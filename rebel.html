@@ -12,19 +12,14 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#f0f2f5">
     
-    <!-- Android Fullscreen Manifest Trick -->
-    <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Rebel%20Script%22%2C%22short_name%22%3A%22Rebel%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f0f2f5%22%2C%22theme_color%22%3A%22%23f0f2f5%22%7D'>
-    
-    <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAEM0lEQVR4nO2dS0hUURjHf6M0S8pIs6SclS9SCh9YREUuS8pI8pFFLpSCoIigYAtatIuCFrVpE9SipS1atChasChasChasChasChasCis78I7mBvjzL1zZ+7MOfP9YODOnXvOd875v/8599yzY8yYMWPGjBkzZsyYMWPGLAsCHAE+AHeB98At4CPQD9wA3gEPgS7gFvAKeAO8BvKB98BF4AtwG/gI3Ad6gZ7pB6mBBvAn6gX6pht0GNoD9AH9QB/QDwwAA8AgMAgMAUPAsAn/P78Ghk3Y9L8Fhk3YNHoA0z+A6Y+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z9Y2B2SBywE6gO1gfKBGkC5QFmgeFBa8FvwoLggR/BbcAEvuIDfggu4C7iA34ILuAs0LpDqH8D0p0z/An0E8D/Qf6DfQG9LpPoX6BfQv0C/gT4D7e9iYAs0AnWBOqA2UAVQCZQMShp/C8oD5YGSgg6L/A77XfCfYF8K9mPwn2CfC88E+/E0D4mBAtAH9AD9QB/QDwwAA8AgMAgMAUPAMDBswv8P0+fD9Lkw/U6vXN6K6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J+Y/onpn5j+ifF/Gf8BnU5wEw3+1VAAAAAASUVORK5CYII=">
-
     <style>
         body { font-family: -apple-system, system-ui, sans-serif; padding: 10px; max-width: 500px; margin: auto; background: #f0f2f5; }
         .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         h2 { margin-top: 0; font-size: 1.1rem; color: #333; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
         .label { font-weight: bold; font-size: 0.7rem; color: #666; text-transform: uppercase; margin-top: 8px; display: block; }
         
-        input { width: 100%; padding: 8px; margin: 4px 0 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-        input:focus { border-color: #007bff; outline: none; }
+        input, select { width: 100%; padding: 8px; margin: 4px 0 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        input:focus, select:focus { border-color: #007bff; outline: none; }
         
         button { border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; width: 100%; font-size: 0.9rem; }
         .btn-main { background: #007bff; color: white; margin-top: 4px; }
@@ -59,14 +54,28 @@
 <div class="card">
     <h2>Rebel Script Gen</h2>
     
+    <span class="label">Choose Gallery</span>
+    <select id="gallerySelect" onchange="updateConsoles()">
+        <option value="rebel_bnw">Rebel BNW</option>
+        <option value="rebel_color">Rebel Color</option>
+        <!-- Add more gallery options here -->
+    </select>
+
+    <span class="label">Choose Role</span>
+    <select id="roleSelect" onchange="updateConsoles()">
+        <option value="Mod">Moderator</option>
+        <option value="Admin">Admin</option>
+        <!-- Add more role options here -->
+    </select>
+    
+    <span class="label">Your Username (Moderator Handle)</span>
+    <input type="text" id="modInput" placeholder="Mod username (no @)" oninput="saveMod()">
+
     <span class="label">Artist Name</span>
-    <input type="text" id="nameInput" placeholder="Enter artist name...">
+    <input type="text" id="nameInput" placeholder="Enter artist name..." oninput="updateConsoles()">
     
     <span class="label">Artist Handle</span>
     <input type="text" id="handleInput" placeholder="username (no @) or paste from post link">
-
-    <span class="label">Moderator Handle</span>
-    <input type="text" id="modInput" placeholder="Mod username (no @)" oninput="saveMod()">
 
     <button class="btn-clear" onclick="clearArtistFields()">Clear Artist Data Only</button>
 
@@ -126,11 +135,15 @@ function execCopy(text, btn) {
 }
 
 function generate() {
+    const gallery = document.getElementById('gallerySelect').value;
+    const role = document.getElementById('roleSelect').value;
     const name = document.getElementById('nameInput').value || '[name]';
     const handle = document.getElementById('handleInput').value || '[handle]';
-    const mod = document.getElementById('modInput').value || 'rebel_bnw';
+    const mod = document.getElementById('modInput').value || '[mod_name]';
     
-    return `𝐟𝐞𝐚𝐭𝐮𝐫𝐞𝐝 𝐚𝐫𝐭𝐢𝐬𝐭\n☆ ${name}\n@${handle}\n.\n✼ Please visit this talented artist’s gallery\n━━━•☆•━━━\nSelected By Mod:\n@${mod}\n.\nFollow & Hashtag:\n@rebel_bnw \n#rebel_bnw \n━━━━━━━•☆•━━━━━━━\n#MoreOnVero #bnw4vero #verofriendsandfamily \n.\n#bnw #blackandwhite #monochrome #monomoods #lightandshadow #blackandwhitephotography #bw #monoculture #gomono #momo #fineart_bwphoto #Bnw_mood #darkandmoody\n.\nFor Hub Use:\n#rebelbnw_${handle}\n#rufeature_${handle}\n.`;
+    // In the future, this function can fetch from your /Templates/ folder
+    // For now, it dynamically updates based on the selections
+    return `𝐟𝐞𝐚𝐭𝐮𝐫𝐞𝐝 𝐚𝐫𝐭𝐢𝐬𝐭\n☆ ${name}\n@${handle}\n.\n✼ Please visit this talented artist’s gallery\n━━━•☆•━━━\nSelected By ${role}:\n@${mod}\n.\nFollow & Hashtag:\n@${gallery} \n#${gallery} \n━━━━━━━•☆•━━━━━━━\n#MoreOnVero #bnw4vero #verofriendsandfamily \n.\n#bnw #blackandwhite #monochrome #monomoods #lightandshadow #blackandwhitephotography #bw #monoculture #gomono #momo #fineart_bwphoto #Bnw_mood #darkandmoody\n.\nFor Hub Use:\n#rebelbnw_${handle}\n#rufeature_${handle}\n.`;
 }
 
 function updateConsoles() {
@@ -138,9 +151,6 @@ function updateConsoles() {
     document.getElementById('consoleComment1').value = "🌟Great shot  📸 🌟 Keep tagging us so we can see your beautiful photos in our feed 👏👏🖤";
     document.getElementById('consoleComment2').value = "🌟 Featured 🌟";
 }
-
-document.getElementById('nameInput').addEventListener('input', updateConsoles);
-document.getElementById('modInput').addEventListener('input', updateConsoles);
 
 function copyMain() {
     execCopy(generate(), document.getElementById('mainBtn'));
