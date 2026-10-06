@@ -13,142 +13,149 @@
     <meta name="theme-color" content="#f0f2f5">
     
 <style>
-        /* Import Material Font */
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
-
         body { 
-            font-family: 'Roboto', sans-serif; 
+            /* Reverting to the clean, original system font */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
             padding: 16px; 
             max-width: 100%; 
             margin: auto; 
-            background: #f8f9fa; 
-            color: #202124;
+            /* Modern dark gradient background */
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); 
+            color: #e2e8f0;
+            min-height: 100vh;
         }
 
-        /* Limit width to 75% only on desktop */
         @media (min-width: 768px) {
             body { max-width: 75%; padding: 32px; }
         }
 
         .card { 
-            background: #ffffff; 
+            background: #1e293b; /* Deep slate instead of bright white */
             padding: 32px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); 
+            border: 1px solid #334155;
         }
 
         h2 { 
             margin-top: 0; 
             font-size: 1.5rem; 
-            font-weight: 500;
-            color: #202124; 
+            font-weight: 600;
+            color: #f8fafc; 
             text-align: center; 
             margin-bottom: 24px; 
+            border-bottom: 1px solid #334155;
+            padding-bottom: 16px;
         }
 
         .label { 
-            font-weight: 500; 
+            font-weight: 600; 
             font-size: 0.75rem; 
-            color: #5f6368; 
+            color: #94a3b8; 
             text-transform: uppercase; 
             letter-spacing: 0.5px;
             margin-top: 12px; 
-            margin-bottom: 4px;
+            margin-bottom: 6px;
             display: block; 
         }
         
-        /* Material Inputs & Textareas */
-        input, select, .preview-box { 
+        /* Modern Dark Inputs */
+        input, select { 
             width: 100%; 
             padding: 12px 16px; 
-            margin: 4px 0 12px 0; 
-            background: #f1f3f4;
-            border: 1px solid transparent; 
-            border-bottom: 2px solid #9aa0a6;
-            border-radius: 4px 4px 0 0; 
+            margin: 0 0 16px 0; 
+            background: #0f172a;
+            color: #f8fafc;
+            border: 1px solid #334155; 
+            border-radius: 8px; 
             box-sizing: border-box; 
             font-size: 14px; 
             font-family: inherit;
             transition: all 0.2s ease;
         }
 
+        input:focus, select:focus { 
+            border-color: #6366f1; 
+            outline: none; 
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Dark, easy-on-the-eyes Textareas */
         .preview-box {
-            font-family: 'Courier New', Courier, monospace;
+            width: 100%; 
+            background: #020617; /* Very dark background to fix the brightness */
+            color: #cbd5e1;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 16px;
+            box-sizing: border-box;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 13px;
+            line-height: 1.5;
             resize: vertical;
-            height: 120px;
-            line-height: 1.4;
+            transition: all 0.2s ease;
+        }
+
+        .preview-box:focus {
+            border-color: #6366f1; 
+            outline: none;
         }
 
         .preview-box.small {
             height: 60px;
         }
 
-        /* Material Focus State */
-        input:focus, select:focus, .preview-box:focus { 
-            background: #e8f0fe;
-            border-bottom: 2px solid #1a73e8; 
-            outline: none; 
-        }
-        
-        /* Material Buttons */
+        /* Sleek Modern Buttons */
         button { 
             border: none; 
-            padding: 10px 24px; 
-            border-radius: 4px; 
+            padding: 12px 24px; 
+            border-radius: 8px; 
             cursor: pointer; 
-            font-weight: 500; 
+            font-weight: 600; 
             font-size: 0.875rem; 
-            letter-spacing: 0.25px;
-            text-transform: uppercase;
-            transition: background 0.2s, box-shadow 0.2s; 
+            transition: all 0.2s; 
             width: 100%; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
-        /* Primary Button */
+        /* Vibrant Indigo Action Button */
         .btn-main { 
-            background: #1a73e8; 
+            background: #4f46e5; 
             color: white; 
             margin-top: 8px; 
-            box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
         }
         .btn-main:hover {
-            background: #1557b0;
-            box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
+            background: #4338ca;
+            transform: translateY(-1px);
         }
 
-        /* Outlined Button (Clear) */
+        /* Soft Red Outline Clear Button */
         .btn-clear { 
             background: transparent; 
-            color: #d93025; 
-            border: 1px solid #d93025;
-            margin: 12px 0 20px 0; 
+            color: #fb7185; 
+            border: 1px solid #fb7185;
+            margin: 8px 0 20px 0; 
         }
         .btn-clear:hover {
-            background: rgba(217, 48, 37, 0.04);
+            background: rgba(251, 113, 133, 0.1);
         }
 
-        /* Secondary Button */
+        /* Subtle Gray Secondary Buttons */
         .btn-alt { 
-            background: #f1f3f4; 
-            color: #202124; 
-            margin-bottom: 16px; 
-            box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3);
+            background: #334155; 
+            color: #f8fafc; 
+            margin-bottom: 20px; 
         }
         .btn-alt:hover {
-            background: #e8eaed;
-            box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
+            background: #475569;
         }
         
         .success { 
-            background: #1e8e3e !important; 
+            background: #10b981 !important; 
             color: white !important; 
             border-color: transparent !important;
         }
 
-        hr { border: 0; border-top: 1px solid #e8eaed; margin: 24px 0; }
+        hr { border: 0; border-top: 1px solid #334155; margin: 24px 0; }
 
         /* Responsive Layout */
         .layout-grid {
@@ -159,9 +166,9 @@
 
         @media (min-width: 768px) {
             .layout-grid {
-                /* Left column is fixed at 320px, right column fills the rest */
+                /* Left column fixed width, right column fills the rest */
                 grid-template-columns: 320px 1fr; 
-                gap: 48px;
+                gap: 40px;
                 align-items: start;
             }
             .preview-box { height: 350px; }
