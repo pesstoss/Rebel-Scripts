@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Fetch the Vero profile page. We pass a User-Agent so Vero doesn't block the request.
+    // Fetch the Vero profile page.
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
@@ -15,16 +15,18 @@ export default async function handler(req, res) {
     
     const html = await response.text();
 
-    // Look for Vero's title tags in the background HTML
     let name = '';
     const ogMatch = html.match(/<meta property="og:title" content="([^"]+)"/i);
     const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
 
     if (ogMatch && ogMatch[1]) {
-      name = ogMatch[1].replace(' on VERO', '').trim();
+      name = ogMatch[1];
     } else if (titleMatch && titleMatch[1]) {
-      name = titleMatch[1].replace(' on VERO', '').trim();
+      name = titleMatch[1];
     }
+
+    // Clean up the scraped name by removing " on VERO" and the "™" symbol
+    name = name.replace(' on VERO', '').replace('™', '').trim();
 
     res.status(200).json({ name });
   } catch (error) {
