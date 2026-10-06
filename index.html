@@ -16,44 +16,46 @@
     <meta name="theme-color" content="#0f172a">
     
 <style>
-        /* 1. Global Box Sizing & Width Lock */
+        /* 1. Clean Reset */
         * {
             box-sizing: border-box;
-            max-width: 100%; /* Prevents ANY element from stretching the screen */
-        }
-
-        /* 2. The Nuclear iOS Scroll Lock & White-Edge Fix */
-        html {
-            background-color: #0f172a; /* Hides the white edge completely */
-        }
-
-        html, body {
-            overflow-x: hidden;
-            width: 100%;
             margin: 0;
-            touch-action: pan-y; /* Hardware-blocks left/right swiping on touchscreens */
+            padding: 0;
         }
 
-        /* 3. Main Body Styling */
+        /* 2. Safe Viewport Lock & White Edge Hider */
+        html {
+            background-color: #0f172a; 
+            overflow-x: hidden;
+        }
+
+        /* 3. Main Body Styling (Flexbox Centering) */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
-            padding: 16px; 
             background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); 
             color: #e2e8f0;
             min-height: 100vh;
+            overflow-x: hidden;
+            
+            /* The magic fix: perfectly centers the card and respects padding */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 16px;
         }
 
         /* 4. Card Container */
         .card { 
             background: #1e293b; 
-            padding: 32px; 
+            padding: 24px; 
             border-radius: 16px; 
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); 
             border: 1px solid #334155;
             width: 100%; 
+            max-width: 900px; /* Naturally limits width on desktop */
         }
+
         h2 { 
-            margin-top: 0; 
             font-size: 1.5rem; 
             font-weight: 600;
             color: #f8fafc; 
@@ -83,8 +85,7 @@
             color: #f8fafc;
             border: 1px solid #334155; 
             border-radius: 8px; 
-            box-sizing: border-box; 
-            font-size: 16px; /* 16px prevents iOS auto-zoom bug */
+            font-size: 16px; /* Prevents iOS auto-zoom */
             font-family: inherit;
             transition: all 0.2s ease;
         }
@@ -103,9 +104,8 @@
             border: 1px solid #334155;
             border-radius: 8px;
             padding: 16px;
-            box-sizing: border-box;
             font-family: "Courier New", Courier, monospace;
-            font-size: 16px; /* 16px prevents iOS auto-zoom bug */
+            font-size: 16px; /* Prevents iOS auto-zoom */
             line-height: 1.5;
             resize: vertical;
             transition: all 0.2s ease;
@@ -132,43 +132,16 @@
             width: 100%; 
         }
 
-        /* Vibrant Indigo Action Button */
-        .btn-main { 
-            background: #4f46e5; 
-            color: white; 
-            margin-top: 8px; 
-        }
-        .btn-main:hover {
-            background: #4338ca;
-            transform: translateY(-1px);
-        }
-
-        /* Soft Red Outline Clear Button */
-        .btn-clear { 
-            background: transparent; 
-            color: #fb7185; 
-            border: 1px solid #fb7185;
-            margin: 8px 0 20px 0; 
-        }
-        .btn-clear:hover {
-            background: rgba(251, 113, 133, 0.1);
-        }
-
-        /* Subtle Gray Secondary Buttons */
-        .btn-alt { 
-            background: #334155; 
-            color: #f8fafc; 
-            margin-bottom: 20px; 
-        }
-        .btn-alt:hover {
-            background: #475569;
-        }
+        .btn-main { background: #4f46e5; color: white; margin-top: 8px; }
+        .btn-main:hover { background: #4338ca; transform: translateY(-1px); }
         
-        .success { 
-            background: #10b981 !important; 
-            color: white !important; 
-            border-color: transparent !important;
-        }
+        .btn-clear { background: transparent; color: #fb7185; border: 1px solid #fb7185; margin: 8px 0 20px 0; }
+        .btn-clear:hover { background: rgba(251, 113, 133, 0.1); }
+
+        .btn-alt { background: #334155; color: #f8fafc; margin-bottom: 20px; }
+        .btn-alt:hover { background: #475569; }
+        
+        .success { background: #10b981 !important; color: white !important; border-color: transparent !important; }
 
         hr { border: 0; border-top: 1px solid #334155; margin: 24px 0; }
 
@@ -179,19 +152,14 @@
             gap: 24px;
         }
 
-        /* Desktop specific styles */
+        /* Desktop view */
         @media (min-width: 768px) {
-            body { 
-                max-width: 75%; 
-                padding: 32px; 
-                margin: auto; /* Keeps the 75% width centered on the monitor */
-            }
+            .card { padding: 32px; } /* Restores wider padding for monitors */
             .layout-grid {
                 grid-template-columns: 320px 1fr; 
                 gap: 40px;
                 align-items: start;
             }
-            /* Shrink font sizes back down for desktop */
             .preview-box { height: 350px; font-size: 13px; }
             .preview-box.small { height: 70px; }
             input, select { font-size: 14px; }
