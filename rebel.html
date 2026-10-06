@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rebel Script Gen</title>
+    
+    <!-- iOS and Android App Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Rebel Script">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#f0f2f5">
+    
+    <!-- Android Fullscreen Manifest Trick -->
+    <link rel="manifest" href='data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Rebel%20Script%22%2C%22short_name%22%3A%22Rebel%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f0f2f5%22%2C%22theme_color%22%3A%22%23f0f2f5%22%7D'>
+    
+    <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAEM0lEQVR4nO2dS0hUURjHf6M0S8pIs6SclS9SCh9YREUuS8pI8pFFLpSCoIigYAtatIuCFrVpE9SipS1atChasChasChasChasChasCis78I7mBvjzL1zZ+7MOfP9YODOnXvOd875v/8599yzY8yYMWPGjBkzZsyYMWPGLAsCHAE+AHeB98At4CPQD9wA3gEPgS7gFvAKeAO8BvKB98BF4AtwG/gI3Ad6gZ7pB6mBBvAn6gX6pht0GNoD9AH9QB/QDwwAA8AgMAgMAUPAsAn/P78Ghk3Y9L8Fhk3YNHoA0z+A6Y+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z9Y2B2SBywE6gO1gfKBGkC5QFmgeFBa8FvwoLggR/BbcAEvuIDfggu4C7iA34ILuAs0LpDqH8D0p0z/An0E8D/Qf6DfQG9LpPoX6BfQv0C/gT4D7e9iYAs0AnWBOqA2UAVQCZQMShp/C8oD5YGSgg6L/A77XfCfYF8K9mPwn2CfC88E+/E0D4mBAtAH9AD9QB/QDwwAA8AgMAgMAUPAMDBswv8P0+fD9Lkw/U6vXN6K6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J6Z+Y/onpn5j+iemfmP6J+Y/onpn5j+ifF/Gf8BnU5wEw3+1VAAAAAASUVORK5CYII=">
+
+    <style>
+        body { font-family: -apple-system, system-ui, sans-serif; padding: 10px; max-width: 500px; margin: auto; background: #f0f2f5; }
+        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { margin-top: 0; font-size: 1.1rem; color: #333; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
+        .label { font-weight: bold; font-size: 0.7rem; color: #666; text-transform: uppercase; margin-top: 8px; display: block; }
+        
+        input { width: 100%; padding: 8px; margin: 4px 0 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        input:focus { border-color: #007bff; outline: none; }
+        
+        button { border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; width: 100%; font-size: 0.9rem; }
+        .btn-main { background: #007bff; color: white; margin-top: 4px; }
+        .btn-clear { background: #fff1f2; color: #e11d48; margin: 10px 0 15px 0; font-size: 0.75rem; border: 1px solid #fecdd3; }
+        .btn-alt { background: #e4e6eb; color: #1c1e21; font-size: 0.8rem; margin-top: 2px; margin-bottom: 12px; }
+        
+        .success { background: #22c55e !important; color: white !important; }
+        hr { border: 0; border-top: 1px solid #eee; margin: 15px 0; }
+
+        .preview-box {
+            width: 100%;
+            height: 260px;
+            padding: 8px;
+            margin: 4px 0 4px 0;
+            background: #f4f5f7;
+            border: 1px dashed #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 10px;
+            font-family: monospace;
+            color: #333;
+            resize: vertical;
+        }
+        .preview-box.small {
+            height: 45px;
+        }
+    </style>
+</head>
+
+<body onload="loadMod()">
+
+<div class="card">
+    <h2>Rebel Script Gen</h2>
+    
+    <span class="label">Artist Name</span>
+    <input type="text" id="nameInput" placeholder="Enter artist name...">
+    
+    <span class="label">Artist Handle</span>
+    <input type="text" id="handleInput" placeholder="username (no @) or paste from post link">
+
+    <span class="label">Moderator Handle</span>
+    <input type="text" id="modInput" placeholder="Mod username (no @)" oninput="saveMod()">
+
+    <button class="btn-clear" onclick="clearArtistFields()">Clear Artist Data Only</button>
+
+    <span class="label">Main Script Preview</span>
+    <textarea id="consoleMain" readonly class="preview-box"></textarea>
+
+    <button class="btn-main" id="mainBtn" onclick="copyMain()">Copy Main Script</button>
+
+    <hr>
+
+    <span class="label">Feature Comment</span>
+    <textarea id="consoleComment1" readonly class="preview-box small"></textarea>
+    <button class="btn-alt" onclick="copyDirect('🌟Great shot  📸 🌟 Keep tagging us so we can see your beautiful photos in our feed 👏👏🖤', this)">Copy "Feature Comment" 📸</button>
+
+    <span class="label">Post Comment</span>
+    <textarea id="consoleComment2" readonly class="preview-box small"></textarea>
+    <button class="btn-alt" onclick="copyDirect('🌟 Featured 🌟', this)">Copy "Post Comment" 🌟</button>
+</div>
+
+<script>
+document.getElementById('handleInput').addEventListener('input', function() {
+    const veroRegex = /vero\.(?:com|co)\/([^\/?#\s]+)/i;
+    const match = this.value.match(veroRegex);
+    if (match && match[1]) {
+        this.value = match[1];
+    }
+    updateConsoles(); 
+});
+
+function loadMod() {
+    const savedMod = localStorage.getItem('rebel_mod_name');
+    if (savedMod) {
+        document.getElementById('modInput').value = savedMod;
+    }
+    updateConsoles(); 
+}
+
+function saveMod() {
+    const modValue = document.getElementById('modInput').value;
+    localStorage.setItem('rebel_mod_name', modValue);
+    updateConsoles();
+}
+
+function execCopy(text, btn) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    textArea.setSelectionRange(0, 99999);
+    try {
+        document.execCommand('copy');
+        showFeedback(btn);
+    } catch (err) {
+        alert('Copy failed');
+    }
+    document.body.removeChild(textArea);
+}
+
+function generate() {
+    const name = document.getElementById('nameInput').value || '[name]';
+    const handle = document.getElementById('handleInput').value || '[handle]';
+    const mod = document.getElementById('modInput').value || 'rebel_bnw';
+    
+    return `𝐟𝐞𝐚𝐭𝐮𝐫𝐞𝐝 𝐚𝐫𝐭𝐢𝐬𝐭\n☆ ${name}\n@${handle}\n.\n✼ Please visit this talented artist’s gallery\n━━━•☆•━━━\nSelected By Mod:\n@${mod}\n.\nFollow & Hashtag:\n@rebel_bnw \n#rebel_bnw \n━━━━━━━•☆•━━━━━━━\n#MoreOnVero #bnw4vero #verofriendsandfamily \n.\n#bnw #blackandwhite #monochrome #monomoods #lightandshadow #blackandwhitephotography #bw #monoculture #gomono #momo #fineart_bwphoto #Bnw_mood #darkandmoody\n.\nFor Hub Use:\n#rebelbnw_${handle}\n#rufeature_${handle}\n.`;
+}
+
+function updateConsoles() {
+    document.getElementById('consoleMain').value = generate();
+    document.getElementById('consoleComment1').value = "🌟Great shot  📸 🌟 Keep tagging us so we can see your beautiful photos in our feed 👏👏🖤";
+    document.getElementById('consoleComment2').value = "🌟 Featured 🌟";
+}
+
+document.getElementById('nameInput').addEventListener('input', updateConsoles);
+document.getElementById('modInput').addEventListener('input', updateConsoles);
+
+function copyMain() {
+    execCopy(generate(), document.getElementById('mainBtn'));
+}
+
+function copyDirect(text, btn) {
+    execCopy(text, btn);
+}
+
+function showFeedback(btn) {
+    const oldText = btn.innerText;
+    btn.innerText = "✓ Copied!";
+    btn.classList.add('success');
+    setTimeout(() => {
+        btn.innerText = oldText;
+        btn.classList.remove('success');
+    }, 1200);
+}
+
+function clearArtistFields() {
+    document.getElementById('nameInput').value = '';
+    document.getElementById('handleInput').value = '';
+    document.getElementById('nameInput').focus();
+    updateConsoles(); 
+}
+</script>
+
+</body>
+</html>
