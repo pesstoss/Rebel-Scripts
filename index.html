@@ -89,15 +89,15 @@
 
     <button class="btn-main" id="mainBtn" onclick="copyMain()">Copy Main Script</button>
 
-    <hr>
+<hr>
 
-    <span class="label">Feature Comment</span>
-    <textarea id="consoleComment1" readonly class="preview-box small"></textarea>
-    <button class="btn-alt" onclick="copyDirect('🌟Great shot  📸 🌟 Keep tagging us so we can see your beautiful photos in our feed 👏👏🖤', this)">Copy "Feature Comment" 📸</button>
+    <span class="label">Personal / Feature Comment</span>
+    <textarea id="consoleComment1" class="preview-box small" placeholder="Type your personal comment here..."></textarea>
+    <button class="btn-alt" onclick="copyPersonal(this)">Copy "Feature Comment" ✍</button>
 
-    <span class="label">Post Comment</span>
+    <span class="label">Original Post Comment</span>
     <textarea id="consoleComment2" readonly class="preview-box small"></textarea>
-    <button class="btn-alt" onclick="copyDirect('🌟 Featured 🌟', this)">Copy "Post Comment" 🌟</button>
+    <button class="btn-alt" onclick="copyPost(this)">Copy "Post Comment" 🎉</button>
 </div>
 
 <script>
@@ -206,8 +206,15 @@ async function updateConsoles() {
         .replace(/{mod}/g, mod);
 
     document.getElementById('consoleMain').value = generatedScript;
-    document.getElementById('consoleComment1').value = "🌟Great shot  📸 🌟 Keep tagging us so we can see your beautiful photos in our feed 👏👏🖤";
-    document.getElementById('consoleComment2').value = "🌟 Featured 🌟";
+if (gallery === 'rebel_bnw') {
+        document.getElementById('consoleComment1').value = "🌟Great shot  📸 🌟 Keep tagging us so we can see your beautiful photos in our feed 👏👏🖤";
+        document.getElementById('consoleComment2').value = "🌟 Featured 🌟";
+    } else {
+        if (document.getElementById('consoleComment1').value === "🌟Great shot  📸 🌟 Keep tagging us so we can see your beautiful photos in our feed 👏👏🖤") {
+            document.getElementById('consoleComment1').value = ""; 
+        }
+        document.getElementById('consoleComment2').value = `✨ ✨ ✨ FEATURED BY @${gallery} CONGRATS! 🎉 🎉 🎉`;
+    }
 }
 
 // Copy actions
@@ -232,8 +239,14 @@ function copyMain() {
     execCopy(scriptToCopy, document.getElementById('mainBtn'));
 }
 
-function copyDirect(text, btn) {
-    execCopy(text, btn);
+function copyPersonal(btn) {
+    const textToCopy = document.getElementById('consoleComment1').value;
+    execCopy(textToCopy, btn);
+}
+
+function copyPost(btn) {
+    const textToCopy = document.getElementById('consoleComment2').value;
+    execCopy(textToCopy, btn);
 }
 
 function showFeedback(btn) {
