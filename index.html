@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-title" content="Rebel Script">
     <meta name="mobile-web-app-capable" content="yes">
     
-    <!-- Updated theme-color to match your new Dark Slate background -->
+    <!-- Updated theme-color to match the new Dark Slate background -->
     <meta name="theme-color" content="#0f172a">
     
 <style>
@@ -199,7 +199,7 @@
                 <input type="text" id="nameInput" placeholder="Enter artist name..." oninput="updateConsoles()">
             </div>
             
-            <span class="label">Artist Handle</span>
+            <span class="label">Artist Username</span>
             <input type="text" id="handleInput" placeholder="username (no @) or paste from post link">
 
             <button class="btn-clear" onclick="clearArtistFields()">Clear Artist Data Only</button>
@@ -241,7 +241,7 @@ document.getElementById('handleInput').addEventListener('input', async function(
         updateConsoles(); 
 
         try {
-            // 3. Send the full Vero URL to your new Vercel backend
+            // 3. Send the full Vero URL to the Vercel backend
             const response = await fetch(`/api/scrape?url=${encodeURIComponent(inputVal)}`);
             const data = await response.json();
             
