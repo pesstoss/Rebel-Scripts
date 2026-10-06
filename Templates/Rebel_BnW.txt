@@ -5,7 +5,7 @@
 ✼ Please visit this talented artist’s gallery
 ━━━•☆•━━━
 Selected By Mod:
-@{handle} 
+@{mod} 
 .
 Follow & Hashtag:
 @rebel_bnw 
@@ -16,6 +16,6 @@ Follow & Hashtag:
 #bnw #blackandwhite #monomoods #lightandshadow #blackandwhitephotography #bw #monoculture #gomono #momo #fineart_bwphoto #Bnw_mood #darkandmoody
 .
 For Hub Use:
-#rebelbnw_costaskal
-#rufeature_costaskal
+#rebelbnw_{handle}
+#rufeature_{handle}
 .
