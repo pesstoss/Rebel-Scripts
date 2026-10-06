@@ -25,8 +25,12 @@ export default async function handler(req, res) {
       name = titleMatch[1];
     }
 
-    // Clean up the scraped name by removing " on VERO" and the "™" symbol
-    name = name.replace(' on VERO', '').replace('™', '').trim();
+    // Strip Vero suffixes, actions, and special characters
+    name = name
+      .replace(/(\s+shared\s+(a\s+)?(photo|post|video|image|link).*)/i, '')
+      .replace(/\s+on\s+VERO.*$/i, '')
+      .replace(/[™®]/g, '')
+      .trim();
 
     res.status(200).json({ name });
   } catch (error) {
