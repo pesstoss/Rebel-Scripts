@@ -4,7 +4,7 @@
 ✼  Please visit this beautiful gallery  ✼ ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀ ☆ ☆ ⋅⋆~⋆⋅ ☆☆ ⋅⋆~⋆⋅ ☆ ☆
 
-Feature selected by: {handle} 
+Feature selected by {role}: {handle} 
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 Follow & Hashtag:
 @rebels_united 
@@ -12,6 +12,6 @@ Follow & Hashtag:
 
  #hey_ihadtosnapthat #vero #photography #snap_community  #vero_photography #ipulledoverforthis #rebel_macro #rebel_sky #rebel_bnw #freshbreezeclub 
 ~For hub use~
-#rufeature_simonphotography 
+#rufeature_{handle} 
 
 ✨️✨️✨️✨️✨️✨️✨️✨️✨️✨️
