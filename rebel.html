@@ -101,14 +101,41 @@
 </div>
 
 <script>
-// Format the vero URL if pasted
-document.getElementById('handleInput').addEventListener('input', function() {
+document.getElementById('handleInput').addEventListener('input', async function() {
+    const inputVal = this.value;
     const veroRegex = /vero\.(?:com|co)\/([^\/?#\s]+)/i;
-    const match = this.value.match(veroRegex);
+    const match = inputVal.match(veroRegex);
+    
     if (match && match[1]) {
+        // 1. Instantly strip the URL to just the handle
         this.value = match[1];
+        
+        // 2. Temporarily show a loading message in the name field
+        const nameInput = document.getElementById('nameInput');
+        const originalName = nameInput.value;
+        nameInput.value = "Fetching name...";
+        updateConsoles(); 
+
+        try {
+            // 3. Send the full Vero URL to your new Vercel backend
+            const response = await fetch(`/api/scrape?url=${encodeURIComponent(inputVal)}`);
+            const data = await response.json();
+            
+            if (data.name) {
+                nameInput.value = data.name; // Insert the scraped name!
+            } else {
+                nameInput.value = originalName; // Revert if name wasn't found
+                nameInput.placeholder = "Name not found, enter manually";
+            }
+        } catch (error) {
+            nameInput.value = originalName;
+        }
+        
+        // 4. Update the console to show the final generated script
+        updateConsoles();
+    } else {
+        updateConsoles(); 
     }
-    updateConsoles(); 
 });
 
 function loadSettings() {
