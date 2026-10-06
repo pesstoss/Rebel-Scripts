@@ -49,27 +49,28 @@
     </style>
 </head>
 
-<body onload="loadMod()">
+<body onload="loadSettings()">
 
 <div class="card">
     <h2>Rebel Script Gen</h2>
     
     <span class="label">Choose Gallery</span>
-    <select id="gallerySelect" onchange="updateConsoles()">
+    <select id="gallerySelect" onchange="saveSettings(); updateConsoles()">
+        <!-- Values here must match your filename exactly (e.g., value="rebel_bnw" -> rebel_bnw.txt) -->
         <option value="rebel_bnw">Rebel BNW</option>
-        <option value="rebel_color">Rebel Color</option>
-        <!-- Add more gallery options here -->
+        <option value="rebels_united">Rebels United</option>
+        <option value="rebel_macro">Rebel Macro</option>
+        <option value="rebel_skies">Rebel Skies</option>
     </select>
 
     <span class="label">Choose Role</span>
-    <select id="roleSelect" onchange="updateConsoles()">
-        <option value="Mod">Moderator</option>
+    <select id="roleSelect" onchange="saveSettings(); updateConsoles()">
+        <option value="Mod">Mod</option>
         <option value="Admin">Admin</option>
-        <!-- Add more role options here -->
     </select>
     
-    <span class="label">Your Username (Moderator Handle)</span>
-    <input type="text" id="modInput" placeholder="Mod username (no @)" oninput="saveMod()">
+    <span class="label">Your Username</span>
+    <input type="text" id="modInput" placeholder="Your username (no @)" oninput="saveSettings(); updateConsoles()">
 
     <span class="label">Artist Name</span>
     <input type="text" id="nameInput" placeholder="Enter artist name..." oninput="updateConsoles()">
@@ -80,7 +81,7 @@
     <button class="btn-clear" onclick="clearArtistFields()">Clear Artist Data Only</button>
 
     <span class="label">Main Script Preview</span>
-    <textarea id="consoleMain" readonly class="preview-box"></textarea>
+    <textarea id="consoleMain" readonly class="preview-box">Loading template...</textarea>
 
     <button class="btn-main" id="mainBtn" onclick="copyMain()">Copy Main Script</button>
 
@@ -96,6 +97,7 @@
 </div>
 
 <script>
+// Format the vero URL if pasted
 document.getElementById('handleInput').addEventListener('input', function() {
     const veroRegex = /vero\.(?:com|co)\/([^\/?#\s]+)/i;
     const match = this.value.match(veroRegex);
@@ -105,20 +107,56 @@ document.getElementById('handleInput').addEventListener('input', function() {
     updateConsoles(); 
 });
 
-function loadMod() {
-    const savedMod = localStorage.getItem('rebel_mod_name');
-    if (savedMod) {
-        document.getElementById('modInput').value = savedMod;
-    }
+function loadSettings() {
+    if (localStorage.getItem('rebel_mod_name')) document.getElementById('modInput').value = localStorage.getItem('rebel_mod_name');
+    if (localStorage.getItem('rebel_role')) document.getElementById('roleSelect').value = localStorage.getItem('rebel_role');
+    if (localStorage.getItem('rebel_gallery')) document.getElementById('gallerySelect').value = localStorage.getItem('rebel_gallery');
     updateConsoles(); 
 }
 
-function saveMod() {
-    const modValue = document.getElementById('modInput').value;
-    localStorage.setItem('rebel_mod_name', modValue);
-    updateConsoles();
+function saveSettings() {
+    localStorage.setItem('rebel_mod_name', document.getElementById('modInput').value);
+    localStorage.setItem('rebel_role', document.getElementById('roleSelect').value);
+    localStorage.setItem('rebel_gallery', document.getElementById('gallerySelect').value);
 }
 
+// Fetch the template text file from the Templates folder
+async function fetchTemplate(galleryName) {
+    try {
+        const response = await fetch(`Templates/${galleryName}.txt`);
+        if (!response.ok) {
+            throw new Error(`File not found: Templates/${galleryName}.txt`);
+        }
+        return await response.text();
+    } catch (error) {
+        return `Error: Could not load template for ${galleryName}.\nMake sure Templates/${galleryName}.txt exists in your repository.\n\n(${error.message})`;
+    }
+}
+
+// Update text areas
+async function updateConsoles() {
+    const gallery = document.getElementById('gallerySelect').value;
+    const role = document.getElementById('roleSelect').value;
+    const name = document.getElementById('nameInput').value || '[name]';
+    const handle = document.getElementById('handleInput').value || '[handle]';
+    const mod = document.getElementById('modInput').value || '[username]';
+    
+    // Fetch raw template text
+    let template = await fetchTemplate(gallery);
+
+    // Replace placeholders with current input values
+    const generatedScript = template
+        .replace(/{name}/g, name)
+        .replace(/{handle}/g, handle)
+        .replace(/{role}/g, role)
+        .replace(/{mod}/g, mod);
+
+    document.getElementById('consoleMain').value = generatedScript;
+    document.getElementById('consoleComment1').value = "🌟Great shot  📸 🌟 Keep tagging us so we can see your beautiful photos in our feed 👏👏🖤";
+    document.getElementById('consoleComment2').value = "🌟 Featured 🌟";
+}
+
+// Copy actions
 function execCopy(text, btn) {
     const textArea = document.createElement("textarea");
     textArea.value = text;
@@ -134,26 +172,10 @@ function execCopy(text, btn) {
     document.body.removeChild(textArea);
 }
 
-function generate() {
-    const gallery = document.getElementById('gallerySelect').value;
-    const role = document.getElementById('roleSelect').value;
-    const name = document.getElementById('nameInput').value || '[name]';
-    const handle = document.getElementById('handleInput').value || '[handle]';
-    const mod = document.getElementById('modInput').value || '[mod_name]';
-    
-    // In the future, this function can fetch from your /Templates/ folder
-    // For now, it dynamically updates based on the selections
-    return `𝐟𝐞𝐚𝐭𝐮𝐫𝐞𝐝 𝐚𝐫𝐭𝐢𝐬𝐭\n☆ ${name}\n@${handle}\n.\n✼ Please visit this talented artist’s gallery\n━━━•☆•━━━\nSelected By ${role}:\n@${mod}\n.\nFollow & Hashtag:\n@${gallery} \n#${gallery} \n━━━━━━━•☆•━━━━━━━\n#MoreOnVero #bnw4vero #verofriendsandfamily \n.\n#bnw #blackandwhite #monochrome #monomoods #lightandshadow #blackandwhitephotography #bw #monoculture #gomono #momo #fineart_bwphoto #Bnw_mood #darkandmoody\n.\nFor Hub Use:\n#rebelbnw_${handle}\n#rufeature_${handle}\n.`;
-}
-
-function updateConsoles() {
-    document.getElementById('consoleMain').value = generate();
-    document.getElementById('consoleComment1').value = "🌟Great shot  📸 🌟 Keep tagging us so we can see your beautiful photos in our feed 👏👏🖤";
-    document.getElementById('consoleComment2').value = "🌟 Featured 🌟";
-}
-
+// Grabs whatever is currently in the preview box to copy
 function copyMain() {
-    execCopy(generate(), document.getElementById('mainBtn'));
+    const scriptToCopy = document.getElementById('consoleMain').value;
+    execCopy(scriptToCopy, document.getElementById('mainBtn'));
 }
 
 function copyDirect(text, btn) {
