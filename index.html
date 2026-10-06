@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+    <!-- Strict iOS viewport lock to prevent zoom and horizontal scroll -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>Rebel Script Gen</title>
     
     <!-- iOS and Android App Meta Tags -->
@@ -10,49 +11,42 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Rebel Script">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#f0f2f5">
+    
+    <!-- Updated theme-color to match your new Dark Slate background -->
+    <meta name="theme-color" content="#0f172a">
     
 <style>
-        /* This prevents anything from stretching wider than the screen */
+        /* 1. Global Box Sizing */
         * {
             box-sizing: border-box;
         }
 
+        /* 2. Strict iOS scroll lock */
         html, body {
-            overflow-x: hidden; /* Completely disables horizontal swiping */
+            overflow-x: hidden;
             width: 100%;
+            max-width: 100vw; /* Forces iOS to respect screen width */
+            position: relative; /* Required by iOS to enforce overflow-x */
+            margin: 0;
         }
 
+        /* 3. Main Body Styling */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
             padding: 16px; 
-            margin: 0; 
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); 
-            color: #e2e8f0;
-            min-height: 100vh;
-        }
-        body { 
-            /* Reverting to the clean, original system font */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
-            padding: 16px; 
-            max-width: 100%; 
-            margin: auto; 
-            /* Modern dark gradient background */
             background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); 
             color: #e2e8f0;
             min-height: 100vh;
         }
 
-        @media (min-width: 768px) {
-            body { max-width: 75%; padding: 32px; }
-        }
-
+        /* 4. Card Container */
         .card { 
-            background: #1e293b; /* Deep slate instead of bright white */
+            background: #1e293b; 
             padding: 32px; 
             border-radius: 16px; 
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); 
             border: 1px solid #334155;
+            max-width: 100%; /* Prevents the card from stretching the screen */
         }
 
         h2 { 
@@ -87,7 +81,7 @@
             border: 1px solid #334155; 
             border-radius: 8px; 
             box-sizing: border-box; 
-            font-size: 14px; 
+            font-size: 16px; /* 16px prevents iOS auto-zoom bug */
             font-family: inherit;
             transition: all 0.2s ease;
         }
@@ -101,14 +95,14 @@
         /* Dark, easy-on-the-eyes Textareas */
         .preview-box {
             width: 100%; 
-            background: #020617; /* Very dark background to fix the brightness */
+            background: #020617; 
             color: #cbd5e1;
             border: 1px solid #334155;
             border-radius: 8px;
             padding: 16px;
             box-sizing: border-box;
             font-family: "Courier New", Courier, monospace;
-            font-size: 13px;
+            font-size: 16px; /* 16px prevents iOS auto-zoom bug */
             line-height: 1.5;
             resize: vertical;
             transition: all 0.2s ease;
@@ -182,15 +176,22 @@
             gap: 24px;
         }
 
+        /* Desktop specific styles */
         @media (min-width: 768px) {
+            body { 
+                max-width: 75%; 
+                padding: 32px; 
+                margin: auto; /* Keeps the 75% width centered on the monitor */
+            }
             .layout-grid {
-                /* Left column fixed width, right column fills the rest */
                 grid-template-columns: 320px 1fr; 
                 gap: 40px;
                 align-items: start;
             }
-            .preview-box { height: 350px; }
+            /* Shrink font sizes back down for desktop */
+            .preview-box { height: 350px; font-size: 13px; }
             .preview-box.small { height: 70px; }
+            input, select { font-size: 14px; }
         }
     </style>
 </head>
