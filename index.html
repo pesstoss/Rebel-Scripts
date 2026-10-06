@@ -12,16 +12,59 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#f0f2f5">
     
-    <style>
-        body { font-family: -apple-system, system-ui, sans-serif; padding: 10px; max-width: 500px; margin: auto; background: #f0f2f5; }
-        .card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { margin-top: 0; font-size: 1.1rem; color: #333; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; }
-        .label { font-weight: bold; font-size: 0.7rem; color: #666; text-transform: uppercase; margin-top: 8px; display: block; }
+<style>
+        body { 
+            font-family: -apple-system, system-ui, sans-serif; 
+            padding: 15px; 
+            max-width: 980px; 
+            margin: auto; 
+            background: #f0f2f5; 
+        }
+        .card { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+        }
+        h2 { 
+            margin-top: 0; 
+            font-size: 1.2rem; 
+            color: #333; 
+            text-align: center; 
+            border-bottom: 1px solid #eee; 
+            padding-bottom: 12px; 
+            margin-bottom: 16px; 
+        }
+        .label { 
+            font-weight: bold; 
+            font-size: 0.7rem; 
+            color: #666; 
+            text-transform: uppercase; 
+            margin-top: 8px; 
+            display: block; 
+        }
         
-        input, select { width: 100%; padding: 8px; margin: 4px 0 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        input, select { 
+            width: 100%; 
+            padding: 8px; 
+            margin: 4px 0 8px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            font-size: 14px; 
+        }
         input:focus, select:focus { border-color: #007bff; outline: none; }
         
-        button { border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; width: 100%; font-size: 0.9rem; }
+        button { 
+            border: none; 
+            padding: 10px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: 0.2s; 
+            width: 100%; 
+            font-size: 0.9rem; 
+        }
         .btn-main { background: #007bff; color: white; margin-top: 4px; }
         .btn-clear { background: #fff1f2; color: #e11d48; margin: 10px 0 15px 0; font-size: 0.75rem; border: 1px solid #fecdd3; }
         .btn-alt { background: #e4e6eb; color: #1c1e21; font-size: 0.8rem; margin-top: 2px; margin-bottom: 12px; }
@@ -31,20 +74,34 @@
 
         .preview-box {
             width: 100%;
-            height: 260px;
+            height: 240px;
             padding: 8px;
             margin: 4px 0 4px 0;
             background: #f4f5f7;
             border: 1px dashed #ccc;
             border-radius: 6px;
             box-sizing: border-box;
-            font-size: 10px;
+            font-size: 11px;
             font-family: monospace;
             color: #333;
             resize: vertical;
         }
         .preview-box.small {
-            height: 45px;
+            height: 48px;
+        }
+
+        /* Responsive 2-Column Grid */
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .layout-grid {
+                grid-template-columns: 1fr 1.15fr;
+                align-items: start;
+            }
         }
     </style>
 </head>
@@ -54,50 +111,56 @@
 <div class="card">
     <h2>Rebel Script Gen</h2>
     
-    <span class="label">Choose Gallery</span>
-    <select id="gallerySelect" onchange="saveSettings(); updateVisibility(); updateConsoles()">
-        <option value="rebel_bnw">Rebel BNW</option>
-        <option value="rebels_united">Rebels United</option>
-        <option value="rebel_macro">Rebel Macro</option>
-        <option value="rebel_sky">Rebel Sky</option>
-    </select>
+    <div class="layout-grid">
+        <!-- Left Column: Inputs & Controls -->
+        <div>
+            <span class="label">Choose Gallery</span>
+            <select id="gallerySelect" onchange="saveSettings(); updateVisibility(); updateConsoles()">
+                <option value="rebel_bnw">Rebel BNW</option>
+                <option value="rebels_united">Rebels United</option>
+                <option value="rebel_macro">Rebel Macro</option>
+                <option value="rebel_sky">Rebel Sky</option>
+            </select>
 
-    <div id="roleGroup">
-        <span class="label">Choose Role</span>
-        <select id="roleSelect" onchange="saveSettings(); updateConsoles()">
-            <option value="Mod">Mod</option>
-            <option value="Admin">Admin</option>
-        </select>
+            <div id="roleGroup">
+                <span class="label">Choose Role</span>
+                <select id="roleSelect" onchange="saveSettings(); updateConsoles()">
+                    <option value="Mod">Mod</option>
+                    <option value="Admin">Admin</option>
+                </select>
+            </div>
+            
+            <span class="label">Your Username</span>
+            <input type="text" id="modInput" placeholder="Your username (no @)" oninput="saveSettings(); updateConsoles()">
+
+            <div id="nameGroup">
+                <span class="label">Artist Name</span>
+                <input type="text" id="nameInput" placeholder="Enter artist name..." oninput="updateConsoles()">
+            </div>
+            
+            <span class="label">Artist Handle</span>
+            <input type="text" id="handleInput" placeholder="username (no @) or paste from post link">
+
+            <button class="btn-clear" onclick="clearArtistFields()">Clear Artist Data Only</button>
+        </div>
+
+        <!-- Right Column: Previews & Copy Actions -->
+        <div>
+            <span class="label">Main Script Preview</span>
+            <textarea id="consoleMain" readonly class="preview-box">Loading template...</textarea>
+            <button class="btn-main" id="mainBtn" onclick="copyMain()">Copy Main Script</button>
+
+            <hr>
+
+            <span class="label">Personal / Feature Comment</span>
+            <textarea id="consoleComment1" class="preview-box small" placeholder="Type your personal comment here..."></textarea>
+            <button class="btn-alt" onclick="copyPersonal(this)">Copy "Feature Comment" ✍</button>
+
+            <span class="label">Original Post Comment</span>
+            <textarea id="consoleComment2" readonly class="preview-box small"></textarea>
+            <button class="btn-alt" onclick="copyPost(this)">Copy "Post Comment" 🎉</button>
+        </div>
     </div>
-    
-    <span class="label">Your Username</span>
-    <input type="text" id="modInput" placeholder="Your username (no @)" oninput="saveSettings(); updateConsoles()">
-
-    <!-- Name is wrapped in a div so we can hide it -->
-    <div id="nameGroup">
-        <span class="label">Artist Name</span>
-        <input type="text" id="nameInput" placeholder="Enter artist name..." oninput="updateConsoles()">
-    </div>
-    
-    <span class="label">Artist Handle</span>
-    <input type="text" id="handleInput" placeholder="username (no @) or paste from post link">
-
-    <button class="btn-clear" onclick="clearArtistFields()">Clear Artist Data Only</button>
-
-    <span class="label">Main Script Preview</span>
-    <textarea id="consoleMain" readonly class="preview-box">Loading template...</textarea>
-
-    <button class="btn-main" id="mainBtn" onclick="copyMain()">Copy Main Script</button>
-
-<hr>
-
-    <span class="label">Personal / Feature Comment</span>
-    <textarea id="consoleComment1" class="preview-box small" placeholder="Type your personal comment here..."></textarea>
-    <button class="btn-alt" onclick="copyPersonal(this)">Copy "Feature Comment" ✍</button>
-
-    <span class="label">Original Post Comment</span>
-    <textarea id="consoleComment2" readonly class="preview-box small"></textarea>
-    <button class="btn-alt" onclick="copyPost(this)">Copy "Post Comment" 🎉</button>
 </div>
 
 <script>
