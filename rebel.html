@@ -55,25 +55,29 @@
     <h2>Rebel Script Gen</h2>
     
     <span class="label">Choose Gallery</span>
-    <select id="gallerySelect" onchange="saveSettings(); updateConsoles()">
-        <!-- Values here must match your filename exactly (e.g., value="rebel_bnw" -> rebel_bnw.txt) -->
+    <select id="gallerySelect" onchange="saveSettings(); updateVisibility(); updateConsoles()">
         <option value="rebel_bnw">Rebel BNW</option>
         <option value="rebels_united">Rebels United</option>
         <option value="rebel_macro">Rebel Macro</option>
         <option value="rebel_skies">Rebel Skies</option>
     </select>
 
-    <span class="label">Choose Role</span>
-    <select id="roleSelect" onchange="saveSettings(); updateConsoles()">
-        <option value="Mod">Mod</option>
-        <option value="Admin">Admin</option>
-    </select>
+    <div id="roleGroup">
+        <span class="label">Choose Role</span>
+        <select id="roleSelect" onchange="saveSettings(); updateConsoles()">
+            <option value="Mod">Mod</option>
+            <option value="Admin">Admin</option>
+        </select>
+    </div>
     
     <span class="label">Your Username</span>
     <input type="text" id="modInput" placeholder="Your username (no @)" oninput="saveSettings(); updateConsoles()">
 
-    <span class="label">Artist Name</span>
-    <input type="text" id="nameInput" placeholder="Enter artist name..." oninput="updateConsoles()">
+    <!-- Name is wrapped in a div so we can hide it -->
+    <div id="nameGroup">
+        <span class="label">Artist Name</span>
+        <input type="text" id="nameInput" placeholder="Enter artist name..." oninput="updateConsoles()">
+    </div>
     
     <span class="label">Artist Handle</span>
     <input type="text" id="handleInput" placeholder="username (no @) or paste from post link">
@@ -111,6 +115,8 @@ function loadSettings() {
     if (localStorage.getItem('rebel_mod_name')) document.getElementById('modInput').value = localStorage.getItem('rebel_mod_name');
     if (localStorage.getItem('rebel_role')) document.getElementById('roleSelect').value = localStorage.getItem('rebel_role');
     if (localStorage.getItem('rebel_gallery')) document.getElementById('gallerySelect').value = localStorage.getItem('rebel_gallery');
+    
+    updateVisibility(); // Call this on load to set the correct view
     updateConsoles(); 
 }
 
@@ -118,6 +124,27 @@ function saveSettings() {
     localStorage.setItem('rebel_mod_name', document.getElementById('modInput').value);
     localStorage.setItem('rebel_role', document.getElementById('roleSelect').value);
     localStorage.setItem('rebel_gallery', document.getElementById('gallerySelect').value);
+}
+
+// Hides or shows inputs based on the chosen gallery
+function updateVisibility() {
+    const gallery = document.getElementById('gallerySelect').value;
+    const nameGroup = document.getElementById('nameGroup');
+    const roleGroup = document.getElementById('roleGroup');
+
+    // Show Artist Name ONLY for Rebel BNW
+    if (gallery === 'rebel_bnw') {
+        nameGroup.style.display = 'block';
+    } else {
+        nameGroup.style.display = 'none';
+    }
+
+    // Since Rebels United doesn't use "Role" either, we can optionally hide it too!
+    if (gallery === 'rebels_united') {
+        roleGroup.style.display = 'none';
+    } else {
+        roleGroup.style.display = 'block';
+    }
 }
 
 // Fetch the template text file from the Templates folder
@@ -195,7 +222,12 @@ function showFeedback(btn) {
 function clearArtistFields() {
     document.getElementById('nameInput').value = '';
     document.getElementById('handleInput').value = '';
-    document.getElementById('nameInput').focus();
+    // Optional: Only focus nameInput if it's visible, otherwise focus handleInput
+    if (document.getElementById('nameGroup').style.display === 'none') {
+        document.getElementById('handleInput').focus();
+    } else {
+        document.getElementById('nameInput').focus();
+    }
     updateConsoles(); 
 }
 </script>
