@@ -454,7 +454,7 @@ function clearArtistFields() {
         }
 
         const originalText = btn.innerText;
-        btn.innerText = "Converting... ⏳";
+        btn.innerText = "Fetching... ⏳";
         btn.disabled = true;
 
         try {
@@ -471,36 +471,41 @@ function clearArtistFields() {
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0);
                 
-                // The Magic iOS Fix: Convert to a File object
-                canvas.toBlob(async (pngBlob) => {
-                    const file = new File([pngBlob], `rebel_feature_${Date.now()}.png`, { type: 'image/png' });
-                    
-                    // Check if the device supports the native Share Sheet (iPhone does!)
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        try {
-                            await navigator.share({
-                                files: [file],
-                                title: 'Rebel Feature Photo'
-                            });
-                        } catch (err) {
-                            console.log("User closed the share sheet");
-                        }
-                    } else {
-                        // Fallback for Windows/Android/Mac (Standard download)
-                        const link = document.createElement('a');
-                        link.href = URL.createObjectURL(pngBlob);
-                        link.download = file.name;
-                        link.click();
-                    }
-                    
-                    btn.innerText = "✓ Ready!";
-                    btn.classList.add('success');
-                    setTimeout(() => {
-                        btn.innerText = originalText;
-                        btn.classList.remove('success');
-                        btn.disabled = false;
-                    }, 2000);
-                }, 'image/png');
+                const pngUrl = canvas.toDataURL('image/png');
+                
+                // 1. Trigger the standard auto-download for Android/Mac/Windows
+                const link = document.createElement('a');
+                link.href = pngUrl;
+                link.download = `rebel_feature_${Date.now()}.png`;
+                link.click();
+                
+                // 2. The iOS Fix: Display the photo directly on the screen so you can long-press it
+                let previewBox = document.getElementById('iosPhotoFallback');
+                if (!previewBox) {
+                    previewBox = document.createElement('div');
+                    previewBox.id = 'iosPhotoFallback';
+                    previewBox.style.marginTop = '8px';
+                    previewBox.style.marginBottom = '16px';
+                    previewBox.style.textAlign = 'center';
+                    // Insert the image box right below the Fetch Photo button
+                    btn.parentNode.insertBefore(previewBox, btn.nextSibling);
+                }
+                
+                // Inject the image and instructions
+                previewBox.innerHTML = `
+                    <p style="color: #10b981; font-size: 0.8rem; margin-bottom: 8px; font-weight: 600;">
+                        📸 If it didn't auto-download, long-press the image below and "Save to Photos"
+                    </p>
+                    <img src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                `;
+
+                btn.innerText = "✓ Photo Ready!";
+                btn.classList.add('success');
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.classList.remove('success');
+                    btn.disabled = false;
+                }, 2000);
             };
             img.src = URL.createObjectURL(blob);
         } catch (err) {
