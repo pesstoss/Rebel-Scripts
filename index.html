@@ -413,6 +413,14 @@ function showFeedback(btn) {
 function clearArtistFields() {
     document.getElementById('nameInput').value = '';
     document.getElementById('handleInput').value = '';
+    document.getElementById('handleInput').dataset.fullUrl = ''; // Wipe the hidden URL
+
+    // Find and remove the generated photo preview
+    const photoPreview = document.getElementById('iosPhotoFallback');
+    if (photoPreview) {
+        photoPreview.remove(); 
+    }
+
     // Optional: Only focus nameInput if it's visible, otherwise focus handleInput
     if (document.getElementById('nameGroup').style.display === 'none') {
         document.getElementById('handleInput').focus();
