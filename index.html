@@ -431,19 +431,17 @@ function clearArtistFields() {
 }
     async function pasteFromClipboard() {
         try {
-            // iOS 14+ workaround: ensure clipboard is focused
-            const handleInput = document.getElementById('handleInput');
-            handleInput.focus(); 
-            
+            // Ask for clipboard text immediately upon tapping the button
             const text = await navigator.clipboard.readText();
             if (!text) return;
 
+            const handleInput = document.getElementById('handleInput');
             handleInput.value = text;
             handleInput.dispatchEvent(new Event('input', { bubbles: true }));
             
         } catch (err) {
             console.error('Clipboard failed: ', err);
-            alert('iOS blocked the clipboard button. Please tap the text box and use the black "Paste" bubble instead!');
+            alert('Clipboard access blocked. Please tap the text box and use the black "Paste" bubble instead!');
         }
     }
 
