@@ -432,17 +432,19 @@ function clearArtistFields() {
 async function pasteFromClipboard() {
     try {
         const handleInput = document.getElementById('handleInput');
-        handleInput.focus(); 
         
+        // 1. Explicitly ONLY read from clipboard. Never write to it!
         const text = await navigator.clipboard.readText();
         if (!text) return;
 
         handleInput.value = text;
+        
+        // 2. Trigger input event so the scraper fires
         handleInput.dispatchEvent(new Event('input', { bubbles: true }));
         
     } catch (err) {
-        console.error('Clipboard failed: ', err);
-        alert('Clipboard access restricted by browser. Please tap the "Artist Username" text box and use your system "Paste" option instead!');
+        console.error('Clipboard read failed: ', err);
+        // Fail silently so buttons never freeze up
     }
 }
 
