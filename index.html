@@ -141,6 +141,9 @@
         .btn-paste { background: #10b981; color: white; margin: 4px 0 16px 0; }
         .btn-paste:hover { background: #059669; transform: translateY(-1px); }
 
+        .btn-photo { background: #0ea5e9; color: white; margin-bottom: 16px; }
+        .btn-photo:hover { background: #0284c7; transform: translateY(-1px); }
+
         .btn-alt { background: #334155; color: #f8fafc; margin-bottom: 20px; }
         .btn-alt:hover { background: #475569; }
         
@@ -218,6 +221,8 @@
 
             <button class="btn-paste" onclick="pasteFromClipboard()">Paste From Post 📋</button>
 
+            <button class="btn-photo" onclick="fetchAndDownloadPhoto(this)">Fetch Photo 🖼️</button>
+
             <button class="btn-clear" onclick="clearArtistFields()">Clear Artist Data Only</button>
 
         </div>
@@ -248,6 +253,7 @@
 <script>
 document.getElementById('handleInput').addEventListener('input', async function() {
     const inputVal = this.value;
+    this.dataset.fullUrl = inputVal;
     const veroRegex = /vero\.(?:com|co)\/([^\/?#\s]+)/i;
     const match = inputVal.match(veroRegex);
     
@@ -433,6 +439,67 @@ function clearArtistFields() {
             alert('Clipboard access blocked by browser. Please paste manually.');
         }
     }
+
+    async function fetchAndDownloadPhoto(btn) {
+        const fullUrl = document.getElementById('handleInput').dataset.fullUrl;
+        
+        // Ensure they actually pasted a full post link, not just typed a username
+        if (!fullUrl || !fullUrl.includes('vero.co')) {
+            alert("Please paste a full Vero post link to fetch the photo.");
+            return;
+        }
+
+        // The Consent Gate
+        if (!localStorage.getItem('rebel_photo_consent')) {
+            const agreed = confirm("LEGAL AGREEMENT:\n\nBy clicking OK, you agree that this photo will ONLY be used for feature purposes and must be permanently deleted from your device immediately after posting. Do you agree?");
+            if (!agreed) return;
+            localStorage.setItem('rebel_photo_consent', 'true');
+        }
+
+        const originalText = btn.innerText;
+        btn.innerText = "Converting... ⏳";
+        btn.disabled = true;
+
+        try {
+            // Fetch from our new backend proxy
+            const response = await fetch(`/api/photo?url=${encodeURIComponent(fullUrl)}`);
+            if (!response.ok) throw new Error("Could not fetch photo");
+            
+            const blob = await response.blob();
+            const img = new Image();
+            
+            img.onload = () => {
+                // Draw to canvas and convert to PNG
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                
+                const pngUrl = canvas.toDataURL('image/png');
+                
+                // Trigger native device download
+                const link = document.createElement('a');
+                link.download = `rebel_feature_${Date.now()}.png`;
+                link.href = pngUrl;
+                link.click();
+                
+                btn.innerText = "✓ Downloaded!";
+                btn.classList.add('success');
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.classList.remove('success');
+                    btn.disabled = false;
+                }, 2000);
+            };
+            img.src = URL.createObjectURL(blob);
+        } catch (err) {
+            alert("Error fetching photo. Make sure the post link is valid.");
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    }
+    
 </script>
 
 </body>
