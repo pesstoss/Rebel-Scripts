@@ -137,6 +137,9 @@
         
         .btn-clear { background: transparent; color: #fb7185; border: 1px solid #fb7185; margin: 8px 0 20px 0; }
         .btn-clear:hover { background: rgba(251, 113, 133, 0.1); }
+    
+        .btn-paste { background: #10b981; color: white; margin: 4px 0 16px 0; }
+        .btn-paste:hover { background: #059669; transform: translateY(-1px); }
 
         .btn-alt { background: #334155; color: #f8fafc; margin-bottom: 20px; }
         .btn-alt:hover { background: #475569; }
@@ -212,6 +215,13 @@
             
             <span class="label">Artist Username</span>
             <input type="text" id="handleInput" placeholder="username (no @) or paste from post link">
+
+            <span class="label">Artist Username</span>
+            <input type="text" id="handleInput" placeholder="username (no @) or paste from post link">
+
+            <button class="btn-paste" onclick="pasteFromClipboard()">Paste From Post 📋</button>
+
+            <button class="btn-clear" onclick="clearArtistFields()">Clear Artist Data Only</button>
 
             <button class="btn-clear" onclick="clearArtistFields()">Clear Artist Data Only</button>
         </div>
@@ -409,6 +419,24 @@ function clearArtistFields() {
     }
     updateConsoles(); 
 }
+    async function pasteFromClipboard() {
+        try {
+            // Ask the browser to read the clipboard text
+            const text = await navigator.clipboard.readText();
+            if (!text) return;
+
+            // Find the handle input field and set its value
+            const handleInput = document.getElementById('handleInput');
+            handleInput.value = text;
+
+            // Simulate a user typing/pasting so your existing script triggers
+            handleInput.dispatchEvent(new Event('input', { bubbles: true }));
+            
+        } catch (err) {
+            console.error('Failed to read clipboard: ', err);
+            alert('Clipboard access blocked by browser. Please paste manually.');
+        }
+    }
 </script>
 
 </body>
