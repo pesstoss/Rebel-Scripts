@@ -430,99 +430,98 @@ function clearArtistFields() {
 }
 
 async function pasteFromClipboard() {
-    try {
-        // 1. Instantly grabs the clipboard text (Works perfectly on Android, Mac, Windows)
-        const text = await navigator.clipboard.readText();
-        if (!text) return;
+        try {
+            // iOS 14+ workaround: ensure clipboard is focused
+            const handleInput = document.getElementById('handleInput');
+            handleInput.focus(); 
+            
+            const text = await navigator.clipboard.readText();
+            if (!text) return;
 
-        const handleInput = document.getElementById('handleInput');
-        handleInput.value = text;
-        
-        // Simulates you typing so the scraper triggers automatically
-        handleInput.dispatchEvent(new Event('input', { bubbles: true }));
-        
-    } catch (err) {
-        // 2. If iOS Safari gets stubborn, it catches the error and tells you what to do
-        console.error('Clipboard failed: ', err);
-        alert('Clipboard blocked by iOS. Please tap the "Artist Username" text box and use the black iPhone "Paste" bubble instead!');
+            handleInput.value = text;
+            handleInput.dispatchEvent(new Event('input', { bubbles: true }));
+            
+        } catch (err) {
+            console.error('Clipboard failed: ', err);
+            alert('iOS blocked the clipboard button. Please tap the text box and use the black "Paste" bubble instead!');
+        }
     }
-}
 
 async function fetchAndDownloadPhoto(btn) {
-    const fullUrl = document.getElementById('handleInput').dataset.fullUrl;
-    
-    if (!fullUrl || !fullUrl.includes('vero.co')) {
-        alert("Please paste a full Vero post link to fetch the photo.");
-        return;
-    }
-
-    if (!localStorage.getItem('rebel_photo_consent')) {
-        const agreed = confirm("LEGAL AGREEMENT:\n\nBy clicking OK, you agree that this photo will ONLY be used for feature purposes and must be permanently deleted from your device immediately after posting. Do you agree?");
-        if (!agreed) return;
-        localStorage.setItem('rebel_photo_consent', 'true');
-    }
-
-    const originalText = btn.innerText;
-    btn.innerText = "Fetching... ⏳";
-    btn.disabled = true;
-
-    try {
-        const response = await fetch(`/api/photo?url=${encodeURIComponent(fullUrl)}`);
-        if (!response.ok) throw new Error("Could not fetch photo");
+        const fullUrl = document.getElementById('handleInput').dataset.fullUrl;
         
-        const blob = await response.blob();
-        const img = new Image();
-        
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
-            
-            const pngUrl = canvas.toDataURL('image/png');
-            
-            // 1. Trigger the standard auto-download for Android/Mac/Windows
-            const link = document.createElement('a');
-            link.href = pngUrl;
-            link.download = `rebel_feature_${Date.now()}.png`;
-            link.click();
-            
-            // 2. The iOS Fix: Display the photo directly on the screen so you can long-press it
-            let previewBox = document.getElementById('iosPhotoFallback');
-            if (!previewBox) {
-                previewBox = document.createElement('div');
-                previewBox.id = 'iosPhotoFallback';
-                previewBox.style.marginTop = '8px';
-                previewBox.style.marginBottom = '16px';
-                previewBox.style.textAlign = 'center';
-                // Insert the image box right below the Fetch Photo button
-                btn.parentNode.insertBefore(previewBox, btn.nextSibling);
-            }
-            
-            // Inject the image and instructions
-            previewBox.innerHTML = `
-                <p style="color: #10b981; font-size: 0.8rem; margin-bottom: 8px; font-weight: 600;">
-                    📸 If it didn't auto-download, long-press the image below and "Save to Photos"
-                </p>
-                <img src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-            `;
+        if (!fullUrl || !fullUrl.includes('vero.co')) {
+            alert("Please paste a full Vero post link to fetch the photo.");
+            return;
+        }
 
-            btn.innerText = "✓ Photo Ready!";
-            btn.classList.add('success');
-            setTimeout(() => {
-                btn.innerText = originalText;
-                btn.classList.remove('success');
-                btn.disabled = false;
-            }, 2000);
-        };
-        img.src = URL.createObjectURL(blob);
-    } catch (err) {
-        alert("Error fetching photo. Make sure the post link is valid.");
-        btn.innerText = originalText;
-        btn.disabled = false;
+        if (!localStorage.getItem('rebel_photo_consent')) {
+            const agreed = confirm("LEGAL AGREEMENT:\n\nBy clicking OK, you agree that this photo will ONLY be used for feature purposes and must be permanently deleted from your device immediately after posting. Do you agree?");
+            if (!agreed) return;
+            localStorage.setItem('rebel_photo_consent', 'true');
+        }
+
+        const originalText = btn.innerText;
+        btn.innerText = "Fetching... ⏳";
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(`/api/photo?url=${encodeURIComponent(fullUrl)}`);
+            if (!response.ok) throw new Error("Could not fetch photo");
+            
+            const blob = await response.blob();
+            const img = new Image();
+            
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                
+                const pngUrl = canvas.toDataURL('image/png');
+                
+                // 1. Trigger the standard auto-download for Android/Mac/Windows
+                const link = document.createElement('a');
+                link.href = pngUrl;
+                link.download = `rebel_feature_${Date.now()}.png`;
+                link.click();
+                
+                // 2. The iOS Fix: Display the photo directly on the screen so you can long-press it
+                let previewBox = document.getElementById('iosPhotoFallback');
+                if (!previewBox) {
+                    previewBox = document.createElement('div');
+                    previewBox.id = 'iosPhotoFallback';
+                    previewBox.style.marginTop = '8px';
+                    previewBox.style.marginBottom = '16px';
+                    previewBox.style.textAlign = 'center';
+                    // Insert the image box right below the Fetch Photo button
+                    btn.parentNode.insertBefore(previewBox, btn.nextSibling);
+                }
+                
+                // Inject the image and instructions
+                previewBox.innerHTML = `
+                    <p style="color: #10b981; font-size: 0.8rem; margin-bottom: 8px; font-weight: 600;">
+                        📸 If it didn't auto-download, long-press the image below and "Save to Photos"
+                    </p>
+                    <img src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                `;
+
+                btn.innerText = "✓ Photo Ready!";
+                btn.classList.add('success');
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.classList.remove('success');
+                    btn.disabled = false;
+                }, 2000);
+            };
+            img.src = URL.createObjectURL(blob);
+        } catch (err) {
+            alert("Error fetching photo. Make sure the post link is valid.");
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
     }
-}
     
 </script>
 
