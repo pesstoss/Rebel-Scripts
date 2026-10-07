@@ -423,33 +423,30 @@ function clearArtistFields() {
 }
     async function pasteFromClipboard() {
         try {
-            // Ask the browser to read the clipboard text
+            // iOS 14+ workaround: ensure clipboard is focused
+            const handleInput = document.getElementById('handleInput');
+            handleInput.focus(); 
+            
             const text = await navigator.clipboard.readText();
             if (!text) return;
 
-            // Find the handle input field and set its value
-            const handleInput = document.getElementById('handleInput');
             handleInput.value = text;
-
-            // Simulate a user typing/pasting so your existing script triggers
             handleInput.dispatchEvent(new Event('input', { bubbles: true }));
             
         } catch (err) {
-            console.error('Failed to read clipboard: ', err);
-            alert('Clipboard access blocked by browser. Please paste manually.');
+            console.error('Clipboard failed: ', err);
+            alert('iOS blocked the clipboard button. Please tap the text box and use the black "Paste" bubble instead!');
         }
     }
 
     async function fetchAndDownloadPhoto(btn) {
         const fullUrl = document.getElementById('handleInput').dataset.fullUrl;
         
-        // Ensure they actually pasted a full post link, not just typed a username
         if (!fullUrl || !fullUrl.includes('vero.co')) {
             alert("Please paste a full Vero post link to fetch the photo.");
             return;
         }
 
-        // The Consent Gate
         if (!localStorage.getItem('rebel_photo_consent')) {
             const agreed = confirm("LEGAL AGREEMENT:\n\nBy clicking OK, you agree that this photo will ONLY be used for feature purposes and must be permanently deleted from your device immediately after posting. Do you agree?");
             if (!agreed) return;
@@ -461,7 +458,6 @@ function clearArtistFields() {
         btn.disabled = true;
 
         try {
-            // Fetch from our new backend proxy
             const response = await fetch(`/api/photo?url=${encodeURIComponent(fullUrl)}`);
             if (!response.ok) throw new Error("Could not fetch photo");
             
@@ -469,28 +465,42 @@ function clearArtistFields() {
             const img = new Image();
             
             img.onload = () => {
-                // Draw to canvas and convert to PNG
                 const canvas = document.createElement('canvas');
                 canvas.width = img.width;
                 canvas.height = img.height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0);
                 
-                const pngUrl = canvas.toDataURL('image/png');
-                
-                // Trigger native device download
-                const link = document.createElement('a');
-                link.download = `rebel_feature_${Date.now()}.png`;
-                link.href = pngUrl;
-                link.click();
-                
-                btn.innerText = "✓ Downloaded!";
-                btn.classList.add('success');
-                setTimeout(() => {
-                    btn.innerText = originalText;
-                    btn.classList.remove('success');
-                    btn.disabled = false;
-                }, 2000);
+                // The Magic iOS Fix: Convert to a File object
+                canvas.toBlob(async (pngBlob) => {
+                    const file = new File([pngBlob], `rebel_feature_${Date.now()}.png`, { type: 'image/png' });
+                    
+                    // Check if the device supports the native Share Sheet (iPhone does!)
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                files: [file],
+                                title: 'Rebel Feature Photo'
+                            });
+                        } catch (err) {
+                            console.log("User closed the share sheet");
+                        }
+                    } else {
+                        // Fallback for Windows/Android/Mac (Standard download)
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(pngBlob);
+                        link.download = file.name;
+                        link.click();
+                    }
+                    
+                    btn.innerText = "✓ Ready!";
+                    btn.classList.add('success');
+                    setTimeout(() => {
+                        btn.innerText = originalText;
+                        btn.classList.remove('success');
+                        btn.disabled = false;
+                    }, 2000);
+                }, 'image/png');
             };
             img.src = URL.createObjectURL(blob);
         } catch (err) {
