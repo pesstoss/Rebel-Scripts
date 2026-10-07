@@ -17,16 +17,29 @@ export default async function handler(req, res) {
         
         if (matches.length === 0) return res.status(404).json({ error: 'No image found' });
 
-        // 3. Smart Filter: Find an image URL that is NOT a profile avatar or user thumbnail
-        let imageUrl = matches.find(img => !/(avatar|profile|user)/i.test(img));
+        // 3. Smart Size Check: Find the image with the largest file size (Content-Length)
+        let bestUrl = matches[0];
+        let maxBytes = 0;
 
-        // Fallback to the first image if all match the filter
-        if (!imageUrl) {
-            imageUrl = matches[0];
+        for (const imgUrl of matches) {
+            try {
+                // Send a lightweight HEAD request to check file size without downloading the image yet
+                const headRes = await fetch(imgUrl, { method: 'HEAD' });
+                const contentLength = headRes.headers.get('content-length');
+                const bytes = contentLength ? parseInt(contentLength, 10) : 0;
+
+                // If this image is bigger than the previous winner, it's our post photo!
+                if (bytes > maxBytes) {
+                    maxBytes = bytes;
+                    bestUrl = imgUrl;
+                }
+            } catch (e) {
+                // If a HEAD request fails for one of them, just skip it and check the rest
+            }
         }
 
-        // 4. Fetch the actual content image from Vero's server
-        const imageReq = await fetch(imageUrl);
+        // 4. Fetch the actual winner (the largest image) from Vero's server
+        const imageReq = await fetch(bestUrl);
         const imageBuffer = await imageReq.arrayBuffer();
 
         // 5. Send it cleanly to the frontend
