@@ -430,20 +430,21 @@ function clearArtistFields() {
 }
 
 async function pasteFromClipboard() {
-        try {
-            // iOS 14+ workaround: ensure clipboard is focused
-            const handleInput = document.getElementById('handleInput');
-            handleInput.focus(); 
-            
-            const text = await navigator.clipboard.readText();
-            if (!text) return;
+    try {
+        const handleInput = document.getElementById('handleInput');
+        handleInput.focus(); 
+        
+        const text = await navigator.clipboard.readText();
+        if (!text) return;
 
-            handleInput.value = text;
-            handleInput.dispatchEvent(new Event('input', { bubbles: true }));
-            
-        } catch (err) {
-            console.error('Clipboard failed: ', err);
+        handleInput.value = text;
+        handleInput.dispatchEvent(new Event('input', { bubbles: true }));
+        
+    } catch (err) {
+        console.error('Clipboard failed: ', err);
+        alert('Clipboard access restricted by browser. Please tap the "Artist Username" text box and use your system "Paste" option instead!');
     }
+}
 
 async function fetchAndDownloadPhoto(btn) {
         const fullUrl = document.getElementById('handleInput').dataset.fullUrl;
