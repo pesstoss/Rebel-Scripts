@@ -1,158 +1,397 @@
-pesstoss
-Rebel-Scripts
-Repository navigation
-Code
-Issues
-Pull requests
-Agents
-Actions
-Projects
-Wiki
-Security and quality
-Insights
-Settings
-Files
-Go to file
-t
-T
-Templates
-api
-LICENSE
-README.md
-index.html
-Rebel-Scripts
-/
-index.html
-in
-main
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Strict iOS viewport lock to prevent zoom and horizontal scroll -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>Rebel Script Gen</title>
+    
+    <!-- iOS and Android App Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Rebel Script">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Updated theme-color to match the new Dark Slate background -->
+    <meta name="theme-color" content="#0f172a">
+    
+    <style>
+        /* 1. Clean Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-Edit
+        /* 2. Safe Viewport Lock & White Edge Hider */
+        html {
+            background-color: #0f172a; 
+            overflow-x: hidden;
+        }
 
-Preview
-Indent mode
+        /* 3. Main Body Styling (Flexbox Centering) */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); 
+            color: #e2e8f0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            
+            /* The magic fix: perfectly centers the card and respects padding */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 16px;
+        }
 
-Spaces
-Indent size
+        /* 4. Card Container */
+        .card { 
+            background: #1e293b; 
+            padding: 24px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); 
+            border: 1px solid #334155;
+            width: 100%; 
+            max-width: 900px; /* Naturally limits width on desktop */
+        }
 
-4
-Line wrap mode
+        h2 { 
+            font-size: 1.5rem; 
+            font-weight: 600;
+            color: #f8fafc; 
+            text-align: center; 
+            margin-bottom: 24px; 
+            border-bottom: 1px solid #334155;
+            padding-bottom: 16px;
+        }
 
-No wrap
-Editing index.html file contents
-396
-397
-398
-399
-400
-401
-402
-403
-404
-405
-406
-407
-408
-409
-410
-411
-412
-413
-414
-415
-416
-417
-418
-419
-420
-421
-422
-423
-424
-425
-426
-427
-428
-429
-430
-431
-432
-433
-434
-435
-436
-437
-438
-439
-440
-441
-442
-443
-444
-445
-446
-447
-448
-449
-450
-451
-452
-453
-454
-455
-456
-457
-458
-459
-460
-461
-462
-463
-464
-465
-466
-467
-468
-469
-470
-471
-472
-473
-474
-475
-476
-477
-478
-479
-480
-481
-482
-483
-484
-485
-486
-487
-488
-489
-490
-491
-492
-493
-494
-495
-496
-497
-498
-499
-500
-501
-502
-503
-504
-505
-506
-507
-508
-509
+        .label { 
+            font-weight: 600; 
+            font-size: 0.75rem; 
+            color: #94a3b8; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+            margin-top: 12px; 
+            margin-bottom: 6px;
+            display: block; 
+        }
+        
+        /* Modern Dark Inputs */
+        input, select { 
+            width: 100%; 
+            padding: 12px 16px; 
+            margin: 0 0 16px 0; 
+            background: #0f172a;
+            color: #f8fafc;
+            border: 1px solid #334155; 
+            border-radius: 8px; 
+            font-size: 16px; /* Prevents iOS auto-zoom */
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus { 
+            border-color: #6366f1; 
+            outline: none; 
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Dark, easy-on-the-eyes Textareas */
+        .preview-box {
+            width: 100%; 
+            background: #020617; 
+            color: #cbd5e1;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 16px; /* Prevents iOS auto-zoom */
+            line-height: 1.5;
+            resize: vertical;
+            transition: all 0.2s ease;
+        }
+
+        .preview-box:focus {
+            border-color: #6366f1; 
+            outline: none;
+        }
+
+        .preview-box.small {
+            height: 60px;
+        }
+
+        /* Sleek Modern Buttons */
+        button { 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 0.875rem; 
+            transition: all 0.2s; 
+            width: 100%; 
+        }
+
+        .btn-main { background: #4f46e5; color: white; margin-top: 8px; }
+        .btn-main:hover { background: #4338ca; transform: translateY(-1px); }
+        
+        .btn-clear { background: transparent; color: #fb7185; border: 1px solid #fb7185; margin: 8px 0 20px 0; }
+        .btn-clear:hover { background: rgba(251, 113, 133, 0.1); }
+    
+        .btn-paste { background: #10b981; color: white; margin: 4px 0 16px 0; }
+        .btn-paste:hover { background: #059669; transform: translateY(-1px); }
+
+        .btn-photo { background: #0ea5e9; color: white; margin-bottom: 16px; }
+        .btn-photo:hover { background: #0284c7; transform: translateY(-1px); }
+
+        .btn-alt { background: #334155; color: #f8fafc; margin-bottom: 20px; }
+        .btn-alt:hover { background: #475569; }
+        
+        .success { background: #10b981 !important; color: white !important; border-color: transparent !important; }
+
+        hr { border: 0; border-top: 1px solid #334155; margin: 24px 0; }
+
+        /* Responsive Layout */
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        /* Desktop view */
+        @media (min-width: 768px) {
+            .card { padding: 32px; } /* Restores wider padding for monitors */
+            .layout-grid {
+                grid-template-columns: 320px 1fr; 
+                gap: 40px;
+                align-items: start;
+            }
+            .preview-box { height: 350px; font-size: 13px; }
+            .preview-box.small { height: 70px; }
+            input, select { font-size: 14px; }
+        }
+    .footer {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #334155;
+        }
+        .footer a { color: #94a3b8; text-decoration: none; }
+        .footer a:hover { color: #f8fafc; text-decoration: underline; }
+    </style>
+    
+</head>
+
+<body onload="loadSettings()">
+
+<div class="card">
+    <h2>Rebel Script Gen</h2>
+    
+    <div class="layout-grid">
+        <!-- Left Column: Inputs & Controls -->
+        <div>
+            <span class="label">Choose Gallery</span>
+            <select id="gallerySelect" onchange="saveSettings(); updateVisibility(); updateConsoles()">
+                <option value="rebel_bnw">Rebel BNW</option>
+                <option value="rebels_united">Rebels United</option>
+                <option value="rebel_macro">Rebel Macro</option>
+                <option value="rebel_sky">Rebel Sky</option>
+            </select>
+
+            <div id="roleGroup">
+                <span class="label">Choose Role</span>
+                <select id="roleSelect" onchange="saveSettings(); updateConsoles()">
+                    <option value="Mod">Mod</option>
+                    <option value="Admin">Admin</option>
+                </select>
+            </div>
+            
+            <span class="label">Your Username</span>
+            <input type="text" id="modInput" placeholder="Your username (no @)" oninput="saveSettings(); updateConsoles()">
+
+            <div id="nameGroup">
+                <span class="label">Artist Name</span>
+                <input type="text" id="nameInput" placeholder="Enter artist name..." oninput="updateConsoles()">
+            </div>
+            
+            <span class="label">Artist Username</span>
+            <input type="text" id="handleInput" placeholder="username (no @) or paste from post link">
+
+            <button class="btn-paste" onclick="pasteFromClipboard()">Paste From Post 📋</button>
+
+            <button class="btn-photo" onclick="fetchAndDownloadPhoto(this)">Fetch Photo 🖼️</button>
+
+            <button class="btn-clear" onclick="clearArtistFields()">Clear Artist Data Only</button>
+
+        </div>
+
+        <!-- Right Column: Previews & Copy Actions -->
+        <div>
+            <span class="label">Feature Script Preview</span>
+            <textarea id="consoleMain" readonly class="preview-box">Loading template...</textarea>
+            <button class="btn-main" id="mainBtn" onclick="copyMain()">Copy Feature Script</button>
+
+            <hr>
+
+            <span class="label">Personal / Feature Comment</span>
+            <textarea id="consoleComment1" class="preview-box small" placeholder="Type your personal comment here..."></textarea>
+            <button class="btn-alt" onclick="copyPersonal(this)">Copy Feature Comment ✍</button>
+
+            <span class="label">Original Post Comment</span>
+            <textarea id="consoleComment2" readonly class="preview-box small"></textarea>
+            <button class="btn-alt" onclick="copyPost(this)">Copy Post Comment 🎉</button>
+        </div>
+    </div>
+    <!-- Copyright footer -->
+    <div class="footer">
+        &copy; 2026 Georgee
+    </div>
+</div>
+
+<script>
+document.getElementById('handleInput').addEventListener('input', async function() {
+    const inputVal = this.value;
+    this.dataset.fullUrl = inputVal;
+    const veroRegex = /vero\.(?:com|co)\/([^\/?#\s]+)/i;
+    const match = inputVal.match(veroRegex);
+    
+    if (match && match[1]) {
+        // 1. Instantly strip the URL to just the handle
+        this.value = match[1];
+        
+        // 2. Temporarily show a loading message in the name field
+        const nameInput = document.getElementById('nameInput');
+        const originalName = nameInput.value;
+        nameInput.value = "Fetching name...";
+        updateConsoles(); 
+
+        try {
+            // 3. Send the full Vero URL to the Vercel backend
+            const response = await fetch(`/api/scrape?url=${encodeURIComponent(inputVal)}`);
+            const data = await response.json();
+            
+            if (data.name) {
+                nameInput.value = data.name; // Insert the scraped name!
+            } else {
+                nameInput.value = originalName; // Revert if name wasn't found
+                nameInput.placeholder = "Name not found, enter manually";
+            }
+        } catch (error) {
+            nameInput.value = originalName;
+        }
+        
+        // 4. Update the console to show the final generated script
+        updateConsoles();
+    } else {
+        updateConsoles(); 
+    }
+});
+
+function loadSettings() {
+    if (localStorage.getItem('rebel_mod_name')) document.getElementById('modInput').value = localStorage.getItem('rebel_mod_name');
+    if (localStorage.getItem('rebel_role')) document.getElementById('roleSelect').value = localStorage.getItem('rebel_role');
+    if (localStorage.getItem('rebel_gallery')) document.getElementById('gallerySelect').value = localStorage.getItem('rebel_gallery');
+    
+    updateVisibility(); // Call this on load to set the correct view
+    updateConsoles(); 
+}
+
+function saveSettings() {
+    localStorage.setItem('rebel_mod_name', document.getElementById('modInput').value);
+    localStorage.setItem('rebel_role', document.getElementById('roleSelect').value);
+    localStorage.setItem('rebel_gallery', document.getElementById('gallerySelect').value);
+}
+
+// Hides or shows inputs based on the chosen gallery
+function updateVisibility() {
+    const gallery = document.getElementById('gallerySelect').value;
+    const nameGroup = document.getElementById('nameGroup');
+    const roleGroup = document.getElementById('roleGroup');
+
+    // Show Artist Name ONLY for Rebel BNW
+    if (gallery === 'rebel_bnw') {
+        nameGroup.style.display = 'block';
+    } else {
+        nameGroup.style.display = 'none';
+    }
+
+    // Since Rebels United doesn't use "Role" either, we can optionally hide it too!
+    if (gallery === 'rebels_united') {
+        roleGroup.style.display = 'none';
+    } else {
+        roleGroup.style.display = 'block';
+    }
+}
+
+// Fetch the template text file from the Templates folder
+async function fetchTemplate(galleryName) {
+    try {
+        const response = await fetch(`Templates/${galleryName}.txt`);
+        if (!response.ok) {
+            throw new Error(`File not found: Templates/${galleryName}.txt`);
+        }
+        return await response.text();
+    } catch (error) {
+        return `Error: Could not load template for ${galleryName}.\nMake sure Templates/${galleryName}.txt exists in your repository.\n\n(${error.message})`;
+    }
+}
+
+// Update text areas
+async function updateConsoles() {
+    const gallery = document.getElementById('gallerySelect').value;
+    const role = document.getElementById('roleSelect').value;
+    const name = document.getElementById('nameInput').value || '[name]';
+    const handle = document.getElementById('handleInput').value || '[handle]';
+    const mod = document.getElementById('modInput').value || '[username]';
+    
+    // Fetch raw template text
+    let template = await fetchTemplate(gallery);
+
+    // Replace placeholders with current input values
+    const generatedScript = template
+        .replace(/{name}/g, name)
+        .replace(/{handle}/g, handle)
+        .replace(/{role}/g, role)
+        .replace(/{mod}/g, mod);
+
+    document.getElementById('consoleMain').value = generatedScript;
+    if (gallery === 'rebel_bnw') {
+        document.getElementById('consoleComment1').value = "🌟Great shot  📸 🌟 Keep tagging us so we can see your beautiful photos in our feed 👏👏🖤";
+        document.getElementById('consoleComment2').value = "🌟 Featured 🌟";
+    } else {
+        if (document.getElementById('consoleComment1').value === "🌟Great shot  📸 🌟 Keep tagging us so we can see your beautiful photos in our feed 👏👏🖤") {
+            document.getElementById('consoleComment1').value = ""; 
+        }
+        document.getElementById('consoleComment2').value = `✨ ✨ ✨ FEATURED BY @${gallery} CONGRATS! 🎉 🎉 🎉`;
+    }
+}
+
+// Copy actions
+function execCopy(text, btn) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    textArea.setSelectionRange(0, 99999);
+    try {
+        document.execCommand('copy');
+        showFeedback(btn);
+    } catch (err) {
+        alert('Copy failed');
+    }
+    document.body.removeChild(textArea);
+}
+
+function copyMain() {
+    const scriptToCopy = document.getElementById('consoleMain').value;
+    execCopy(scriptToCopy, document.getElementById('mainBtn'));
+}
+
+function copyPersonal(btn) {
+    const textToCopy = document.getElementById('consoleComment1').value;
+    execCopy(textToCopy, btn);
 }
 
 function copyPost(btn) {
@@ -190,81 +429,102 @@ function clearArtistFields() {
     updateConsoles(); 
 }
 
-    async function pasteFromClipboard() {
-        try {
-            // 1. Instantly grabs the clipboard text (Works perfectly on Android, Mac, Windows)
-            const text = await navigator.clipboard.readText();
-            if (!text) return;
+async function pasteFromClipboard() {
+    try {
+        // 1. Instantly grabs the clipboard text (Works perfectly on Android, Mac, Windows)
+        const text = await navigator.clipboard.readText();
+        if (!text) return;
 
-            const handleInput = document.getElementById('handleInput');
-            handleInput.value = text;
-            
-            // Simulates you typing so the scraper triggers automatically
-            handleInput.dispatchEvent(new Event('input', { bubbles: true }));
-            
-        } catch (err) {
-            // 2. If iOS Safari gets stubborn, it catches the error and tells you what to do
-            console.error('Clipboard failed: ', err);
-            alert('Clipboard blocked by iOS. Please tap the "Artist Username" text box and use the black iPhone "Paste" bubble instead!');
-        }
-    }
-    
-async function fetchAndDownloadPhoto(btn) {
-        const fullUrl = document.getElementById('handleInput').dataset.fullUrl;
+        const handleInput = document.getElementById('handleInput');
+        handleInput.value = text;
         
-        if (!fullUrl || !fullUrl.includes('vero.co')) {
-            alert("Please paste a full Vero post link to fetch the photo.");
-            return;
-        }
+        // Simulates you typing so the scraper triggers automatically
+        handleInput.dispatchEvent(new Event('input', { bubbles: true }));
+        
+    } catch (err) {
+        // 2. If iOS Safari gets stubborn, it catches the error and tells you what to do
+        console.error('Clipboard failed: ', err);
+        alert('Clipboard blocked by iOS. Please tap the "Artist Username" text box and use the black iPhone "Paste" bubble instead!');
+    }
+}
 
-        if (!localStorage.getItem('rebel_photo_consent')) {
-            const agreed = confirm("LEGAL AGREEMENT:\n\nBy clicking OK, you agree that this photo will ONLY be used for feature purposes and must be permanently deleted from your device immediately after posting. Do you agree?");
-            if (!agreed) return;
-            localStorage.setItem('rebel_photo_consent', 'true');
-        }
+async function fetchAndDownloadPhoto(btn) {
+    const fullUrl = document.getElementById('handleInput').dataset.fullUrl;
+    
+    if (!fullUrl || !fullUrl.includes('vero.co')) {
+        alert("Please paste a full Vero post link to fetch the photo.");
+        return;
+    }
 
-        const originalText = btn.innerText;
-        btn.innerText = "Fetching... ⏳";
-        btn.disabled = true;
+    if (!localStorage.getItem('rebel_photo_consent')) {
+        const agreed = confirm("LEGAL AGREEMENT:\n\nBy clicking OK, you agree that this photo will ONLY be used for feature purposes and must be permanently deleted from your device immediately after posting. Do you agree?");
+        if (!agreed) return;
+        localStorage.setItem('rebel_photo_consent', 'true');
+    }
 
-        try {
-            const response = await fetch(`/api/photo?url=${encodeURIComponent(fullUrl)}`);
-            if (!response.ok) throw new Error("Could not fetch photo");
+    const originalText = btn.innerText;
+    btn.innerText = "Fetching... ⏳";
+    btn.disabled = true;
+
+    try {
+        const response = await fetch(`/api/photo?url=${encodeURIComponent(fullUrl)}`);
+        if (!response.ok) throw new Error("Could not fetch photo");
+        
+        const blob = await response.blob();
+        const img = new Image();
+        
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
             
-            const blob = await response.blob();
-            const img = new Image();
+            const pngUrl = canvas.toDataURL('image/png');
             
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                
-                const pngUrl = canvas.toDataURL('image/png');
-                
-                // 1. Trigger the standard auto-download for Android/Mac/Windows
-                const link = document.createElement('a');
-                link.href = pngUrl;
-                link.download = `rebel_feature_${Date.now()}.png`;
-                link.click();
-                
-                // 2. The iOS Fix: Display the photo directly on the screen so you can long-press it
-                let previewBox = document.getElementById('iosPhotoFallback');
-                if (!previewBox) {
-                    previewBox = document.createElement('div');
-                    previewBox.id = 'iosPhotoFallback';
-                    previewBox.style.marginTop = '8px';
-                    previewBox.style.marginBottom = '16px';
-                    previewBox.style.textAlign = 'center';
-                    // Insert the image box right below the Fetch Photo button
-                    btn.parentNode.insertBefore(previewBox, btn.nextSibling);
-                }
-                
-                // Inject the image and instructions
-                previewBox.innerHTML = `
-                    <p style="color: #10b981; font-size: 0.8rem; margin-bottom: 8px; font-weight: 600;">
-                        📸 If it didn't auto-download, long-press the image below and "Save to Photos"
-                    </p>
-                    <img src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-Use Control + Shift + m to toggle the tab key moving focus. Alternatively, use esc then tab to move to the next interactive element on the page.
+            // 1. Trigger the standard auto-download for Android/Mac/Windows
+            const link = document.createElement('a');
+            link.href = pngUrl;
+            link.download = `rebel_feature_${Date.now()}.png`;
+            link.click();
+            
+            // 2. The iOS Fix: Display the photo directly on the screen so you can long-press it
+            let previewBox = document.getElementById('iosPhotoFallback');
+            if (!previewBox) {
+                previewBox = document.createElement('div');
+                previewBox.id = 'iosPhotoFallback';
+                previewBox.style.marginTop = '8px';
+                previewBox.style.marginBottom = '16px';
+                previewBox.style.textAlign = 'center';
+                // Insert the image box right below the Fetch Photo button
+                btn.parentNode.insertBefore(previewBox, btn.nextSibling);
+            }
+            
+            // Inject the image and instructions
+            previewBox.innerHTML = `
+                <p style="color: #10b981; font-size: 0.8rem; margin-bottom: 8px; font-weight: 600;">
+                    📸 If it didn't auto-download, long-press the image below and "Save to Photos"
+                </p>
+                <img src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+            `;
+
+            btn.innerText = "✓ Photo Ready!";
+            btn.classList.add('success');
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.classList.remove('success');
+                btn.disabled = false;
+            }, 2000);
+        };
+        img.src = URL.createObjectURL(blob);
+    } catch (err) {
+        alert("Error fetching photo. Make sure the post link is valid.");
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+    
+</script>
+
+</body>
+</html>
