@@ -7,17 +7,19 @@ export default async function handler(req, res) {
         const postReq = await fetch(url);
         const postHtml = await postReq.text();
 
-        // 2. Extract the high-res og:image URL
-        const imgMatch = postHtml.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i);
-        if (!imgMatch) return res.status(404).json({ error: 'No image found' });
+        // 2. Extract ALL og:image and twitter:image tags globally
+        const matches = [...postHtml.matchAll(/<meta\s+(?:property|name)="(?:og:image|twitter:image)"\s+content="([^"]+)"/gi)];
+        
+        if (matches.length === 0) return res.status(404).json({ error: 'No image found' });
 
-        const imageUrl = imgMatch[1];
+        // 3. Grab the LAST image in the list (this bypasses the default avatar)
+        const imageUrl = matches[matches.length - 1][1];
 
-        // 3. Fetch the actual image from Vero's server
+        // 4. Fetch the actual image from Vero's server
         const imageReq = await fetch(imageUrl);
         const imageBuffer = await imageReq.arrayBuffer();
 
-        // 4. Send it cleanly to the frontend
+        // 5. Send it cleanly to the frontend
         res.setHeader('Content-Type', 'image/jpeg');
         res.setHeader('Access-Control-Allow-Origin', '*'); 
         res.send(Buffer.from(imageBuffer));
