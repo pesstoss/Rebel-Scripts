@@ -430,18 +430,34 @@ function clearArtistFields() {
     updateConsoles(); 
 }
     async function pasteFromClipboard() {
+        const handleInput = document.getElementById('handleInput');
+        
+        // 1. MUST happen instantly! Focus the input right as your finger taps.
+        // This guarantees the iOS keyboard opens and the "Paste" bubble is ready.
+        handleInput.focus();
+
         try {
-            // Ask for clipboard text immediately upon tapping the button
+            // 2. Try the instant automatic paste (Works on Mac, Windows, Android)
             const text = await navigator.clipboard.readText();
             if (!text) return;
 
-            const handleInput = document.getElementById('handleInput');
             handleInput.value = text;
             handleInput.dispatchEvent(new Event('input', { bubbles: true }));
             
         } catch (err) {
-            console.error('Clipboard failed: ', err);
-            alert('Clipboard access blocked. Please tap the text box and use the black "Paste" bubble instead!');
+            // 3. The iOS Home Screen Fallback
+            // If Apple blocks the instant paste, the box is already focused from step 1!
+            // We just temporarily change the button text to tell you what to do.
+            const btn = document.querySelector('.btn-paste');
+            const originalText = btn.innerText;
+            
+            btn.innerText = "Tap box above to Paste ⬆️";
+            btn.style.backgroundColor = "#fb7185"; // Turn it temporarily red
+            
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.backgroundColor = ""; // Revert to green
+            }, 3000);
         }
     }
 
