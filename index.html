@@ -146,6 +146,13 @@
 
         .btn-alt { background: #334155; color: #f8fafc; margin-bottom: 20px; }
         .btn-alt:hover { background: #475569; }
+
+        /* Hides the green paste button automatically on mobile browsers */
+        @media (max-width: 767px) {
+            .btn-paste {
+                display: none !important;
+            }
+        }
         
         .success { background: #10b981 !important; color: white !important; border-color: transparent !important; }
 
@@ -218,6 +225,10 @@
             
             <span class="label">Artist Username</span>
             <input type="text" id="handleInput" placeholder="username (no @) or paste from post link">
+
+            <!-- Clear instructions for mobile and desktop -->
+            <span class="label">Artist Username / Paste Link</span>
+            <input type="text" id="handleInput" placeholder="username or paste Vero link">
 
             <button class="btn-paste" onclick="pasteFromClipboard()">Paste From Post 📋</button>
 
