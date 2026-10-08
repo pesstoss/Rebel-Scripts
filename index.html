@@ -218,20 +218,16 @@
             <span class="label">Your Username</span>
             <input type="text" id="modInput" placeholder="Your username (no @)" oninput="saveSettings(); updateConsoles()">
 
-            <div id="nameGroup">
-                <span class="label">Artist Name</span>
-                <input type="text" id="nameInput" placeholder="Enter artist name..." oninput="updateConsoles()">
+           <div id="nameGroup">
+            <span class="label">Artist Name</span>
+            <input type="text" id="nameInput" placeholder="Enter artist name..." oninput="updateConsoles()">
             </div>
-            
-            <span class="label">Artist Username</span>
-            <input type="text" id="handleInput" placeholder="username (no @) or paste from post link">
 
             <!-- Clear instructions for mobile and desktop -->
             <span class="label">Artist Username / Paste Link</span>
             <input type="text" id="handleInput" placeholder="username or paste Vero link">
 
             <button class="btn-paste" onclick="pasteFromClipboard()">Paste From Post 📋</button>
-
             <button class="btn-photo" onclick="fetchAndDownloadPhoto(this)">Fetch Photo 🖼️</button>
 
             <button class="btn-clear" onclick="clearArtistFields()">Clear Artist Data Only</button>
