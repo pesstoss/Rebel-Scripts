@@ -1,0 +1,3 @@
+✨✨ CONGRATULATIONS @{handle}  ✨✨
+{personalComment}
+✨✨Thank you for tagging #snap_{snapGallery}  ✨✨

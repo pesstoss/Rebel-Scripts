@@ -202,9 +202,11 @@
             <span class="label">Choose Gallery</span>
             <select id="gallerySelect" onchange="saveSettings(); updateVisibility(); updateConsoles()">
                 <option value="rebel_bnw">Rebel BNW</option>
-                <option value="rebels_united">Rebels United</option>
-                <option value="rebel_macro">Rebel Macro</option>
-                <option value="rebel_sky">Rebel Sky</option>
+                <option value="snap_bnw">Snap BNW</option>
+                <option value="snap_asia">Snap Asia</option>
+                <option value="snap_depthoffield">Snap Depthoffield</option>
+                <option value="snap_allnature">Snap Allnature</option>
+                <option value="snap_wildlife">Snap Wildlife</option>
             </select>
 
             <div id="roleGroup">
@@ -212,16 +214,52 @@
                 <select id="roleSelect" onchange="saveSettings(); updateConsoles()">
                     <option value="Mod">Mod</option>
                     <option value="Admin">Admin</option>
+                    <option value="Co-Admin">Co-Admin</option>
+                    <option value="Guest Mod">Guest Mod</option>
                 </select>
+            </div>
+
+            <!-- Curator First Name (Snap Only) -->
+            <div id="firstNameGroup" style="display: none;">
+            <span class="label">Your First Name</span>
+            <input type="text" id="firstNameInput" placeholder="Your first name" oninput="saveSettings(); updateConsoles()">
             </div>
             
             <span class="label">Your Username</span>
             <input type="text" id="modInput" placeholder="Your username (no @)" oninput="saveSettings(); updateConsoles()">
 
+            <!-- Personal Comment Input -->
+            <div id="commentGroup" style="display: none;">
+            <span class="label">Personal Comment</span>
+            <textarea id="commentInput" placeholder="Write your comment here..." oninput="updateConsoles()" rows="3" style="width: 100%;"></textarea>
+            </div>
+
+            <!-- 2nd Personal Comment Input -->
+            <div id="commentGroup2" style="display: none;">
+            <span class="label">2nd Personal Comment</span>
+            <textarea id="commentInput2" placeholder="Write your original postcomment here..." oninput="updateConsoles()" rows="3" style="width: 100%;"></textarea>
+            </div>
+
            <div id="nameGroup">
             <span class="label">Artist Name</span>
             <input type="text" id="nameInput" placeholder="Enter artist name..." oninput="updateConsoles()">
             </div>
+
+            <!-- Membership Level Dropdown -->
+            <div id="levelGroup">
+            <span class="label">Membership Level</span>
+            <select id="levelSelect" onchange="updateConsoles()">
+            <option value="Artist">Artist</option>
+            <option value="Member">Member</option>
+            <option value="VIP">VIP</option>
+            <option value="VIP Gold">VIP Gold</option>
+            <option value="Platinum">Platinum</option>
+            <option value="Elite">Elite</option>
+            <option value="HOF">HOF</option>
+            <option value="Diamond">Diamond</option>
+        </select>
+        
+        </div>
 
             <!-- Clear instructions for mobile and desktop -->
             <span class="label">Artist Username / Paste Link</span>
@@ -300,6 +338,7 @@ function loadSettings() {
     if (localStorage.getItem('rebel_mod_name')) document.getElementById('modInput').value = localStorage.getItem('rebel_mod_name');
     if (localStorage.getItem('rebel_role')) document.getElementById('roleSelect').value = localStorage.getItem('rebel_role');
     if (localStorage.getItem('rebel_gallery')) document.getElementById('gallerySelect').value = localStorage.getItem('rebel_gallery');
+    if (localStorage.getItem('rebel_first_name')) document.getElementById('firstNameInput').value = localStorage.getItem('rebel_first_name');
     
     updateVisibility(); // Call this on load to set the correct view
     updateConsoles(); 
@@ -309,39 +348,53 @@ function saveSettings() {
     localStorage.setItem('rebel_mod_name', document.getElementById('modInput').value);
     localStorage.setItem('rebel_role', document.getElementById('roleSelect').value);
     localStorage.setItem('rebel_gallery', document.getElementById('gallerySelect').value);
+    localStorage.setItem('rebel_first_name', document.getElementById('firstNameInput').value);
 }
 
-// Hides or shows inputs based on the chosen gallery
 function updateVisibility() {
-    const gallery = document.getElementById('gallerySelect').value;
-    const nameGroup = document.getElementById('nameGroup');
-    const roleGroup = document.getElementById('roleGroup');
+    const gallery = document.getElementById("gallerySelect").value;
+    
+    const nameGroup = document.getElementById("nameGroup");
+    const firstNameGroup = document.getElementById("firstNameGroup");
+    const commentGroup = document.getElementById("commentGroup");
+    const commentGroup2 = document.getElementById("commentGroup2"); // Added back!
 
-    // Show Artist Name ONLY for Rebel BNW
-    if (gallery === 'rebel_bnw') {
-        nameGroup.style.display = 'block';
+    // 1. Artist Name: Only for Rebel BNW, Snap Allnature, and Snap Wildlife
+    if (gallery === 'rebel_bnw' || gallery === 'snap_allnature' || gallery === 'snap_wildlife') {
+        nameGroup.style.display = "block";
     } else {
-        nameGroup.style.display = 'none';
+        nameGroup.style.display = "none";
     }
 
-    // Since Rebels United doesn't use "Role" either, we can optionally hide it too!
-    if (gallery === 'rebels_united') {
-        roleGroup.style.display = 'none';
+    // 2. Curator First Name: Only for Snap galleries
+    if (gallery.startsWith('snap_')) {
+        firstNameGroup.style.display = "block";
     } else {
-        roleGroup.style.display = 'block';
+        firstNameGroup.style.display = "none";
+    }
+
+    // 3. Personal Comment: Everyone gets it EXCEPT Rebel BNW
+    if (commentGroup && commentGroup2) { 
+        if (gallery !== 'rebel_bnw') {
+            commentGroup.style.display = "block";
+            commentGroup2.style.display = "block";
+        } else {
+            commentGroup.style.display = "none";
+            commentGroup2.style.display = "none";
+        }
     }
 }
 
-// Fetch the template text file from the Templates folder
-async function fetchTemplate(galleryName) {
+// Fetch the template text file from the specific subfolder
+async function fetchTemplate(folder, fileName) {
     try {
-        const response = await fetch(`Templates/${galleryName}.txt`);
+        const response = await fetch(`Templates/${folder}/${fileName}.txt`);
         if (!response.ok) {
-            throw new Error(`File not found: Templates/${galleryName}.txt`);
+            throw new Error(`File not found: Templates/${folder}/${fileName}.txt`);
         }
         return await response.text();
     } catch (error) {
-        return `Error: Could not load template for ${galleryName}.\nMake sure Templates/${galleryName}.txt exists in your repository.\n\n(${error.message})`;
+        return `Error: Could not load template for ${fileName}. \nMake sure Templates/${folder}/${fileName}.txt exists.`;
     }
 }
 
@@ -352,27 +405,42 @@ async function updateConsoles() {
     const name = document.getElementById('nameInput').value || '[name]';
     const handle = document.getElementById('handleInput').value || '[handle]';
     const mod = document.getElementById('modInput').value || '[username]';
+    const levelSelect = document.getElementById('levelSelect');
+    const level = levelSelect ? levelSelect.value : 'Artist';
     
-    // Fetch raw template text
-    let template = await fetchTemplate(gallery);
+    // Grab the new inputs
+   // Grab the new inputs safely! (Alerts removed)
+    const firstName = document.getElementById('firstNameInput') ? document.getElementById('firstNameInput').value : '[FirstName]';
+    const comment = document.getElementById('commentInput') ? document.getElementById('commentInput').value : '';
+    const comment2 = document.getElementById('commentInput2') ? document.getElementById('commentInput2').value : '';
 
-    // Replace placeholders with current input values
-    const generatedScript = template
-        .replace(/{name}/g, name)
-        .replace(/{handle}/g, handle)
-        .replace(/{role}/g, role)
-        .replace(/{mod}/g, mod);
+    // Determine the comment file to load (snap or rebel) and extract the snap gallery name
+    const commentFileName = gallery.startsWith('snap_') ? 'snap' : 'rebel';
+    const snapGalleryName = gallery.replace('snap_', ''); // Turns 'snap_asia' into 'asia'
 
-    document.getElementById('consoleMain').value = generatedScript;
-    if (gallery === 'rebel_bnw') {
-        document.getElementById('consoleComment1').value = "🌟Great shot  📸 🌟 Keep tagging us so we can see your beautiful photos in our feed 👏👏🖤";
-        document.getElementById('consoleComment2').value = "🌟 Featured 🌟";
-    } else {
-        if (document.getElementById('consoleComment1').value === "🌟Great shot  📸 🌟 Keep tagging us so we can see your beautiful photos in our feed 👏👏🖤") {
-            document.getElementById('consoleComment1').value = ""; 
-        }
-        document.getElementById('consoleComment2').value = `✨ ✨ ✨ FEATURED BY @${gallery} CONGRATS! 🎉 🎉 🎉`;
-    }
+    // Fetch all three templates using our new folders!
+    let scriptText = await fetchTemplate('feature scripts', gallery);
+    let featureCommentText = await fetchTemplate('feature comments', commentFileName);
+    let postCommentText = await fetchTemplate('post comments', commentFileName);
+
+    // A helper function to swap all placeholders in the text
+    const replaceTags = (text) => {
+        return text
+            .replace(/{level}/g, level)
+            .replace(/{name}/g, name)
+            .replace(/{handle}/g, handle)
+            .replace(/{role}/g, role)
+            .replace(/{mod}/g, mod)
+            .replace(/{modName}/g, firstName)
+            .replace(/{personalComment}/g, comment)
+            .replace(/{personalComment2}/g, comment2)
+            .replace(/{snapGallery}/g, snapGalleryName);
+    };
+
+    // Output the final generated text to all three text boxes
+    document.getElementById('consoleMain').value = replaceTags(scriptText);
+    document.getElementById('consoleComment1').value = replaceTags(featureCommentText);
+    document.getElementById('consoleComment2').value = replaceTags(postCommentText);
 }
 
 // Copy actions
