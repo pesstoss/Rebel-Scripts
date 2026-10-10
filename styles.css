@@ -1,0 +1,254 @@
+        /* 1. Clean Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 2. Safe Viewport Lock & White Edge Hider */
+        html {
+            background-color: #0f172a; 
+            overflow-x: hidden;
+        }
+
+        /* 3. Main Body Styling (Flexbox Centering) */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); 
+            color: #e2e8f0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            
+            /* The magic fix: perfectly centers the card and respects padding */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 16px;
+        }
+
+        /* Hide global scrollbar for a native app feel */
+    ::-webkit-scrollbar {
+        display: none;
+    }
+    html, body {
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+    }
+
+        /* 4. Card Container */
+        .card { 
+            background: #1e293b; 
+            padding: 24px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); 
+            border: 1px solid #334155;
+            width: 100%; 
+            max-width: 900px; /* Naturally limits width on desktop */
+        }
+
+        h2 { 
+            font-size: 1.5rem; 
+            font-weight: 600;
+            color: #f8fafc; 
+            text-align: center; 
+            margin-bottom: 24px; 
+            border-bottom: 1px solid #334155;
+            padding-bottom: 16px;
+        }
+
+        .label { 
+            font-weight: 600; 
+            font-size: 0.75rem; 
+            color: #94a3b8; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px;
+            margin-top: 12px; 
+            margin-bottom: 6px;
+            display: block; 
+        }
+        
+        /* Modern Dark Inputs */
+        input, select { 
+            width: 100%; 
+            padding: 12px 16px; 
+            margin: 0 0 16px 0; 
+            background: #0f172a;
+            color: #f8fafc;
+            border: 1px solid #334155; 
+            border-radius: 8px; 
+            font-size: 16px; /* Prevents iOS auto-zoom */
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus { 
+            border-color: #6366f1; 
+            outline: none; 
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Dark, easy-on-the-eyes Textareas */
+        .preview-box {
+            width: 100%; 
+            background: #020617; 
+            color: #cbd5e1;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 16px; /* Prevents iOS auto-zoom */
+            line-height: 1.5;
+            resize: vertical;
+            transition: all 0.2s ease;
+        }
+
+        .preview-box:focus {
+            border-color: #6366f1; 
+            outline: none;
+        }
+
+        .preview-box.small {
+            height: 60px;
+        }
+
+        /* Sleek Modern Buttons */
+        button { 
+            border: none; 
+            padding: 12px 16px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 0.875rem; 
+            transition: all 0.2s;  
+        }
+
+        .btn-main { background: #4f46e5; color: white; margin-top: 8px; }
+        .btn-main:hover { background: #4338ca; transform: translateY(-1px); }
+        
+        .btn-clear { background: transparent; color: #fb7185; border: 1px solid #fb7185; margin: 8px 0 20px 0; }
+        .btn-clear:hover { background: rgba(251, 113, 133, 0.1); }
+    
+        .btn-paste { background: #10b981; color: white; margin: 4px 0 16px 0; }
+        .btn-paste:hover { background: #059669; transform: translateY(-1px); }
+
+        .btn-photo { background: #0ea5e9; color: white; margin-bottom: 16px; }
+        .btn-photo:hover { background: #0284c7; transform: translateY(-1px); }
+
+        .btn-alt { background: #334155; color: #f8fafc; margin-bottom: 20px; }
+        .btn-alt:hover { background: #475569; }
+
+        /* Hides the green paste button automatically on mobile browsers */
+        @media (max-width: 767px) {
+            .btn-paste {
+                display: none !important;
+            }
+        }
+        
+        .success { background: #10b981 !important; color: white !important; border-color: transparent !important; }
+
+        hr { border: 0; border-top: 1px solid #334155; margin: 24px 0; }
+
+        /* Responsive Layout */
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        /* Desktop view */
+        @media (min-width: 768px) {
+            .card { padding: 32px; } /* Restores wider padding for monitors */
+            .layout-grid {
+                grid-template-columns: 320px 1fr; 
+                gap: 40px;
+                align-items: start;
+            }
+            .preview-box { height: 350px; font-size: 13px; }
+            .preview-box.small { height: 70px; }
+            input, select { font-size: 14px; }
+        }
+
+        /* Mobile view: Swipeable Pages */
+        /* Prevent fetched images from stretching the screen width */
+        img, canvas {
+        max-width: 100%;
+        height: auto;
+        object-fit: contain;
+        border-radius: 8px; /* Optional: rounds the corners to match your UI */
+        }
+        @media (max-width: 767px) {
+            /* Fix button width for mobile */
+        button {
+            width: 100%;
+        }
+
+        /* 1. Full-width and CENTERED text for inputs and dropdowns */
+        input, select {
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0 auto;
+            display: block;
+            text-align: center;
+            text-align-last: center; 
+        }
+
+        /* 2. Center the text labels and headings above the boxes */
+        label, .label-text, h3, h4 {
+            text-align: center;
+            display: block; 
+        }
+
+        /* 3. Full-width but LEFT-ALIGNED text for all script/preview boxes */
+        textarea, .preview-box, #scriptOutput {
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0 auto;
+            display: block;
+            text-align: left !important;
+            padding: 12px;
+        }
+
+        /* Expand the main Feature Script box and push comments down */
+        #scriptOutput, .preview-box:not(.small) {
+            height: 280px !important; 
+        }
+            .btn-paste {
+                display: none !important;
+            }
+            .layout-grid {
+                display: flex;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                scroll-behavior: smooth;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                margin: 0 -16px;
+            }
+            .layout-grid::-webkit-scrollbar {
+                display: none;
+            }
+            .layout-grid > div {
+                min-width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+                scroll-snap-align: start;
+                flex-shrink: 0;
+                padding: 0 16px;
+                display: flex;
+                flex-direction: column;
+                height: 85vh;
+                overflow-y: auto;
+                overscroll-behavior-y: contain;
+            }
+        }    
+
+    .footer {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #334155;
+        }
+        .footer a { color: #94a3b8; text-decoration: none; }
+        .footer a:hover { color: #f8fafc; text-decoration: underline; }
