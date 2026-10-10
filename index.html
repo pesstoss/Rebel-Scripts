@@ -187,6 +187,13 @@
         }
 
         /* Mobile view: Swipeable Pages */
+        /* Prevent fetched images from stretching the screen width */
+        img, canvas {
+        max-width: 100%;
+        height: auto;
+        object-fit: contain;
+        border-radius: 8px; /* Optional: rounds the corners to match your UI */
+        }
         @media (max-width: 767px) {
             /* Fix button width for mobile */
         button {
