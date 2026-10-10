@@ -323,7 +323,7 @@ async function fetchAndDownloadPhoto(btn) {
                 // 1. Trigger the standard auto-download for Android/Mac/Windows
                 const link = document.createElement('a');
                 link.href = pngUrl;
-                link.download = `rebel_feature_${Date.now()}.png`;
+                link.download = `featured_photo${Date.now()}.png`;
                 link.click();
                 
                 // 2. The iOS Fix: Display the photo directly on the screen so you can long-press it
