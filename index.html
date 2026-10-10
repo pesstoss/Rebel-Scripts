@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <!-- Strict iOS viewport lock to prevent zoom and horizontal scroll -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>Rebel Script Gen</title>
+    <title>Vero Script Gen</title>
     
     <!-- iOS and Android App Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -43,6 +43,15 @@
             align-items: flex-start;
             padding: 16px;
         }
+
+        /* Hide global scrollbar for a native app feel */
+    ::-webkit-scrollbar {
+        display: none;
+    }
+    html, body {
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE/Edge */
+    }
 
         /* 4. Card Container */
         .card { 
@@ -123,13 +132,12 @@
         /* Sleek Modern Buttons */
         button { 
             border: none; 
-            padding: 12px 24px; 
+            padding: 12px 16px; 
             border-radius: 8px; 
             cursor: pointer; 
             font-weight: 600; 
             font-size: 0.875rem; 
-            transition: all 0.2s; 
-            width: 100%; 
+            transition: all 0.2s;  
         }
 
         .btn-main { background: #4f46e5; color: white; margin-top: 8px; }
@@ -177,6 +185,70 @@
             .preview-box.small { height: 70px; }
             input, select { font-size: 14px; }
         }
+
+        /* Mobile view: Swipeable Pages */
+        @media (max-width: 767px) {
+            /* Fix button width for mobile */
+        button {
+            width: 100%;
+        }
+
+        /* 1. Full-width and CENTERED text for inputs and dropdowns */
+        input, select {
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0 auto;
+            display: block;
+            text-align: center;
+            text-align-last: center; 
+        }
+
+        /* 2. Center the text labels and headings above the boxes */
+        label, .label-text, h3, h4 {
+            text-align: center;
+            display: block; 
+        }
+
+        /* 3. Full-width but LEFT-ALIGNED text for all script/preview boxes */
+        textarea, .preview-box, #scriptOutput {
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0 auto;
+            display: block;
+            text-align: left !important;
+            padding: 12px;
+        }
+
+        /* Expand the main Feature Script box and push comments down */
+        #scriptOutput, .preview-box:not(.small) {
+            height: 280px !important; 
+        }
+            .btn-paste {
+                display: none !important;
+            }
+            .layout-grid {
+                display: flex;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                scroll-behavior: smooth;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                margin: 0 -16px;
+            }
+            .layout-grid::-webkit-scrollbar {
+                display: none;
+            }
+            .layout-grid > div {
+                min-width: 100%;
+                scroll-snap-align: start;
+                flex-shrink: 0;
+                padding: 0 16px;
+                display: flex;
+                flex-direction: column;
+                height: 85vh;
+            }
+        }    
+
     .footer {
             text-align: center;
             font-size: 0.75rem;
@@ -194,7 +266,7 @@
 <body onload="loadSettings()">
 
 <div class="card">
-    <h2>Rebel Script Gen</h2>
+    <h2>Vero Script Gen</h2>
     
     <div class="layout-grid">
         <!-- Left Column: Inputs & Controls -->
@@ -258,6 +330,10 @@
             <option value="HOF">HOF</option>
             <option value="Diamond">Diamond</option>
         </select>
+
+        <div id="cautionWarning" style="display: none; color: #ef4444; font-weight: bold; font-size: 14px; margin-bottom: 8px; text-align: center;">
+        ⚠️ Warning: This artist is on the Caution List!
+        </div>
         
         </div>
 
@@ -265,10 +341,11 @@
             <span class="label">Artist Username / Paste Link</span>
             <input type="text" id="handleInput" placeholder="username or paste Vero post link">
 
+            <div style="margin-top: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 24px;">
             <button class="btn-paste" onclick="pasteFromClipboard()">Paste From Post 📋</button>
             <button class="btn-photo" onclick="fetchAndDownloadPhoto(this)">Fetch Photo 🖼️</button>
-
             <button class="btn-clear" onclick="clearArtistFields()">Clear Artist Data Only</button>
+        </div>
 
         </div>
 
@@ -357,7 +434,8 @@ function updateVisibility() {
     const nameGroup = document.getElementById("nameGroup");
     const firstNameGroup = document.getElementById("firstNameGroup");
     const commentGroup = document.getElementById("commentGroup");
-    const commentGroup2 = document.getElementById("commentGroup2"); // Added back!
+    const commentGroup2 = document.getElementById("commentGroup2");
+    const levelGroup = document.getElementById("levelGroup");
 
     // 1. Artist Name: Only for Rebel BNW, Snap Allnature, and Snap Wildlife
     if (gallery === 'rebel_bnw' || gallery === 'snap_allnature' || gallery === 'snap_wildlife') {
@@ -383,7 +461,37 @@ function updateVisibility() {
             commentGroup2.style.display = "none";
         }
     }
+    // 4. Membership Level: Hide for Rebel BNW
+        if (gallery === 'rebel_bnw') {
+            levelGroup.style.display = "none";
+        } else {
+            levelGroup.style.display = "block";
+        }
 }
+
+// 1. Usernames from the caution list (must be all lowercase!)
+    const cautionList = [
+        "veronian1", 
+        "veronian2", 
+        "veronian3"
+    ];
+
+    // 2. Real-time scanner for the handle input box
+    document.getElementById("handleInput").addEventListener("input", function() {
+        const warningMsg = document.getElementById("cautionWarning");
+        const typedText = this.value.toLowerCase(); 
+        
+        // Check if the typed text contains any username from the caution list
+        // This works whether they type just the handle or paste a full Vero link
+        const isOnList = cautionList.some(badUser => typedText.includes(badUser));
+
+        // Show the warning if there is a match, otherwise keep it hidden
+        if (isOnList && typedText.trim() !== "") {
+            warningMsg.style.display = "block";
+        } else {
+            warningMsg.style.display = "none";
+        }
+    });
 
 // Fetch the template text file from the specific subfolder
 async function fetchTemplate(folder, fileName) {
@@ -409,7 +517,6 @@ async function updateConsoles() {
     const level = levelSelect ? levelSelect.value : 'Artist';
     
     // Grab the new inputs
-   // Grab the new inputs safely! (Alerts removed)
     const firstName = document.getElementById('firstNameInput') ? document.getElementById('firstNameInput').value : '[FirstName]';
     const comment = document.getElementById('commentInput') ? document.getElementById('commentInput').value : '';
     const comment2 = document.getElementById('commentInput2') ? document.getElementById('commentInput2').value : '';
