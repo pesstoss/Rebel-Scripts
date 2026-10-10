@@ -320,10 +320,11 @@ async function fetchAndDownloadPhoto(btn) {
                 
                 const pngUrl = canvas.toDataURL('image/png');
                 
-                // 1. Trigger the standard auto-download for Android/Mac/Windows
+               // 1. Trigger the standard auto-download for Android/Mac/Windows
+                const dateTimeString = new Date().toISOString().replace(/:/g, '-').slice(0, 16);
                 const link = document.createElement('a');
                 link.href = pngUrl;
-                link.download = `featured_photo${Date.now()}.png`;
+                link.download = `featured_photo_${dateTimeString}.png`;
                 link.click();
                 
                 // 2. The iOS Fix: Display the photo directly on the screen so you can long-press it
