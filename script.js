@@ -174,8 +174,12 @@ async function updateConsoles() {
     
     // Grab the new inputs
     const firstName = document.getElementById('firstNameInput') ? document.getElementById('firstNameInput').value : '[FirstName]';
-    const comment = document.getElementById('commentInput') ? document.getElementById('commentInput').value : '';
-    const comment2 = document.getElementById('commentInput2') ? document.getElementById('commentInput2').value : '';
+    
+    let comment = document.getElementById('commentInput') ? document.getElementById('commentInput').value : '';
+    if (comment.trim() !== '') comment += '\n'; // Adds a line break. Change to ' ' if you just want a single space.
+
+    let comment2 = document.getElementById('commentInput2') ? document.getElementById('commentInput2').value : '';
+    if (comment2.trim() !== '') comment2 += '\n'; // Adds a line break. Change to ' ' if you just want a single space.
 
     // Determine the comment file to load (snap or rebel) and extract the snap gallery name
     const commentFileName = gallery.startsWith('snap_') ? 'snap' : 'rebel';
@@ -250,15 +254,20 @@ function showFeedback(btn) {
 function clearArtistFields() {
     document.getElementById('nameInput').value = '';
     document.getElementById('handleInput').value = '';
-    document.getElementById('handleInput').dataset.fullUrl = ''; // Wipe the hidden URL
+    document.getElementById('handleInput').dataset.fullUrl = ''; 
+    
+    // Clear the personal comments
+    const commentInput = document.getElementById('commentInput');
+    if (commentInput) commentInput.value = '';
+    
+    const commentInput2 = document.getElementById('commentInput2');
+    if (commentInput2) commentInput2.value = '';
 
-    // Find and remove the generated photo preview
     const photoPreview = document.getElementById('iosPhotoFallback');
     if (photoPreview) {
         photoPreview.remove(); 
     }
 
-    // Optional: Only focus nameInput if it's visible, otherwise focus handleInput
     if (document.getElementById('nameGroup').style.display === 'none') {
         document.getElementById('handleInput').focus();
     } else {
