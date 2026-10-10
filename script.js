@@ -176,10 +176,10 @@ async function updateConsoles() {
     const firstName = document.getElementById('firstNameInput') ? document.getElementById('firstNameInput').value : '[FirstName]';
     
     let comment = document.getElementById('commentInput') ? document.getElementById('commentInput').value : '';
-    if (comment.trim() !== '') comment += '\n'; // Adds a line break. Change to ' ' if you just want a single space.
+    if (comment.trim() !== '') comment = '\n' + comment.trim() + '\n'; 
 
     let comment2 = document.getElementById('commentInput2') ? document.getElementById('commentInput2').value : '';
-    if (comment2.trim() !== '') comment2 += '\n'; // Adds a line break. Change to ' ' if you just want a single space.
+    if (comment2.trim() !== '') comment2 = '\n' + comment2.trim() + '\n';
 
     // Determine the comment file to load (snap or rebel) and extract the snap gallery name
     const commentFileName = gallery.startsWith('snap_') ? 'snap' : 'rebel';
