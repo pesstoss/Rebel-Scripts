@@ -55,12 +55,12 @@ function saveSettings() {
 
 function updateVisibility() {
     const gallery = document.getElementById("gallerySelect").value;
-    
     const nameGroup = document.getElementById("nameGroup");
     const firstNameGroup = document.getElementById("firstNameGroup");
     const commentGroup = document.getElementById("commentGroup");
     const commentGroup2 = document.getElementById("commentGroup2");
     const levelGroup = document.getElementById("levelGroup");
+    const roleGroup = document.getElementById("roleGroup");
 
     // 1. Artist Name: Only for Rebel BNW, Snap Allnature, and Snap Wildlife
     if (gallery === 'rebel_bnw' || gallery === 'snap_allnature' || gallery === 'snap_wildlife') {
@@ -76,22 +76,29 @@ function updateVisibility() {
         firstNameGroup.style.display = "none";
     }
 
-    // 3. Personal Comment: Everyone gets it EXCEPT Rebel BNW
+    // 3. Personal Comment: Everyone gets it EXCEPT Rebel BNW and Fotomasters
     if (commentGroup && commentGroup2) { 
-        if (gallery !== 'rebel_bnw') {
-            commentGroup.style.display = "block";
-            commentGroup2.style.display = "block";
-        } else {
+        if (gallery === 'rebel_bnw' || gallery === 'fotomasters') {
             commentGroup.style.display = "none";
             commentGroup2.style.display = "none";
+        } else {
+            commentGroup.style.display = "block";
+            commentGroup2.style.display = "block";
         }
     }
-    // 4. Membership Level: Hide for Rebel BNW
-        if (gallery === 'rebel_bnw') {
+    // 4. Membership Level: Hide for Rebel BNW and Fotomasters
+        if (gallery === 'rebel_bnw' || gallery === 'fotomasters') {
             levelGroup.style.display = "none";
         } else {
             levelGroup.style.display = "block";
         }
+        if (roleGroup) {
+        if (gallery === 'fotomasters') {
+            roleGroup.style.display = "none";
+        } else {
+            roleGroup.style.display = "block";
+        }
+    }
 }
 
 // 1. Usernames from the caution list (must be all lowercase!)
@@ -174,14 +181,25 @@ async function updateConsoles() {
     
     // Grab the new inputs
     const firstName = document.getElementById('firstNameInput') ? document.getElementById('firstNameInput').value : '[FirstName]';
-    const comment = document.getElementById('commentInput') ? document.getElementById('commentInput').value : '';
-    const comment2 = document.getElementById('commentInput2') ? document.getElementById('commentInput2').value : '';
+    
+    // Add the smart spacing for comments
+    let comment = document.getElementById('commentInput') ? document.getElementById('commentInput').value : '';
+    if (comment.trim() !== '') comment = '\n' + comment.trim() + '\n'; 
 
-    // Determine the comment file to load (snap or rebel) and extract the snap gallery name
-    const commentFileName = gallery.startsWith('snap_') ? 'snap' : 'rebel';
-    const snapGalleryName = gallery.replace('snap_', ''); // Turns 'snap_asia' into 'asia'
+    let comment2 = document.getElementById('commentInput2') ? document.getElementById('commentInput2').value : '';
+    if (comment2.trim() !== '') comment2 = '\n' + comment2.trim() + '\n'; 
 
-    // Fetch all three templates using our new folders!
+    // Determine the comment file to load (Route Fotomasters correctly!)
+    let commentFileName = 'rebel';
+    if (gallery.startsWith('snap_')) {
+        commentFileName = 'snap';
+    } else if (gallery === 'fotomasters') {
+        commentFileName = 'fotomasters'; 
+    }
+    
+    const snapGalleryName = gallery.replace('snap_', ''); 
+
+    // Fetch all three templates using our new folders
     let scriptText = await fetchTemplate('feature scripts', gallery);
     let featureCommentText = await fetchTemplate('feature comments', commentFileName);
     let postCommentText = await fetchTemplate('post comments', commentFileName);
@@ -321,9 +339,10 @@ async function fetchAndDownloadPhoto(btn) {
                 const pngUrl = canvas.toDataURL('image/png');
                 
                 // 1. Trigger the standard auto-download for Android/Mac/Windows
+                const dateTimeString = new Date().toISOString().replace(/:/g, '-').slice(0, 16);
                 const link = document.createElement('a');
                 link.href = pngUrl;
-                link.download = `rebel_feature_${Date.now()}.png`;
+                link.download = `featured_photo_${dateTimeString}.png`;
                 link.click();
                 
                 // 2. The iOS Fix: Display the photo directly on the screen so you can long-press it
