@@ -99,16 +99,12 @@ function updateVisibility() {
             roleGroup.style.display = "block";
         }
     }
-    // 6. iOS Safari Repaint Fix (Hard Blur & Transform)
+    // 6. iOS Safari Repaint Fix (Non-destructive)
     const galleryDropdown = document.getElementById("gallerySelect");
     if (galleryDropdown) {
-        // Force the dropdown to lose focus
-        galleryDropdown.blur();
-        
-        // Force iOS to redraw the hardware acceleration layer
-        galleryDropdown.style.transform = 'translateZ(0)';
+        galleryDropdown.style.opacity = '0.99';
         setTimeout(() => {
-            galleryDropdown.style.transform = 'none';
+            galleryDropdown.style.opacity = '1';
         }, 10);
     }
 }
