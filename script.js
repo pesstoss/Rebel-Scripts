@@ -99,14 +99,6 @@ function updateVisibility() {
             roleGroup.style.display = "block";
         }
     }
-    // 6. iOS Safari Repaint Fix (Non-destructive)
-    const galleryDropdown = document.getElementById("gallerySelect");
-    if (galleryDropdown) {
-        galleryDropdown.style.opacity = '0.99';
-        setTimeout(() => {
-            galleryDropdown.style.opacity = '1';
-        }, 10);
-    }
 }
 
 // 1. Usernames from the caution list (must be all lowercase!)
