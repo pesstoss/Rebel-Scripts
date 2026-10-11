@@ -5,7 +5,7 @@
 __________________________________
 .
 Selected by Page Admin :
-Leo : @leovr_rotterdam 
+{modName} : @{mod} 
 .
 Follow vero.co/snap_kingdom for more pages to tag and follow
 Visit our Website:  www.rawkingdomarts.com
@@ -25,7 +25,7 @@ For your membership questions and level validations
 #snap #snap_community #vero #verofamily #verofriends #photography #wildlife #animalwildlife #wildlife_photography #nature #lensculture
 .
  For internal use only!
-#snap_wildlife_vogelsvanel
-#snap_featured_vogelsvanel
+#snap_wildlife_{handle}
+#snap_featured_{handle}
 .
 .
