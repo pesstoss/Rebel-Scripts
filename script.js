@@ -268,15 +268,20 @@ function showFeedback(btn) {
 function clearArtistFields() {
     document.getElementById('nameInput').value = '';
     document.getElementById('handleInput').value = '';
-    document.getElementById('handleInput').dataset.fullUrl = ''; // Wipe the hidden URL
+    document.getElementById('handleInput').dataset.fullUrl = ''; 
+    
+    // Clear the personal comments
+    const commentInput = document.getElementById('commentInput');
+    if (commentInput) commentInput.value = '';
+    
+    const commentInput2 = document.getElementById('commentInput2');
+    if (commentInput2) commentInput2.value = '';
 
-    // Find and remove the generated photo preview
     const photoPreview = document.getElementById('iosPhotoFallback');
     if (photoPreview) {
         photoPreview.remove(); 
     }
 
-    // Optional: Only focus nameInput if it's visible, otherwise focus handleInput
     if (document.getElementById('nameGroup').style.display === 'none') {
         document.getElementById('handleInput').focus();
     } else {
