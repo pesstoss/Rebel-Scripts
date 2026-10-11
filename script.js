@@ -99,13 +99,15 @@ function updateVisibility() {
             roleGroup.style.display = "block";
         }
     }
-    // 6. iOS Safari Repaint Fix
-    // Forces the iPhone to redraw the text inside the select box after layout shifts
+    // 6. iOS Safari Repaint Fix (Delayed)
+    // Forces the iPhone to redraw the select box after the DOM finishes expanding
     const galleryDropdown = document.getElementById("gallerySelect");
     if (galleryDropdown) {
-        galleryDropdown.style.display = 'none';
-        galleryDropdown.offsetHeight; // This invisible calculation forces the redraw
-        galleryDropdown.style.display = 'block';
+        setTimeout(() => {
+            galleryDropdown.style.display = 'none';
+            galleryDropdown.offsetHeight; // Force reflow
+            galleryDropdown.style.display = ''; // Revert to default CSS display
+        }, 10);
     }
 }
 
