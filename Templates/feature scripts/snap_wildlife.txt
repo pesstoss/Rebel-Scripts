@@ -4,7 +4,7 @@
  ✨ C O N G R A T U L A T I O N S ✨
 __________________________________
 .
-Selected by Page Admin :
+Selected by Page {role} :
 {modName} : @{mod} 
 .
 Follow vero.co/snap_kingdom for more pages to tag and follow
