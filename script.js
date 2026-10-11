@@ -99,6 +99,14 @@ function updateVisibility() {
             roleGroup.style.display = "block";
         }
     }
+    // 6. iOS Safari Repaint Fix
+    // Forces the iPhone to redraw the text inside the select box after layout shifts
+    const galleryDropdown = document.getElementById("gallerySelect");
+    if (galleryDropdown) {
+        galleryDropdown.style.display = 'none';
+        galleryDropdown.offsetHeight; // This invisible calculation forces the redraw
+        galleryDropdown.style.display = 'block';
+    }
 }
 
 // 1. Usernames from the caution list (must be all lowercase!)
