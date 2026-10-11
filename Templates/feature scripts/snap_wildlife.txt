@@ -1,6 +1,6 @@
 #snap_wildlife
 .
- Featured {level}; {name} @{handle} 
+ Featured {level} {name} @{handle} 
  ✨ C O N G R A T U L A T I O N S ✨
 __________________________________
 .
