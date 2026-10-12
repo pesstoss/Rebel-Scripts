@@ -25,8 +25,9 @@
     <h2>Feature Scripts</h2>
     
     <div class="layout-grid">
-        <!-- Left Column: Inputs & Controls -->
+        <!-- Left Column: Inputs & Controls --> 
         <div>
+            <div>
             <span class="label">Choose Gallery</span>
             <select id="gallerySelect" onchange="saveSettings(); updateVisibility(); updateConsoles()">
                 <option value="rebel_bnw">Rebel BNW</option>
@@ -38,6 +39,7 @@
                 <option value="snap_wildlife">Snap Wildlife</option>
                 <option value="snap_potd">Snap POTD</option>
             </select>
+            </div>
 
             <div id="roleGroup">
                 <span class="label">Choose Role</span>
@@ -47,7 +49,7 @@
                     <option value="Co-Admin">Co-Admin</option>
                     <option value="Guest Mod">Guest Mod</option>
                 </select>
-            </div>
+            </div>   
 
             <!-- Curator First Name (Snap Only) -->
             <div id="firstNameGroup" style="display: none;">
