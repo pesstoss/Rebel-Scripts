@@ -310,78 +310,99 @@ async function pasteFromClipboard() {
 }
 
 async function fetchAndDownloadPhoto(btn) {
-        const fullUrl = document.getElementById('handleInput').dataset.fullUrl;
-        
-        if (!fullUrl || !fullUrl.includes('vero.co')) {
-            alert("Please paste a full Vero post link to fetch the photo.");
-            return;
-        }
+    const fullUrl = document.getElementById('handleInput').dataset.fullUrl;
 
-        if (!localStorage.getItem('rebel_photo_consent')) {
-            const agreed = confirm("LEGAL AGREEMENT:\n\nBy clicking OK, you agree that this photo will ONLY be used for feature purposes and must be permanently deleted from your device immediately after posting. Do you agree?");
-            if (!agreed) return;
-            localStorage.setItem('rebel_photo_consent', 'true');
-        }
-
-        const originalText = btn.innerText;
-        btn.innerText = "Fetching... ⏳";
-        btn.disabled = true;
-
-        try {
-            const response = await fetch(`/api/photo?url=${encodeURIComponent(fullUrl)}`);
-            if (!response.ok) throw new Error("Could not fetch photo");
-            
-            const blob = await response.blob();
-            const img = new Image();
-            
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                
-                const pngUrl = canvas.toDataURL('image/png');
-                
-                // 1. Trigger the standard auto-download for Android/Mac/Windows
-                const dateTimeString = new Date().toISOString().replace(/:/g, '-').slice(0, 16);
-                const link = document.createElement('a');
-                link.href = pngUrl;
-                link.download = `featured_photo_${dateTimeString}.png`;
-                link.click();
-                
-                // 2. The iOS Fix: Display the photo directly on the screen so you can long-press it
-                let previewBox = document.getElementById('iosPhotoFallback');
-                if (!previewBox) {
-                    previewBox = document.createElement('div');
-                    previewBox.id = 'iosPhotoFallback';
-                    previewBox.style.marginTop = '8px';
-                    previewBox.style.marginBottom = '16px';
-                    previewBox.style.textAlign = 'center';
-                    // Insert the image box right below the Fetch Photo button
-                    btn.parentNode.insertBefore(previewBox, btn.nextSibling);
-                }
-                
-                // Inject the image and instructions
-                previewBox.innerHTML = `
-                    <p style="color: #10b981; font-size: 0.8rem; margin-bottom: 8px; font-weight: 600;">
-                        📸 If it didn't auto-download, long-press the image below and "Save to Photos"
-                    </p>
-                    <img src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                `;
-
-                btn.innerText = "✓ Photo Ready!";
-                btn.classList.add('success');
-                setTimeout(() => {
-                    btn.innerText = originalText;
-                    btn.classList.remove('success');
-                    btn.disabled = false;
-                }, 2000);
-            };
-            img.src = URL.createObjectURL(blob);
-        } catch (err) {
-            alert("Error fetching photo. Make sure the post link is valid.");
-            btn.innerText = originalText;
-            btn.disabled = false;
-        }
+    if (!fullUrl || !fullUrl.includes('vero.co')) {
+        alert("Please paste a full Vero post link to fetch the photo.");
+        return;
     }
+
+    if (!localStorage.getItem('rebel_photo_consent')) {
+        const agreed = confirm("LEGAL AGREEMENT:\n\nBy clicking OK, you agree that this photo will ONLY be used for feature purposes and must be permanently deleted from your device immediately after posting.");
+        if (!agreed) return;
+        localStorage.setItem('rebel_photo_consent', 'true');
+    }
+
+    const originalText = btn.innerText;
+    btn.innerText = "Searching post...";
+    btn.disabled = true;
+
+    try {
+        // 1. Get the list of scraped images from the API
+        const response = await fetch(`/api/photo?url=${encodeURIComponent(fullUrl)}`);
+        const data = await response.json();
+
+        if (!data.images || data.images.length === 0) throw new Error("No images found");
+
+        // 2. Create the Thumbnail Box UI
+        let previewBox = document.getElementById('carouselPreviewBox');
+        if (!previewBox) {
+            previewBox = document.createElement('div');
+            previewBox.id = 'carouselPreviewBox';
+            previewBox.style.display = 'flex';
+            previewBox.style.overflowX = 'auto';
+            previewBox.style.gap = '12px';
+            previewBox.style.marginTop = '16px';
+            previewBox.style.padding = '8px 0';
+            btn.parentNode.insertBefore(previewBox, btn.nextSibling);
+        }
+        
+        previewBox.innerHTML = '<span style="width:100%; display:block; text-align:center; font-size:0.8rem; color:#94a3b8; margin-bottom:8px;">Tap photo to process & download</span>';
+        
+        const scrollContainer = document.createElement('div');
+        scrollContainer.style.display = 'flex';
+        scrollContainer.style.gap = '12px';
+        scrollContainer.style.width = '100%';
+        scrollContainer.style.overflowX = 'auto';
+        previewBox.appendChild(scrollContainer);
+
+        // 3. Render clickable thumbnails
+        data.images.forEach(imgUrl => {
+            const thumb = document.createElement('img');
+            thumb.src = imgUrl; 
+            thumb.style.height = '140px';
+            thumb.style.width = 'auto';
+            thumb.style.borderRadius = '8px';
+            thumb.style.cursor = 'pointer';
+            thumb.style.border = '2px solid #334155';
+            
+            thumb.onclick = async () => {
+                btn.innerText = "Processing...";
+                
+                // 4. Proxy the specific clicked image to safely extract pixels for the canvas
+                const proxyResp = await fetch(`/api/photo?targetImage=${encodeURIComponent(imgUrl)}`);
+                const blob = await proxyResp.blob();
+                const img = new Image();
+                
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    
+                    const pngUrl = canvas.toDataURL('image/png');
+                    const dateTimeString = new Date().toISOString().replace(/:/g, '-').slice(0, 16);
+                    
+                    // Trigger download
+                    const link = document.createElement('a');
+                    link.href = pngUrl;
+                    link.download = `featured_photo_${dateTimeString}.png`;
+                    link.click();
+                    
+                    btn.innerText = "✓ Saved!";
+                    setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 2000);
+                };
+                img.src = URL.createObjectURL(blob);
+            };
+            scrollContainer.appendChild(thumb);
+        });
+
+        btn.innerText = "Select Photo Below";
+
+    } catch (err) {
+        alert("Error extracting photos. Make sure the post link is valid.");
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
