@@ -310,7 +310,8 @@ async function pasteFromClipboard() {
 }
 
 async function fetchAndDownloadPhoto(btn) {
-    const fullUrl = document.getElementById('handleInput').dataset.fullUrl;
+        const inputElement = document.getElementById('handleInput');
+    const fullUrl = inputElement.dataset.fullUrl || inputElement.value;
 
     if (!fullUrl || !fullUrl.includes('vero.co')) {
         alert("Please paste a full Vero post link to fetch the photo.");
