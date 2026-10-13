@@ -376,7 +376,7 @@ async function fetchAndDownloadPhoto(btn) {
                 const blob = await proxyResp.blob();
                 const img = new Image();
                 
-                                img.onload = () => {
+                    img.onload = () => {
                     const canvas = document.createElement('canvas');
                     canvas.width = img.width;
                     canvas.height = img.height;
@@ -390,14 +390,21 @@ async function fetchAndDownloadPhoto(btn) {
                     previewBox.style.textAlign = 'center';
                     previewBox.innerHTML = `
                         <p style="color: #10b981; font-size: 0.8rem; margin-bottom: 8px; font-weight: 600;">
-                            👆 Long-press to save the photo
+                            👆 Long-press to save, tap photo to close
                         </p>
-                        <img src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                        <img id="finalFetchImage" src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer;">
                     `;
+                    
+                    // Add tap-to-close functionality
+                    document.getElementById('finalFetchImage').onclick = () => {
+                        previewBox.innerHTML = '';
+                        previewBox.style.display = 'none';
+                    };
                     
                     btn.innerText = "✓ Ready to Save!";
                     setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 2000);
                 };
+
                 
                 img.src = URL.createObjectURL(blob);
             };
