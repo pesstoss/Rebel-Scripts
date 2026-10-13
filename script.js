@@ -376,7 +376,7 @@ async function fetchAndDownloadPhoto(btn) {
                 const blob = await proxyResp.blob();
                 const img = new Image();
                 
-                img.onload = () => {
+                                img.onload = () => {
                     const canvas = document.createElement('canvas');
                     canvas.width = img.width;
                     canvas.height = img.height;
@@ -385,17 +385,10 @@ async function fetchAndDownloadPhoto(btn) {
                     
                     const pngUrl = canvas.toDataURL('image/png');
                     
-                    // Display the final photo for manual saving on ALL devices (Kills Android auto-download)
-                    let finalPreview = document.getElementById('iosPhotoFallback');
-                    if (!finalPreview) {
-                        finalPreview = document.createElement('div');
-                        finalPreview.id = 'iosPhotoFallback';
-                        finalPreview.style.marginTop = '16px';
-                        finalPreview.style.textAlign = 'center';
-                        previewBox.parentNode.insertBefore(finalPreview, previewBox.nextSibling);
-                    }
-                    
-                    finalPreview.innerHTML = `
+                    // Wipe the scroller and replace it with the final image
+                    previewBox.style.display = 'block'; 
+                    previewBox.style.textAlign = 'center';
+                    previewBox.innerHTML = `
                         <p style="color: #10b981; font-size: 0.8rem; margin-bottom: 8px; font-weight: 600;">
                             👆 Long-press to save the photo
                         </p>
@@ -405,6 +398,7 @@ async function fetchAndDownloadPhoto(btn) {
                     btn.innerText = "✓ Ready to Save!";
                     setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 2000);
                 };
+                
                 img.src = URL.createObjectURL(blob);
             };
             scrollContainer.appendChild(thumb);
