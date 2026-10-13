@@ -310,17 +310,21 @@ async function pasteFromClipboard() {
 }
 
 async function fetchAndDownloadPhoto(btn) {
-        const inputElement = document.getElementById('handleInput');
-    const fullUrl = inputElement.dataset.fullUrl || inputElement.value;
+    const inputElement = document.getElementById('handleInput');
+    const fullUrl = inputElement ? (inputElement.dataset.fullUrl || inputElement.value) : null;
 
     if (!fullUrl || !fullUrl.includes('vero.co')) {
         alert("Please paste a full Vero post link to fetch the photo.");
+        btn.innerText = "Fetch Photo 🖼️"; // Failsafe reset
         return;
     }
 
     if (!localStorage.getItem('rebel_photo_consent')) {
         const agreed = confirm("LEGAL AGREEMENT:\n\nBy clicking OK, you agree that this photo will ONLY be used for feature purposes and must be permanently deleted from your device immediately after posting.");
-        if (!agreed) return;
+        if (!agreed) {
+            btn.innerText = "Fetch Photo 🖼️"; // Failsafe reset
+            return;
+        }
         localStorage.setItem('rebel_photo_consent', 'true');
     }
 
@@ -329,13 +333,11 @@ async function fetchAndDownloadPhoto(btn) {
     btn.disabled = true;
 
     try {
-        // 1. Get the list of scraped images from the API
         const response = await fetch(`/api/photo?url=${encodeURIComponent(fullUrl)}`);
         const data = await response.json();
 
         if (!data.images || data.images.length === 0) throw new Error("No images found");
 
-        // 2. Create the Thumbnail Box UI
         let previewBox = document.getElementById('carouselPreviewBox');
         if (!previewBox) {
             previewBox = document.createElement('div');
@@ -348,6 +350,7 @@ async function fetchAndDownloadPhoto(btn) {
             btn.parentNode.insertBefore(previewBox, btn.nextSibling);
         }
         
+        previewBox.style.display = 'flex'; 
         previewBox.innerHTML = '<span style="width:100%; display:block; text-align:center; font-size:0.8rem; color:#94a3b8; margin-bottom:8px;">Tap photo to process & download</span>';
         
         const scrollContainer = document.createElement('div');
@@ -357,7 +360,6 @@ async function fetchAndDownloadPhoto(btn) {
         scrollContainer.style.overflowX = 'auto';
         previewBox.appendChild(scrollContainer);
 
-        // 3. Render clickable thumbnails
         data.images.forEach(imgUrl => {
             const thumb = document.createElement('img');
             thumb.src = imgUrl; 
@@ -367,16 +369,14 @@ async function fetchAndDownloadPhoto(btn) {
             thumb.style.cursor = 'pointer';
             thumb.style.border = '2px solid #334155';
             
-            // THIS IS THE UPDATED ONCLICK BLOCK
             thumb.onclick = async () => {
                 btn.innerText = "Processing...";
                 
-                // 4. Proxy the specific clicked image to safely extract pixels for the canvas
                 const proxyResp = await fetch(`/api/photo?targetImage=${encodeURIComponent(imgUrl)}`);
                 const blob = await proxyResp.blob();
                 const img = new Image();
                 
-                    img.onload = () => {
+                img.onload = () => {
                     const canvas = document.createElement('canvas');
                     canvas.width = img.width;
                     canvas.height = img.height;
@@ -385,7 +385,6 @@ async function fetchAndDownloadPhoto(btn) {
                     
                     const pngUrl = canvas.toDataURL('image/png');
                     
-                    // Wipe the scroller and replace it with the final image
                     previewBox.style.display = 'block'; 
                     previewBox.style.textAlign = 'center';
                     previewBox.innerHTML = `
@@ -395,17 +394,14 @@ async function fetchAndDownloadPhoto(btn) {
                         <img id="finalFetchImage" src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer;">
                     `;
                     
-                    // Add tap-to-close functionality
                     document.getElementById('finalFetchImage').onclick = () => {
                         previewBox.innerHTML = '';
                         previewBox.style.display = 'none';
                     };
                     
                     btn.innerText = "✓ Ready to Save!";
-                    setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 2000);
+                    setTimeout(() => { btn.innerText = "Fetch Photo 🖼️"; btn.disabled = false; }, 2000);
                 };
-
-                
                 img.src = URL.createObjectURL(blob);
             };
             scrollContainer.appendChild(thumb);
@@ -415,7 +411,7 @@ async function fetchAndDownloadPhoto(btn) {
 
     } catch (err) {
         alert("Error extracting photos. Make sure the post link is valid.");
-        btn.innerText = originalText;
+        btn.innerText = "Fetch Photo 🖼️";
         btn.disabled = false;
     }
 }
