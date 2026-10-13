@@ -418,4 +418,3 @@ async function fetchAndDownloadPhoto(btn) {
         btn.disabled = false;
     }
 }
-}
