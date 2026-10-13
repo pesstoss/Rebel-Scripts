@@ -366,6 +366,7 @@ async function fetchAndDownloadPhoto(btn) {
             thumb.style.cursor = 'pointer';
             thumb.style.border = '2px solid #334155';
             
+            // THIS IS THE UPDATED ONCLICK BLOCK
             thumb.onclick = async () => {
                 btn.innerText = "Processing...";
                 
@@ -382,15 +383,25 @@ async function fetchAndDownloadPhoto(btn) {
                     ctx.drawImage(img, 0, 0);
                     
                     const pngUrl = canvas.toDataURL('image/png');
-                    const dateTimeString = new Date().toISOString().replace(/:/g, '-').slice(0, 16);
                     
-                    // Trigger download
-                    const link = document.createElement('a');
-                    link.href = pngUrl;
-                    link.download = `featured_photo_${dateTimeString}.png`;
-                    link.click();
+                    // Display the final photo for manual saving on ALL devices (Kills Android auto-download)
+                    let finalPreview = document.getElementById('iosPhotoFallback');
+                    if (!finalPreview) {
+                        finalPreview = document.createElement('div');
+                        finalPreview.id = 'iosPhotoFallback';
+                        finalPreview.style.marginTop = '16px';
+                        finalPreview.style.textAlign = 'center';
+                        previewBox.parentNode.insertBefore(finalPreview, previewBox.nextSibling);
+                    }
                     
-                    btn.innerText = "✓ Saved!";
+                    finalPreview.innerHTML = `
+                        <p style="color: #10b981; font-size: 0.8rem; margin-bottom: 8px; font-weight: 600;">
+                            👆 Long-press to save the photo
+                        </p>
+                        <img src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                    `;
+                    
+                    btn.innerText = "✓ Ready to Save!";
                     setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 2000);
                 };
                 img.src = URL.createObjectURL(blob);
@@ -405,4 +416,5 @@ async function fetchAndDownloadPhoto(btn) {
         btn.innerText = originalText;
         btn.disabled = false;
     }
+}
 }
