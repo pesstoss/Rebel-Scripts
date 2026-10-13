@@ -315,14 +315,14 @@ async function fetchAndDownloadPhoto(btn) {
 
     if (!fullUrl || !fullUrl.includes('vero.co')) {
         alert("Please paste a full Vero post link to fetch the photo.");
-        btn.innerText = "Fetch Photo 🖼️"; // Failsafe reset
+        btn.innerText = "Fetch Photo 🖼️"; 
         return;
     }
 
     if (!localStorage.getItem('rebel_photo_consent')) {
         const agreed = confirm("LEGAL AGREEMENT:\n\nBy clicking OK, you agree that this photo will ONLY be used for feature purposes and must be permanently deleted from your device immediately after posting.");
         if (!agreed) {
-            btn.innerText = "Fetch Photo 🖼️"; // Failsafe reset
+            btn.innerText = "Fetch Photo 🖼️"; 
             return;
         }
         localStorage.setItem('rebel_photo_consent', 'true');
@@ -336,7 +336,16 @@ async function fetchAndDownloadPhoto(btn) {
         const response = await fetch(`/api/photo?url=${encodeURIComponent(fullUrl)}`);
         const data = await response.json();
 
-        if (!data.images || data.images.length === 0) throw new Error("No images found");
+        // 1. Filter out avatars, profiles, and low-res thumbnails
+        const validImages = (data.images || []).filter(imgUrl => {
+            const lowerUrl = imgUrl.toLowerCase();
+            const isAvatar = lowerUrl.includes('avatar') || lowerUrl.includes('profile');
+            const isSmall = lowerUrl.includes('thumb') || lowerUrl.includes('small') || lowerUrl.match(/\b(150|300)x/); 
+            
+            return !isAvatar && !isSmall;
+        });
+
+        if (validImages.length === 0) throw new Error("No valid post images found");
 
         let previewBox = document.getElementById('carouselPreviewBox');
         if (!previewBox) {
@@ -360,7 +369,8 @@ async function fetchAndDownloadPhoto(btn) {
         scrollContainer.style.overflowX = 'auto';
         previewBox.appendChild(scrollContainer);
 
-        data.images.forEach(imgUrl => {
+        // 2. Render only the filtered post images
+        validImages.forEach(imgUrl => {
             const thumb = document.createElement('img');
             thumb.src = imgUrl; 
             thumb.style.height = '140px';
