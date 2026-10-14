@@ -309,26 +309,130 @@ async function pasteFromClipboard() {
     }
 }
 
-async function fetchAndDownloadPhoto(btn) {
+async function fetchSinglePhoto(btn) {
     const inputElement = document.getElementById('handleInput');
     const fullUrl = inputElement ? (inputElement.dataset.fullUrl || inputElement.value) : null;
 
     if (!fullUrl || !fullUrl.includes('vero.co')) {
         alert("Please paste a full Vero post link to fetch the photo.");
-        btn.innerText = "Fetch Photo 🖼️"; 
+        btn.innerText = "Fetch Single Photo 🖼️"; 
         return;
     }
 
     if (!localStorage.getItem('rebel_photo_consent')) {
         const agreed = confirm("LEGAL AGREEMENT:\n\nBy clicking OK, you agree that this photo will ONLY be used for feature purposes and must be permanently deleted from your device immediately after posting.");
         if (!agreed) {
-            btn.innerText = "Fetch Photo 🖼️"; 
+            btn.innerText = "Fetch Single Photo 🖼️"; 
             return;
         }
         localStorage.setItem('rebel_photo_consent', 'true');
     }
 
-    const originalText = btn.innerText;
+    btn.innerText = "Searching post...";
+    btn.disabled = true;
+
+    try {
+        const response = await fetch(`/api/photo?url=${encodeURIComponent(fullUrl)}`);
+        const data = await response.json();
+
+        if (!data.images || data.images.length === 0) throw new Error("No images found");
+
+        let found = false;
+
+        // Create or clear the preview box at the bottom of Page 3
+        let previewBox = document.getElementById('carouselPreviewBox');
+        if (!previewBox) {
+            previewBox = document.createElement('div');
+            previewBox.id = 'carouselPreviewBox';
+            previewBox.style.marginTop = '16px';
+            btn.closest('.page-section').appendChild(previewBox);
+        }
+        previewBox.innerHTML = '';
+        previewBox.style.display = 'none';
+
+        for (const imgUrl of data.images) {
+            if (found) break;
+
+            const tempImg = new Image();
+            tempImg.onload = async () => {
+                if (found) return;
+
+                // Pass anything 400px or larger
+                if (tempImg.naturalWidth >= 400 || tempImg.naturalHeight >= 400) {
+                    found = true;
+                    btn.innerText = "Processing...";
+
+                    const proxyResp = await fetch(`/api/photo?targetImage=${encodeURIComponent(imgUrl)}`);
+                    const blob = await proxyResp.blob();
+                    const img = new Image();
+
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+
+                        const pngUrl = canvas.toDataURL('image/png');
+                        
+                        previewBox.style.display = 'block'; 
+                        previewBox.style.textAlign = 'center';
+                        previewBox.innerHTML = `
+                            <p style="color: #10b981; font-size: 0.8rem; margin-bottom: 8px; font-weight: 600;">
+                                👆 Long-press to save, tap photo to close
+                            </p>
+                            <img id="finalFetchImage" src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer;">
+                        `;
+                        
+                        document.getElementById('finalFetchImage').onclick = () => {
+                            previewBox.innerHTML = '';
+                            previewBox.style.display = 'none';
+                        };
+                        
+                        btn.innerText = "✓ Ready to Save!";
+                        setTimeout(() => { btn.innerText = "Fetch Single Photo 🖼️"; btn.disabled = false; }, 2000);
+                    };
+                    img.src = URL.createObjectURL(blob);
+                }
+            };
+            tempImg.src = imgUrl;
+        }
+
+        setTimeout(() => {
+            if (!found) {
+                alert("Could not find a high-res photo. This might be a private profile.");
+                btn.innerText = "Fetch Single Photo 🖼️";
+                btn.disabled = false;
+            }
+        }, 3000);
+
+    } catch (err) {
+        alert("Error extracting photo. Make sure the post link is valid.");
+        btn.innerText = "Fetch Single Photo 🖼️";
+        btn.disabled = false;
+    }
+}
+
+
+async function fetchAndDownloadPhoto(btn) {
+    const inputElement = document.getElementById('handleInput');
+    const fullUrl = inputElement ? (inputElement.dataset.fullUrl || inputElement.value) : null;
+
+    if (!fullUrl || !fullUrl.includes('vero.co')) {
+        alert("Please paste a full Vero post link to fetch the photo.");
+        btn.innerText = "Fetch Carousel 🎠"; 
+        return;
+    }
+
+    if (!localStorage.getItem('rebel_photo_consent')) {
+        const agreed = confirm("LEGAL AGREEMENT:\n\nBy clicking OK, you agree that this photo will ONLY be used for feature purposes and must be permanently deleted from your device immediately after posting.");
+        if (!agreed) {
+            btn.innerText = "Fetch Carousel 🎠"; 
+            return;
+        }
+        localStorage.setItem('rebel_photo_consent', 'true');
+    }
+
     btn.innerText = "Searching post...";
     btn.disabled = true;
 
@@ -342,15 +446,12 @@ async function fetchAndDownloadPhoto(btn) {
         if (!previewBox) {
             previewBox = document.createElement('div');
             previewBox.id = 'carouselPreviewBox';
-            previewBox.style.display = 'flex';
-            previewBox.style.overflowX = 'auto';
-            previewBox.style.gap = '12px';
             previewBox.style.marginTop = '16px';
-            previewBox.style.padding = '8px 0';
-            btn.parentNode.insertBefore(previewBox, btn.nextSibling);
+            btn.closest('.page-section').appendChild(previewBox);
         }
         
         previewBox.style.display = 'flex'; 
+        previewBox.style.flexDirection = 'column';
         previewBox.innerHTML = '<span style="width:100%; display:block; text-align:center; font-size:0.8rem; color:#94a3b8; margin-bottom:8px;">Tap photo to process & download</span>';
         
         const scrollContainer = document.createElement('div');
@@ -358,17 +459,15 @@ async function fetchAndDownloadPhoto(btn) {
         scrollContainer.style.gap = '12px';
         scrollContainer.style.width = '100%';
         scrollContainer.style.overflowX = 'auto';
+        scrollContainer.style.paddingBottom = '8px';
         previewBox.appendChild(scrollContainer);
 
         data.images.forEach(imgUrl => {
             const thumb = document.createElement('img');
             
-            // Load the image invisibly to check its true pixel size
             thumb.onload = () => {
-                // If BOTH width and height are under 400px, it's a profile pic/icon. Throw it out!
                 if (thumb.naturalWidth < 400 && thumb.naturalHeight < 400) return;
 
-                // Otherwise, it's a real photo. Style it and add it to the carousel.
                 thumb.style.height = '140px';
                 thumb.style.width = 'auto';
                 thumb.style.borderRadius = '8px';
@@ -406,7 +505,7 @@ async function fetchAndDownloadPhoto(btn) {
                         };
                         
                         btn.innerText = "✓ Ready to Save!";
-                        setTimeout(() => { btn.innerText = "Fetch Photo 🖼️"; btn.disabled = false; }, 2000);
+                        setTimeout(() => { btn.innerText = "Fetch Carousel 🎠"; btn.disabled = false; }, 2000);
                     };
                     img.src = URL.createObjectURL(blob);
                 };
@@ -414,7 +513,6 @@ async function fetchAndDownloadPhoto(btn) {
                 scrollContainer.appendChild(thumb);
             };
             
-            // Setting the source triggers the invisible load/size check
             thumb.src = imgUrl; 
         });
 
@@ -422,7 +520,7 @@ async function fetchAndDownloadPhoto(btn) {
 
     } catch (err) {
         alert("Error extracting photos. Make sure the post link is valid.");
-        btn.innerText = "Fetch Photo 🖼️";
+        btn.innerText = "Fetch Carousel 🎠";
         btn.disabled = false;
     }
 }

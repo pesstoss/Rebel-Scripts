@@ -24,21 +24,26 @@
 <div class="card">
     <h2>Feature Scripts</h2>
     
+    <!-- HIER STARTET DAS RASTER FÜR DIE WISCH-FUNKTION -->
     <div class="layout-grid">
-        <!-- Left Column: Inputs & Controls --> 
-        <div>
+
+        <!-- PAGE 1: Gallery & Mod Data -->
+        <div class="page-section">
+            <div class="page-indicator">1 / 4 <span class="arrow">▶</span></div>
+            <h2>Moderator Info</h2>
+            
             <div>
-            <span class="label">Choose Gallery</span>
-            <select id="gallerySelect" onchange="saveSettings(); updateVisibility(); updateConsoles()">
-                <option value="rebel_bnw">Rebel BNW</option>
-                <option value="fotomasters">Fotomasters</option>
-                <option value="snap_bnw">Snap BNW</option>
-                <option value="snap_asia">Snap Asia</option>
-                <option value="snap_depthoffield">Snap Depthoffield</option>
-                <option value="snap_allnature">Snap Allnature</option>
-                <option value="snap_wildlife">Snap Wildlife</option>
-                <option value="snap_potd">Snap POTD</option>
-            </select>
+                <span class="label">Choose Gallery</span>
+                <select id="gallerySelect" onchange="saveSettings(); updateVisibility(); updateConsoles()">
+                    <option value="rebel_bnw">Rebel BNW</option>
+                    <option value="fotomasters">Fotomasters</option>
+                    <option value="snap_bnw">Snap BNW</option>
+                    <option value="snap_asia">Snap Asia</option>
+                    <option value="snap_depthoffield">Snap Depthoffield</option>
+                    <option value="snap_allnature">Snap Allnature</option>
+                    <option value="snap_wildlife">Snap Wildlife</option>
+                    <option value="snap_potd">Snap POTD</option>
+                </select>
             </div>
 
             <div id="roleGroup">
@@ -49,88 +54,118 @@
                     <option value="Co-Admin">Co-Admin</option>
                     <option value="Guest Mod">Guest Mod</option>
                 </select>
-            </div>   
+            </div>  
 
             <!-- Curator First Name (Snap Only) -->
             <div id="firstNameGroup" style="display: none;">
-            <span class="label">Your First Name</span>
-            <input type="text" id="firstNameInput" placeholder="Your first name" oninput="saveSettings(); updateConsoles()">
+                <span class="label">Your First Name</span>
+                <input type="text" id="firstNameInput" placeholder="Your first name" oninput="saveSettings(); updateConsoles()">
             </div>
             
             <span class="label">Your Username</span>
             <input type="text" id="modInput" placeholder="Your username (no @)" oninput="saveSettings(); updateConsoles()">
+        </div>
+    
+        <!-- PAGE 2: Artist Data & Comments -->
+        <div class="page-section">
+            <div class="page-indicator"><span class="arrow">◀</span> 2 / 4 <span class="arrow">▶</span></div>
+            <h2>Artist Details</h2>
 
             <!-- Personal Comment Input -->
             <div id="commentGroup" style="display: none;">
-            <span class="label">Personal Comment</span>
-            <textarea id="commentInput" placeholder="Write your comment here..." oninput="updateConsoles()" rows="3" style="width: 100%;"></textarea>
+                <span class="label">Personal Comment</span>
+                <textarea id="commentInput" placeholder="Write your comment here..." oninput="updateConsoles()" rows="3" style="width: 100%;"></textarea>
             </div>
 
             <!-- 2nd Personal Comment Input -->
             <div id="commentGroup2" style="display: none;">
-            <span class="label">2nd Personal Comment</span>
-            <textarea id="commentInput2" placeholder="Write your post comment here..." oninput="updateConsoles()" rows="1" style="width: 100%; min-height: 44px;"></textarea>
+                <span class="label">2nd Personal Comment</span>
+                <textarea id="commentInput2" placeholder="Write your post comment here..." oninput="updateConsoles()" rows="1" style="width: 100%; min-height: 44px;"></textarea>
             </div>
 
-           <div id="nameGroup">
-            <span class="label">Artist Name</span>
-            <input type="text" id="nameInput" placeholder="Enter name or use ARTIST USERNAME" oninput="updateConsoles()">
+            <div id="nameGroup">
+                <span class="label">Artist Name</span>
+                <input type="text" id="nameInput" placeholder="Enter name or use ARTIST USERNAME" oninput="updateConsoles()">
             </div>
-
-            <!-- Membership Level Dropdown -->
-            <div id="levelGroup">
-            <span class="label">Membership Level</span>
-            <select id="levelSelect" onchange="updateConsoles()">
-            <option value="Artist">Artist</option>
-            <option value="Member">Member</option>
-            <option value="VIP Member">VIP</option>
-            <option value="VIP Gold Member">VIP Gold</option>
-            <option value="Platinum Member">Platinum</option>
-            <option value="Elite Member">Elite</option>
-            <option value="HOF Member">HOF</option>
-            <option value="Diamond Member">Diamond</option>
-        </select>
-
-        <div id="cautionWarning" style="display: none; color: #ef4444; font-weight: bold; font-size: 14px; margin-bottom: 8px; text-align: center;">
-        ⚠️ Warning: This artist is on the Caution List!
-        </div>
-        
-        </div>
 
             <!-- Clear instructions for mobile and desktop -->
             <span class="label">Artist Username / Paste Link</span>
             <input type="text" id="handleInput" placeholder="username or paste Vero post link">
 
+            <!-- Membership Level Dropdown -->
+            <div id="levelGroup">
+                <span class="label">Membership Level</span>
+                <select id="levelSelect" onchange="updateConsoles()">
+                    <option value="Artist">Artist</option>
+                    <option value="Member">Member</option>
+                    <option value="VIP Member">VIP</option>
+                    <option value="VIP Gold Member">VIP Gold</option>
+                    <option value="Platinum Member">Platinum</option>
+                    <option value="Elite Member">Elite</option>
+                    <option value="HOF Member">HOF</option>
+                    <option value="Diamond Member">Diamond</option>
+                </select>
+            </div> <!-- FEHLENDES DIV WURDE HIER HINZUGEFÜGT -->
+
+            <div id="cautionWarning" style="display: none; color: #ef4444; font-weight: bold; font-size: 14px; margin-bottom: 8px; text-align: center;">
+                ⚠️ Warning: This artist is on the Caution List!
+            </div>
+
             <div style="margin-top: auto; padding-top: 20px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 24px;">
-            <button class="btn-paste" onclick="pasteFromClipboard()">Paste From Post 📋</button>
-            <button class="btn-photo" onclick="fetchAndDownloadPhoto(this)">Fetch Photo 🖼️</button>
-            <button class="btn-clear" onclick="clearArtistFields()">Clear Artist Data Only</button>
+                <button class="btn-paste" onclick="pasteFromClipboard()">Paste From Post 📋</button>
+                <button class="btn-clear" onclick="clearArtistFields()">Clear Artist Data Only</button>
+            </div>
+        </div>   
+       
+        <!-- PAGE 3: Photo Fetching -->
+        <div class="page-section">
+            <div class="page-indicator"><span class="arrow">◀</span> 3 / 4 <span class="arrow">▶</span></div>
+            <h2>Fetch Photo</h2>
+            
+            <!-- NEW: Dedicated Single Photo Button -->
+            <div style="margin-top: auto; padding-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn-photo" onclick="fetchSinglePhoto(this)">
+                    Fetch Single Photo 🖼️
+                </button>
+
+                <!-- EXISTING: Carousel Photo Button -->
+                <button class="btn-photo" onclick="fetchAndDownloadPhoto(this)">
+                    Fetch Carousel 🎠
+                </button>
+            </div>
+            <!-- The javascript will automatically inject the previewBox below these buttons -->
+        </div>   
+            
+        <!-- PAGE 4: Script Previews -->
+        <div class="page-section">
+            <div class="page-indicator"><span class="arrow">◀</span> 4 / 4</div>
+            <h2>Generated Scripts</h2>
+            
+            <div>
+                <span class="label">Feature Script Preview</span>
+                <textarea id="consoleMain" readonly class="preview-box">Loading template...</textarea>
+                <button class="btn-main" id="mainBtn" onclick="copyMain()">Copy Feature Script</button>
+
+                <hr>
+
+                <span class="label">Personal / Feature Comment</span>
+                <textarea id="consoleComment1" class="preview-box small" placeholder="Type your personal comment here..."></textarea>
+                <button class="btn-alt" onclick="copyPersonal(this)">Copy Feature Comment ✍</button>
+
+                <span class="label">Original Post Comment</span>
+                <textarea id="consoleComment2" readonly class="preview-box small"></textarea>
+                <button class="btn-alt" onclick="copyPost(this)">Copy Post Comment 🎉</button>
+            </div>
         </div>
 
+</div> <!-- ENDE DES LAYOUT-GRIDS -->
+
+        <!-- Copyright footer -->
+        <div class="footer">
+            &copy; 2026 Georgee
         </div>
 
-        <!-- Right Column: Previews & Copy Actions -->
-        <div>
-            <span class="label">Feature Script Preview</span>
-            <textarea id="consoleMain" readonly class="preview-box">Loading template...</textarea>
-            <button class="btn-main" id="mainBtn" onclick="copyMain()">Copy Feature Script</button>
-
-            <hr>
-
-            <span class="label">Personal / Feature Comment</span>
-            <textarea id="consoleComment1" class="preview-box small" placeholder="Type your personal comment here..."></textarea>
-            <button class="btn-alt" onclick="copyPersonal(this)">Copy Feature Comment ✍</button>
-
-            <span class="label">Original Post Comment</span>
-            <textarea id="consoleComment2" readonly class="preview-box small"></textarea>
-            <button class="btn-alt" onclick="copyPost(this)">Copy Post Comment 🎉</button>
-        </div>
-    </div>
-    <!-- Copyright footer -->
-    <div class="footer">
-        &copy; 2026 Georgee
-    </div>
-</div>
+    </div> <!-- ENDE DER CARD -->
 
 <script src="script.js"></script>
 

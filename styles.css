@@ -253,3 +253,35 @@
         }
         .footer a { color: #94a3b8; text-decoration: none; }
         .footer a:hover { color: #f8fafc; text-decoration: underline; }
+
+    /* Hide manual page indicators on desktop */
+        .page-indicator {
+            display: none; 
+        }
+
+        /* Show and position them on mobile */
+        @media (max-width: 767px) {
+            .page-section {
+                position: relative; /* Crucial so the indicator stays inside its specific page */
+            }
+            
+            .page-indicator {
+                display: block;
+                position: absolute;
+                top: 0;
+                right: 0;
+                font-size: 0.75rem;
+                color: #94a3b8;
+                font-weight: 600;
+                background: rgba(30, 41, 59, 0.7);
+                padding: 4px 8px;
+                border-radius: 8px;
+                z-index: 10;
+            }
+
+            .page-indicator .arrow {
+                color: #6366f1; /* Accent color for the arrows */
+                font-size: 0.7rem;
+                margin: 0 2px;
+            }
+        }
