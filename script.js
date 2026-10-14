@@ -336,16 +336,7 @@ async function fetchAndDownloadPhoto(btn) {
         const response = await fetch(`/api/photo?url=${encodeURIComponent(fullUrl)}`);
         const data = await response.json();
 
-        // 1. Filter out avatars, profiles, and low-res thumbnails
-        const validImages = (data.images || []).filter(imgUrl => {
-            const lowerUrl = imgUrl.toLowerCase();
-            const isAvatar = lowerUrl.includes('avatar') || lowerUrl.includes('profile');
-            const isSmall = lowerUrl.includes('thumb') || lowerUrl.includes('small') || lowerUrl.match(/\b(150|300)x/); 
-            
-            return !isAvatar && !isSmall;
-        });
-
-        if (validImages.length === 0) throw new Error("No valid post images found");
+        if (!data.images || data.images.length === 0) throw new Error("No images found");
 
         let previewBox = document.getElementById('carouselPreviewBox');
         if (!previewBox) {
@@ -369,52 +360,62 @@ async function fetchAndDownloadPhoto(btn) {
         scrollContainer.style.overflowX = 'auto';
         previewBox.appendChild(scrollContainer);
 
-        // 2. Render only the filtered post images
-        validImages.forEach(imgUrl => {
+        data.images.forEach(imgUrl => {
             const thumb = document.createElement('img');
-            thumb.src = imgUrl; 
-            thumb.style.height = '140px';
-            thumb.style.width = 'auto';
-            thumb.style.borderRadius = '8px';
-            thumb.style.cursor = 'pointer';
-            thumb.style.border = '2px solid #334155';
             
-            thumb.onclick = async () => {
-                btn.innerText = "Processing...";
+            // Load the image invisibly to check its true pixel size
+            thumb.onload = () => {
+                // If BOTH width and height are under 400px, it's a profile pic/icon. Throw it out!
+                if (thumb.naturalWidth < 400 && thumb.naturalHeight < 400) return;
+
+                // Otherwise, it's a real photo. Style it and add it to the carousel.
+                thumb.style.height = '140px';
+                thumb.style.width = 'auto';
+                thumb.style.borderRadius = '8px';
+                thumb.style.cursor = 'pointer';
+                thumb.style.border = '2px solid #334155';
                 
-                const proxyResp = await fetch(`/api/photo?targetImage=${encodeURIComponent(imgUrl)}`);
-                const blob = await proxyResp.blob();
-                const img = new Image();
-                
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
+                thumb.onclick = async () => {
+                    btn.innerText = "Processing...";
                     
-                    const pngUrl = canvas.toDataURL('image/png');
+                    const proxyResp = await fetch(`/api/photo?targetImage=${encodeURIComponent(imgUrl)}`);
+                    const blob = await proxyResp.blob();
+                    const img = new Image();
                     
-                    previewBox.style.display = 'block'; 
-                    previewBox.style.textAlign = 'center';
-                    previewBox.innerHTML = `
-                        <p style="color: #10b981; font-size: 0.8rem; margin-bottom: 8px; font-weight: 600;">
-                            👆 Long-press to save, tap photo to close
-                        </p>
-                        <img id="finalFetchImage" src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer;">
-                    `;
-                    
-                    document.getElementById('finalFetchImage').onclick = () => {
-                        previewBox.innerHTML = '';
-                        previewBox.style.display = 'none';
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        
+                        const pngUrl = canvas.toDataURL('image/png');
+                        
+                        previewBox.style.display = 'block'; 
+                        previewBox.style.textAlign = 'center';
+                        previewBox.innerHTML = `
+                            <p style="color: #10b981; font-size: 0.8rem; margin-bottom: 8px; font-weight: 600;">
+                                👆 Long-press to save, tap photo to close
+                            </p>
+                            <img id="finalFetchImage" src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer;">
+                        `;
+                        
+                        document.getElementById('finalFetchImage').onclick = () => {
+                            previewBox.innerHTML = '';
+                            previewBox.style.display = 'none';
+                        };
+                        
+                        btn.innerText = "✓ Ready to Save!";
+                        setTimeout(() => { btn.innerText = "Fetch Photo 🖼️"; btn.disabled = false; }, 2000);
                     };
-                    
-                    btn.innerText = "✓ Ready to Save!";
-                    setTimeout(() => { btn.innerText = "Fetch Photo 🖼️"; btn.disabled = false; }, 2000);
+                    img.src = URL.createObjectURL(blob);
                 };
-                img.src = URL.createObjectURL(blob);
+                
+                scrollContainer.appendChild(thumb);
             };
-            scrollContainer.appendChild(thumb);
+            
+            // Setting the source triggers the invisible load/size check
+            thumb.src = imgUrl; 
         });
 
         btn.innerText = "Select Photo Below";
