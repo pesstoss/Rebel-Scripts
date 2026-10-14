@@ -208,6 +208,10 @@
             padding: 12px;
         }
 
+        textarea {
+        resize: vertical;
+    }
+
         /* Expand the main Feature Script box and push comments down */
         #scriptOutput, .preview-box:not(.small) {
             height: 280px !important; 
