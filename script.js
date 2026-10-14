@@ -415,6 +415,17 @@ async function fetchSinglePhoto(btn) {
 
 
 async function fetchAndDownloadPhoto(btn) {
+    // 1. Check if it's already open, act as a Close button
+    if (btn.innerText.includes("Close Carousel")) {
+        const previewBox = document.getElementById('carouselPreviewBox');
+        if (previewBox) {
+            previewBox.innerHTML = '';
+            previewBox.style.display = 'none';
+        }
+        btn.innerText = "Fetch Carousel 🎠";
+        return;
+    }
+
     const inputElement = document.getElementById('handleInput');
     const fullUrl = inputElement ? (inputElement.dataset.fullUrl || inputElement.value) : null;
 
@@ -450,9 +461,24 @@ async function fetchAndDownloadPhoto(btn) {
             btn.closest('.page-section').appendChild(previewBox);
         }
         
+        previewBox.innerHTML = ''; // Clear previous searches
         previewBox.style.display = 'flex'; 
         previewBox.style.flexDirection = 'column';
-        previewBox.innerHTML = '<span style="width:100%; display:block; text-align:center; font-size:0.8rem; color:#94a3b8; margin-bottom:8px;">Tap photo to process & download</span>';
+        
+        // 2. Create a dedicated container for the high-res image ABOVE the carousel
+        const activePreviewArea = document.createElement('div');
+        activePreviewArea.id = 'activePreviewArea';
+        previewBox.appendChild(activePreviewArea);
+
+        const instruction = document.createElement('span');
+        instruction.style.width = '100%';
+        instruction.style.display = 'block';
+        instruction.style.textAlign = 'center';
+        instruction.style.fontSize = '0.8rem';
+        instruction.style.color = '#94a3b8';
+        instruction.style.marginBottom = '8px';
+        instruction.innerText = 'Tap photo to process & download';
+        previewBox.appendChild(instruction);
         
         const scrollContainer = document.createElement('div');
         scrollContainer.style.display = 'flex';
@@ -490,22 +516,26 @@ async function fetchAndDownloadPhoto(btn) {
                         
                         const pngUrl = canvas.toDataURL('image/png');
                         
-                        previewBox.style.display = 'block'; 
-                        previewBox.style.textAlign = 'center';
-                        previewBox.innerHTML = `
+                        // 3. Inject the high-res image into the dedicated area, leaving thumbnails alone
+                        activePreviewArea.style.textAlign = 'center';
+                        activePreviewArea.style.marginBottom = '16px';
+                        activePreviewArea.innerHTML = `
                             <p style="color: #10b981; font-size: 0.8rem; margin-bottom: 8px; font-weight: 600;">
                                 👆 Long-press to save, tap photo to close
                             </p>
                             <img id="finalFetchImage" src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer;">
                         `;
                         
+                        // Optional: smoothly scroll up so the user sees the big image
+                        activePreviewArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        
+                        // 4. Clicking the big image only clears the big image area
                         document.getElementById('finalFetchImage').onclick = () => {
-                            previewBox.innerHTML = '';
-                            previewBox.style.display = 'none';
+                            activePreviewArea.innerHTML = '';
                         };
                         
                         btn.innerText = "✓ Ready to Save!";
-                        setTimeout(() => { btn.innerText = "Fetch Carousel 🎠"; btn.disabled = false; }, 2000);
+                        setTimeout(() => { btn.innerText = "Close Carousel ❌"; btn.disabled = false; }, 2000);
                     };
                     img.src = URL.createObjectURL(blob);
                 };
@@ -516,7 +546,9 @@ async function fetchAndDownloadPhoto(btn) {
             thumb.src = imgUrl; 
         });
 
-        btn.innerText = "Select Photo Below";
+        // Change the button to act as a close toggle
+        btn.innerText = "Close Carousel ❌";
+        btn.disabled = false;
 
     } catch (err) {
         alert("Error extracting photos. Make sure the post link is valid.");
