@@ -25,14 +25,17 @@ export default async function handler(req, res) {
         });
         const postHtml = await postReq.text();
 
-        // Search the raw HTML for any jpg/png URLs
-        const regex = /https:\/\/[^"'\s<>]+?\.(?:jpg|jpeg|png)(?:\?[^"'\s<>]*)?/gi;
+        // 1. Broaden regex to include .webp and catch JSON-escaped slashes (\/)
+        const regex = /https:(?:\\?\/){2}[^"'\s<>]+?\.(?:jpg|jpeg|png|webp)(?:\?[^"'\s<>]*)?/gi;
         const rawMatches = [...postHtml.matchAll(regex)].map(m => m[0]);
 
         const uniqueImageMap = new Map();
 
-        rawMatches.forEach(imgUrl => {
-            // Aggressively filter out avatars, UI icons, and logos
+        rawMatches.forEach(rawUrl => {
+            // 2. Un-escape JSON slashes if the image was hidden inside a <script> tag
+            const imgUrl = rawUrl.replace(/\\\//g, '/');
+
+            // 3. Aggressively filter out avatars, UI icons, and logos
             if (/(avatar|profile|user|account|thumb|icon|logo|banner)/i.test(imgUrl)) return;
 
             // Strip query parameters to find the base file name
