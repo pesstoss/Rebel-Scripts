@@ -25,13 +25,13 @@ export default async function handler(req, res) {
         });
         const postHtml = await postReq.text();
 
-        // 1. Target the IDs from the responsive carousel images, regardless of domain or size (e.g., _650x, _480x)
-        const regex = /https:\/\/[^"'\\]+\/([a-z0-9\-]{36})\/([a-z0-9\-]{36})_[0-9]+x\.(?:jpg|jpeg|png|webp)/gi;
+        // 1. Target the raw base URLs hidden in Vero's JSON state, which contains all carousel images regardless of lazy-loading
+        const regex = /https:\/\/(?:d1dpu3msttfsqg\.cloudfront\.net|media\.verocdn\.com\/public)\/([a-z0-9\-]{36})\/([a-z0-9\-]{36})(?=["\\])/gi;
 
-        // 2. Extract all matches from the HTML's srcset
+        // 2. Extract all matches
         const matches = [...postHtml.matchAll(regex)];
 
-        // 3. Rebuild the high-res original URLs and deduplicate the dozens of size variations instantly using a Set
+        // 3. Rebuild the high-res original URLs and deduplicate them
         const finalImages = [...new Set(matches.map(m => 
             `https://media.verocdn.com/public/${m[1]}/${m[2]}/original.jpg`
         ))];
