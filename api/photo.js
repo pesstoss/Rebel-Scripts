@@ -21,21 +21,34 @@ export default async function handler(req, res) {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
             }
         });
-        const postHtml = await postReq.text();
+        const html = await postReq.text();
 
-        // 1. Cut the HTML in half. Everything before the caption/profile container is the main media.
-        const topHalf = postHtml.split('_user-post-content-container_')[0];
+        // og:image = folder + first photo
+        const og = html.match(/property="og:image" content="https:\/\/[^/]+\/([0-9a-f-]{36})\/([0-9a-f-]{36})_/i);
+        if (!og) return res.status(404).json({ error: 'No og:image found' });
+        const [, folder, anchor] = og;
 
-        // 2. Grab the UUIDs ONLY from that top half. 
-        const regex = /([a-z0-9\-]{36})\/([a-z0-9\-]{36})_/gi;
-        const matches = [...topHalf.matchAll(regex)];
+        // every id in this folder, with its position in the page
+        const re = new RegExp(folder + '/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})', 'g');
+        const hits = [...html.matchAll(re)].map(m => ({ id: m[1], pos: m.index }));
 
-        // 3. Rebuild the high-res URLs and deduplicate them
-        const finalImages = [...new Set(matches.map(m => 
-            `https://media.verocdn.com/public/${m[1]}/${m[2]}/original.jpg`
-        ))];
+        // group ids that sit close together
+        const clusters = [];
+        for (const h of hits) {
+            const last = clusters[clusters.length - 1];
+            if (last && h.pos - last.end < 800) { last.hits.push(h); last.end = h.pos; }
+            else clusters.push({ hits: [h], end: h.pos });
+        }
+        const groups = clusters.map(c => [...new Set(c.hits.map(h => h.id))]);
 
-        if (finalImages.length === 0) return res.status(404).json({ error: 'No images found' });
+        // the post = the biggest group containing the first photo
+        const ids = groups
+            .filter(g => g.includes(anchor))
+            .sort((a, b) => b.length - a.length)[0] || [anchor];
+
+        const finalImages = ids.map(id => `https://d1dpu3msttfsqg.cloudfront.net/${folder}/${id}`);
+
+        if (req.query.debug) return res.status(200).json({ folder, anchor, groups, finalImages });
 
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.status(200).json({ images: finalImages });
