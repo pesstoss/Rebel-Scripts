@@ -25,8 +25,10 @@ export default async function handler(req, res) {
         });
         const postHtml = await postReq.text();
 
-        // 1. Broaden regex to include .webp and catch JSON-escaped slashes (\/)
-        const regex = /https:(?:\\?\/){2}[^"'\s<>]+?\.(?:jpg|jpeg|png|webp)(?:\?[^"'\s<>]*)?/gi;
+        // 1. Target the actual post media and ignore profile thumbnails
+        const regex = /https:\/\/media\.verocdn\.com\/public\/[^"\\]+?original\.(?:jpg|jpeg|png|webp)/gi;
+
+        // 2. Extract matches (automatically stripping the _thumb.jpg suffix)
         const rawMatches = [...postHtml.matchAll(regex)].map(m => m[0]);
 
         const uniqueImageMap = new Map();
