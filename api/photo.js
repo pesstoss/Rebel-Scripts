@@ -25,8 +25,8 @@ export default async function handler(req, res) {
         });
         const postHtml = await postReq.text();
 
-        // 1. Target the exact 36-character IDs of the main images by looking for the unique "650x" size tag
-        const regex = /https:\/\/[^"'\\]+\/([a-z0-9\-]{36})\/([a-z0-9\-]{36})_650x\.jpg/gi;
+        // 1. Target the exact 36-character IDs of the main images by looking for ANY single-dimension size tag (e.g., _1080x, _540x)
+        const regex = /https:\/\/[^"'\\]+\/([a-z0-9\-]{36})\/([a-z0-9\-]{36})_[0-9]+x\.(?:jpg|jpeg|png|webp)/gi;
 
         // 2. Extract all matches from the HTML
         const matches = [...postHtml.matchAll(regex)];
