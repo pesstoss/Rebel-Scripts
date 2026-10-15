@@ -23,21 +23,17 @@ export default async function handler(req, res) {
         });
         const postHtml = await postReq.text();
 
-        // 1. Extract the raw IDs for ALL original photos in the JSON payload (Bypasses lazy-loading)
-        const regex = /([a-z0-9\-]{36})[\\\/]+([a-z0-9\-]{36})[\\\/]+original\.(?:jpg|jpeg|png|webp)/gi;
-        const matches = [...postHtml.matchAll(regex)];
+        // 1. Cut the HTML in half. Everything before the caption/profile container is the main media.
+        const topHalf = postHtml.split('_user-post-content-container_')[0];
 
-        // 2. Rebuild clean URLs and deduplicate them
-        const allOriginalImages = [...new Set(matches.map(m => 
+        // 2. Grab the UUIDs ONLY from that top half. 
+        const regex = /([a-z0-9\-]{36})\/([a-z0-9\-]{36})_/gi;
+        const matches = [...topHalf.matchAll(regex)];
+
+        // 3. Rebuild the high-res URLs and deduplicate them
+        const finalImages = [...new Set(matches.map(m => 
             `https://media.verocdn.com/public/${m[1]}/${m[2]}/original.jpg`
         ))];
-
-        // 3. Count the carousel dots to know exactly how many photos belong to the main post
-        const dotMatches = [...postHtml.matchAll(/<span data-dot="true"/gi)];
-        const photoCount = dotMatches.length > 0 ? dotMatches.length : 1;
-
-        // 4. Slice the array to keep only the post's photos, cleanly chopping off the 7 Discovery grid photos
-        const finalImages = allOriginalImages.slice(0, photoCount);
 
         if (finalImages.length === 0) return res.status(404).json({ error: 'No images found' });
 
