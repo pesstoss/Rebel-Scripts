@@ -122,20 +122,20 @@
             transition: all 0.2s;  
         }
 
-        .btn-main { background: #4f46e5; color: white; margin-top: 8px; }
-        .btn-main:hover { background: #4338ca; transform: translateY(-1px); }
-        
-        .btn-clear { background: transparent; color: #fb7185; border: 1px solid #fb7185; margin: 8px 0 20px 0; }
+        .btn-main { background: #6366f1; color: white; margin-top: 8px; }
+        .btn-main:hover { background: #4f46e5; transform: translateY(-1px); }
+
+        .btn-clear { background: transparent; color: #fb7185; border: 1px solid #fb7185; }
         .btn-clear:hover { background: rgba(251, 113, 133, 0.1); }
-    
+
         .btn-paste { background: #10b981; color: white; margin: 4px 0 16px 0; }
         .btn-paste:hover { background: #059669; transform: translateY(-1px); }
 
-        .btn-photo { background: #0ea5e9; color: white; margin-bottom: 16px; }
-        .btn-photo:hover { background: #0284c7; transform: translateY(-1px); }
+        .btn-photo { background: #6366f1; color: white; margin-bottom: 16px; }
+        .btn-photo:hover { background: #4f46e5; transform: translateY(-1px); }
 
-        .btn-alt { background: #334155; color: #f8fafc; margin-bottom: 20px; }
-        .btn-alt:hover { background: #475569; }
+        .btn-alt { background: #6366f1; color: white; margin-bottom: 20px; }
+        .btn-alt:hover { background: #4f46e5; }
 
         /* Hides the green paste button automatically on mobile browsers */
         @media (max-width: 767px) {
@@ -190,6 +190,22 @@
             display: block;
             text-align: center;
             text-align-last: center; 
+        }
+
+        select {
+        /* Hides the default black iPhone arrow */
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+    
+        /* Injects the custom #6366f1 purple arrow */
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px;
+    
+        /* Prevents the text from overlapping the arrow */
+            padding-right: 40px; 
         }
 
         /* 2. Center the text labels and headings above the boxes */
