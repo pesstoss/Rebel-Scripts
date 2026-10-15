@@ -25,31 +25,16 @@ export default async function handler(req, res) {
         });
         const postHtml = await postReq.text();
 
-        // 1. Target the actual post media and ignore profile thumbnails
-        const regex = /https:\/\/media\.verocdn\.com\/public\/[^"\\]+?original\.(?:jpg|jpeg|png|webp)/gi;
+        // 1. Target the exact 36-character IDs of the main images by looking for the unique "650x" size tag
+        const regex = /https:\/\/[^"'\\]+\/([a-z0-9\-]{36})\/([a-z0-9\-]{36})_650x\.jpg/gi;
 
-        // 2. Extract matches (automatically stripping the _thumb.jpg suffix)
-        const rawMatches = [...postHtml.matchAll(regex)].map(m => m[0]);
+        // 2. Extract all matches from the HTML
+        const matches = [...postHtml.matchAll(regex)];
 
-        const uniqueImageMap = new Map();
-
-        rawMatches.forEach(rawUrl => {
-            // 2. Un-escape JSON slashes if the image was hidden inside a <script> tag
-            const imgUrl = rawUrl.replace(/\\\//g, '/');
-
-            // 3. Aggressively filter out avatars, UI icons, and logos
-            if (/(avatar|profile|user|account|thumb|icon|logo|banner)/i.test(imgUrl)) return;
-
-            // Strip query parameters to find the base file name
-            const baseUrl = imgUrl.split('?')[0];
-
-            // Deduplicate: Only save one version of each base image
-            if (!uniqueImageMap.has(baseUrl)) {
-                uniqueImageMap.set(baseUrl, imgUrl);
-            }
-        });
-
-        const finalImages = Array.from(uniqueImageMap.values());
+        // 3. Rebuild the high-res original URLs and deduplicate them instantly using a Set
+        const finalImages = [...new Set(matches.map(m => 
+            `https://media.verocdn.com/public/${m[1]}/${m[2]}/original.jpg`
+        ))];
 
         if (finalImages.length === 0) return res.status(404).json({ error: 'No images found' });
 
