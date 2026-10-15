@@ -23,11 +23,18 @@ export default async function handler(req, res) {
         });
         const postHtml = await postReq.text();
 
-        // Reverted to your working 650x rule, but blocking spaces/commas (\s,) so it catches all carousel items
-        const regex = /https:\/\/[^"'\s,\\]+\/([a-z0-9\-]{36})\/([a-z0-9\-]{36})_650x\.jpg/gi;
+        // 1. Isolate the HTML block containing ONLY the main post media. 
+        // This physically cuts out the Discovery grid and avatars at the bottom of the page.
+        const mediaBlockMatch = postHtml.match(/_user-post-media-container_[^>]*>([\s\S]*?)_user-post-content-container_/);
+        const mediaBlock = mediaBlockMatch ? mediaBlockMatch[1] : postHtml;
 
-        const matches = [...postHtml.matchAll(regex)];
+        // 2. Find all responsive image IDs (e.g., _1080x, _450x). 
+        // Because we are only looking inside 'mediaBlock', we get exactly the right number of photos.
+        const regex = /([a-z0-9\-]{36})\/([a-z0-9\-]{36})_[0-9]+x\.(?:jpg|jpeg|png|webp)/gi;
 
+        const matches = [...mediaBlock.matchAll(regex)];
+
+        // 3. Rebuild high-res original URLs and deduplicate them instantly
         const finalImages = [...new Set(matches.map(m => 
             `https://media.verocdn.com/public/${m[1]}/${m[2]}/original.jpg`
         ))];
