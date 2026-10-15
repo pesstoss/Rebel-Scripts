@@ -1,7 +1,6 @@
 export default async function handler(req, res) {
     const { url, targetImage } = req.query;
 
-    // MODE 1: Proxy a specific image to bypass CORS for canvas downloading
     if (targetImage) {
         try {
             const imgReq = await fetch(targetImage);
@@ -14,7 +13,6 @@ export default async function handler(req, res) {
         }
     }
 
-    // MODE 2: Scrape the Vero link for the carousel
     if (!url) return res.status(400).json({ error: 'No URL provided' });
 
     try {
@@ -25,13 +23,11 @@ export default async function handler(req, res) {
         });
         const postHtml = await postReq.text();
 
-        // 1. Target the raw base URLs hidden in Vero's JSON state, which contains all carousel images regardless of lazy-loading
-        const regex = /https:\/\/(?:d1dpu3msttfsqg\.cloudfront\.net|media\.verocdn\.com\/public)\/([a-z0-9\-]{36})\/([a-z0-9\-]{36})(?=["\\])/gi;
+        // Reverted to your working 650x rule, but blocking spaces/commas (\s,) so it catches all carousel items
+        const regex = /https:\/\/[^"'\s,\\]+\/([a-z0-9\-]{36})\/([a-z0-9\-]{36})_650x\.jpg/gi;
 
-        // 2. Extract all matches
         const matches = [...postHtml.matchAll(regex)];
 
-        // 3. Rebuild the high-res original URLs and deduplicate them
         const finalImages = [...new Set(matches.map(m => 
             `https://media.verocdn.com/public/${m[1]}/${m[2]}/original.jpg`
         ))];
