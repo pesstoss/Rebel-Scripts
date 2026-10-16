@@ -24,31 +24,31 @@ export default async function handler(req, res) {
         const postHtml = await postReq.text();
         const cleanHtml = postHtml.replace(/\\\//g, '/');
 
-        // 1. THE SANDBOX: Strip the <head> to completely blind the scraper to the avatar metadata
+        // 1. THE SANDBOX: Strip the <head> to completely avoid avatar/metadata hijacking
         const bodyOnly = cleanHtml.split('</head>')[1] || cleanHtml;
 
-        // 2. ISOLATE MEDIA BLOCK: Vero renders the photos at the very top of the body, followed by a specific container for the caption and bottom grid.
-        // By splitting here, we throw the bottom grid in the trash. What remains is ONLY the main post media!
-        const mediaBlock = bodyOnly.split(/_user-post-content-(?:container|header)_/)[0];
+        // 2. Count the carousel dots in the isolated body (defaults to 1 for single-photo posts)
+        const dotsMatch = bodyOnly.match(/data-dot="true"/gi);
+        const imageCount = Math.max(1, dotsMatch ? dotsMatch.length : 1);
 
-        // 3. PURE TEXT SCAN: Sweep this perfectly isolated block for ANY valid Vero image URL.
-        // This ignores HTML tags completely, making it immune to formatting changes.
-        // Group 1 captures the Image ID to use for deduplication.
-        const urlRegex = /https:\/\/[a-z0-9.-]+\/(?:thumb\/|public\/)?[a-f0-9\-]{36}\/([a-f0-9\-]{36})_[^\s"'<>,\\\\]+/gi;
-        const matches = [...mediaBlock.matchAll(urlRegex)];
+        // 3. Extract the srcSet from ALL <picture> tags strictly inside the body sandbox
+        const pictureRegex = /<picture>[\s\S]*?srcSet=["']([^"']+)["']/gi;
+        const matches = [...bodyOnly.matchAll(pictureRegex)];
 
         if (matches.length === 0) {
             return res.status(404).json({ error: 'Error extracting photos. Make sure the post link is valid.' });
         }
 
-        // 4. Deduplicate by Image ID (match[1]).
-        // Because responsive URLs go from smallest to largest in the code, overwriting the Map keeps the LAST (highest quality) version of each photo!
-        const uniqueImages = new Map();
-        for (const match of matches) {
-            uniqueImages.set(match[1], match[0]); 
-        }
+        // 4. Slice the array to keep exactly the number of images we counted from the dots
+        const postPictures = matches.slice(0, imageCount);
 
-        const finalImages = Array.from(uniqueImages.values());
+        // 5. Extract the highest resolution URL from each srcSet
+        const finalImages = postPictures.map(match => {
+            const srcSet = match[1];
+            // srcSet format: "url1 650w, url2 1080w". The highest quality is the last one.
+            const urls = srcSet.split(',');
+            return urls[urls.length - 1].trim().split(' ')[0];
+        });
 
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.status(200).json({ images: finalImages });
