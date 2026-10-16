@@ -24,31 +24,40 @@ export default async function handler(req, res) {
         const postHtml = await postReq.text();
         const cleanHtml = postHtml.replace(/\\\//g, '/');
 
-        // 1. THE SANDBOX: Strip the <head> to completely avoid avatar/metadata hijacking
-        const bodyOnly = cleanHtml.split('</head>')[1] || cleanHtml;
-
-        // 2. Count the carousel dots in the isolated body (defaults to 1 for single-photo posts)
-        const dotsMatch = bodyOnly.match(/data-dot="true"/gi);
-        const imageCount = Math.max(1, dotsMatch ? dotsMatch.length : 1);
-
-        // 3. Extract the srcSet from ALL <picture> tags strictly inside the body sandbox
-        const pictureRegex = /<picture>[\s\S]*?srcSet=["']([^"']+)["']/gi;
-        const matches = [...bodyOnly.matchAll(pictureRegex)];
+        // 1. THE RESOLUTION FILTER: 
+        // We only extract Vero image URLs that explicitly end in 1080x, 650x, or orig.
+        // This makes the script entirely blind to tiny avatars and old grid thumbnails.
+        // Group 1 captures the Image UUID (for deduplication). Group 2 captures the size.
+        const highResRegex = /https:\/\/[a-z0-9.-]+\/(?:thumb\/|public\/)?[a-f0-9\-]{36}\/([a-f0-9\-]{36})_(1080x|650x|orig)[^\s"'<>,\\\\]+/gi;
+        const matches = [...cleanHtml.matchAll(highResRegex)];
 
         if (matches.length === 0) {
             return res.status(404).json({ error: 'Error extracting photos. Make sure the post link is valid.' });
         }
 
-        // 4. Slice the array to keep exactly the number of images we counted from the dots
-        const postPictures = matches.slice(0, imageCount);
+        // 2. Deduplicate by Image ID and keep the highest resolution
+        const uniqueImages = new Map();
 
-        // 5. Extract the highest resolution URL from each srcSet
-        const finalImages = postPictures.map(match => {
-            const srcSet = match[1];
-            // srcSet format: "url1 650w, url2 1080w". The highest quality is the last one.
-            const urls = srcSet.split(',');
-            return urls[urls.length - 1].trim().split(' ')[0];
-        });
+        for (const match of matches) {
+            const fullUrl = match[0];
+            const imageId = match[1];
+            const resMarker = match[2]; // '1080x', '650x', or 'orig'
+
+            // Assign a numerical weight so we can prioritize the best quality
+            let weight = 1; 
+            if (resMarker === '1080x') weight = 2;
+            if (resMarker === 'orig') weight = 3;
+
+            const existing = uniqueImages.get(imageId);
+            
+            // Save if it's a new image, or overwrite if this version has a higher resolution
+            if (!existing || weight > existing.weight) {
+                uniqueImages.set(imageId, { url: fullUrl, weight: weight });
+            }
+        }
+
+        // 3. Extract just the URLs into our final array
+        const finalImages = Array.from(uniqueImages.values()).map(item => item.url);
 
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.status(200).json({ images: finalImages });
