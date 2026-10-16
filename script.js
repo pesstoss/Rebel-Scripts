@@ -395,14 +395,14 @@ async function fetchSinglePhoto(btn) {
                         const origBtn2Text = btn2.innerText; 
                         
                         // 3. Morph buttons
-                        btn1.innerText = "TinEye";
+                        btn1.innerText = "TinEye Check 🔍";
                         btn1.disabled = false;
                         btn1.onclick = (e) => {
                             e.preventDefault();
                             window.open(`https://tineye.com/search?url=${encodeURIComponent(imgUrl)}`, '_blank');
                         };
                         
-                        btn2.innerText = "Google Lens";
+                        btn2.innerText = "Google Lens Check 🔍";
                         btn2.disabled = false;
                         btn2.onclick = (e) => {
                             e.preventDefault();
@@ -430,7 +430,7 @@ async function fetchSinglePhoto(btn) {
                                 btn2.insertAdjacentElement('afterend', hiveBtn);
                             }
                             hiveBtn.style.display = 'block';
-                            hiveBtn.innerText = "Hive Check";
+                            hiveBtn.innerText = "Hive Check 🤖";
                             hiveBtn.onclick = (e) => {
                                 e.preventDefault();
                                 window.open('https://hivedetect.ai/', '_blank');
@@ -479,7 +479,7 @@ async function fetchAndDownloadPhoto(btn) {
             btn.insertAdjacentElement('afterend', hiveBtn);
         }
         hiveBtn.style.display = 'block';
-        hiveBtn.innerText = "Hive Check";
+        hiveBtn.innerText = "Hive Check 🤖";
         hiveBtn.onclick = (e) => {
             e.preventDefault();
             window.open('https://hivedetect.ai/', '_blank');
@@ -600,14 +600,14 @@ async function fetchAndDownloadPhoto(btn) {
                         const origBtn2Click = btn2.onclick;
                         
                         // 3. Morph buttons
-                        btn1.innerText = "TinEye";
+                        btn1.innerText = "TinEye Check 🔍";
                         btn1.disabled = false;
                         btn1.onclick = (e) => {
                             e.preventDefault();
                             window.open(`https://tineye.com/search?url=${encodeURIComponent(imgUrl)}`, '_blank');
                         };
                         
-                        btn2.innerText = "Google Lens";
+                        btn2.innerText = "Google Lens Check 🔍";
                         btn2.disabled = false;
                         btn2.onclick = (e) => {
                             e.preventDefault();
