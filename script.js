@@ -551,6 +551,13 @@ async function fetchAndDownloadPhoto(btn) {
         scrollContainer.style.paddingBottom = '8px';
         previewBox.appendChild(scrollContainer);
 
+        // 1. Grab both main buttons and save their state ONLY ONCE globally
+        const allBtns = btn.closest('.page-section').querySelectorAll('button');
+        const btn1 = allBtns[0]; // The Single Photo button
+        const btn2 = allBtns[1]; // The Carousel button
+        const origBtn1Click = btn1.onclick;
+        const origBtn2Click = btn2.onclick;
+
         data.images.forEach(imgUrl => {
             const thumb = document.createElement('img');
             
@@ -590,16 +597,7 @@ async function fetchAndDownloadPhoto(btn) {
                         
                         activePreviewArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                         
-                        // 1. Grab both main buttons
-                        const allBtns = btn.closest('.page-section').querySelectorAll('button');
-                        const btn1 = allBtns[0]; // The Single Photo button
-                        const btn2 = allBtns[1]; // The Carousel button
-                        
-                        // 2. Save their original state
-                        const origBtn1Click = btn1.onclick;
-                        const origBtn2Click = btn2.onclick;
-                        
-                        // 3. Morph buttons
+                        // 2. Morph buttons using the exact imgUrl of this specific thumbnail
                         btn1.innerText = "TinEye Check 🔍";
                         btn1.disabled = false;
                         btn1.onclick = (e) => {
@@ -614,7 +612,7 @@ async function fetchAndDownloadPhoto(btn) {
                             window.open(`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(imgUrl)}`, '_blank');
                         };
                         
-                        // 4. Restore everything when the big photo is tapped
+                        // 3. Restore everything when the big photo is tapped
                         document.getElementById('finalFetchImage').onclick = () => {
                             activePreviewArea.innerHTML = '';
                             
@@ -623,6 +621,23 @@ async function fetchAndDownloadPhoto(btn) {
                             
                             btn2.innerText = "Close Carousel ❌";
                             btn2.onclick = origBtn2Click;
+
+                            // --- NEW HIVE CHECK BUTTON LOGIC FOR CAROUSEL PHOTO CLOSE ---
+                            let hiveBtn = document.getElementById('hiveCheckBtn');
+                            if (!hiveBtn) {
+                                hiveBtn = document.createElement('button');
+                                hiveBtn.id = 'hiveCheckBtn';
+                                hiveBtn.className = btn1.className; 
+                                hiveBtn.style.marginTop = '10px';
+                                btn2.insertAdjacentElement('afterend', hiveBtn);
+                            }
+                            hiveBtn.style.display = 'block';
+                            hiveBtn.innerText = "Hive Check ✨";
+                            hiveBtn.onclick = (e) => {
+                                e.preventDefault();
+                                window.open('https://hivedetect.ai/', '_blank');
+                                setTimeout(() => { hiveBtn.style.display = 'none'; }, 500);
+                            };
                         };
                     };
 
