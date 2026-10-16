@@ -23,19 +23,17 @@ export default async function handler(req, res) {
         });
         const postHtml = await postReq.text();
 
-        // 1. Cut the page in half to entirely block out the Discovery grid at the bottom
+        // 1. Cut the page in half to avoid the bottom Discovery grid
         const topHalf = postHtml.split('_user-post-content-container_')[0];
 
-        // 2. The universal regex catching both cloudfront and media.verocdn strictly inside the srcSet
-        const regex = /srcSet="https:\/\/[^"]+?\/([a-z0-9\-]{36})\/([a-z0-9\-]{36})_/gi;
+        // 2. Grab the EXACT first URL inside the srcSet attribute, stopping at the first space or comma
+        const regex = /srcSet="(https:\/\/[^\s",]+)/gi;
         const matches = [...topHalf.matchAll(regex)];
 
-        // 3. Rebuild the maximum resolution original.jpg URLs and deduplicate 
-        const finalImages = [...new Set(matches.map(m => 
-            `https://media.verocdn.com/public/${m[1]}/${m[2]}/original.jpg`
-        ))];
+        // 3. Keep the URLs completely unmodified and deduplicate them
+        const finalImages = [...new Set(matches.map(m => m[1]))];
 
-        if (finalImages.length === 0) return res.status(404).json({ error: 'No images found' });
+        if (finalImages.length === 0) return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
 
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.status(200).json({ images: finalImages });
