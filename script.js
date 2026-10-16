@@ -419,6 +419,23 @@ async function fetchSinglePhoto(btn) {
                             
                             btn2.innerText = origBtn2Text;
                             btn2.onclick = origBtn2Click;
+
+                            // --- NEW HIVE CHECK BUTTON LOGIC ---
+                            let hiveBtn = document.getElementById('hiveCheckBtn');
+                            if (!hiveBtn) {
+                                hiveBtn = document.createElement('button');
+                                hiveBtn.id = 'hiveCheckBtn';
+                                hiveBtn.className = btn1.className; 
+                                hiveBtn.style.marginTop = '10px';
+                                btn2.insertAdjacentElement('afterend', hiveBtn);
+                            }
+                            hiveBtn.style.display = 'block';
+                            hiveBtn.innerText = "Hive Check";
+                            hiveBtn.onclick = (e) => {
+                                e.preventDefault();
+                                window.open('https://hivedetect.ai/', '_blank');
+                                setTimeout(() => { hiveBtn.style.display = 'none'; }, 500);
+                            };
                         };
                     };
 
@@ -443,7 +460,6 @@ async function fetchSinglePhoto(btn) {
     }
 }
 
-
 async function fetchAndDownloadPhoto(btn) {
     // 1. Check if it's already open, act as a Close button
     if (btn.innerText.includes("Close Carousel")) {
@@ -453,6 +469,23 @@ async function fetchAndDownloadPhoto(btn) {
             previewBox.style.display = 'none';
         }
         btn.innerText = "Fetch Carousel 🎠";
+
+        let hiveBtn = document.getElementById('hiveCheckBtn');
+        if (!hiveBtn) {
+            hiveBtn = document.createElement('button');
+            hiveBtn.id = 'hiveCheckBtn';
+            hiveBtn.className = btn.className; 
+            hiveBtn.style.marginTop = '10px';
+            btn.insertAdjacentElement('afterend', hiveBtn);
+        }
+        hiveBtn.style.display = 'block';
+        hiveBtn.innerText = "Hive Check";
+        hiveBtn.onclick = (e) => {
+            e.preventDefault();
+            window.open('https://hivedetect.ai/', '_blank');
+            setTimeout(() => { hiveBtn.style.display = 'none'; }, 500);
+        };
+
         return;
     }
 
@@ -461,7 +494,7 @@ async function fetchAndDownloadPhoto(btn) {
 
     if (!fullUrl || !fullUrl.includes('vero.co')) {
         alert("Please paste a full Vero post link to fetch the photo.");
-        btn.innerText = "Fetch Carousel 🎠"; 
+        btn.innerText = "Fetch Carousel 🎠";
         return;
     }
 
@@ -592,7 +625,7 @@ async function fetchAndDownloadPhoto(btn) {
                             btn2.onclick = origBtn2Click;
                         };
                     };
-                    
+
                     img.src = URL.createObjectURL(blob);
                 };
                 
