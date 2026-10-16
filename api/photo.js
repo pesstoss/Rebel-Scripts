@@ -22,38 +22,35 @@ export default async function handler(req, res) {
             }
         });
         const postHtml = await postReq.text();
-
-        // 1. Skip the <head> entirely to prevent metadata hijacking
-        const bodyOnly = postHtml.split('</head>')[1] || postHtml;
-
-        // 2. Find the VERY FIRST <picture> tag to safely grab the main post's Folder ID.
-        const firstImageMatch = bodyOnly.match(/<picture><source[^>]+srcSet=["']([^"']+)["']/i);
-        if (!firstImageMatch) {
-            return res.status(404).json({ error: 'Error extracting photos. Make sure the post link is valid.' });
-        }
-
-        // Extract the Folder ID from that first string
-        const firstUrl = firstImageMatch[1].split(' ')[0];
-        const idMatch = firstUrl.match(/\/([a-f0-9\-]{36})\/[a-f0-9\-]{36}_/i);
-        if (!idMatch) {
-            return res.status(404).json({ error: 'Error extracting photos. Make sure the post link is valid.' });
-        }
-
-        const folderId = idMatch[1]; // We now have the undisputed correct Folder ID for this post
-
-        // 3. Sweep the ENTIRE document for any image URLs sharing this Folder ID.
-        // This naturally captures the whole carousel while ignoring avatars and the Discovery grid.
-        const regexStr = `https://[^"'\\s,>]+?/${folderId}/([a-f0-9\\-]{36})_[^"'\\s,>]+`;
-        const fullRegex = new RegExp(regexStr, 'gi');
         
-        // Unescape JSON slashes just in case they are hiding in React state
+        // Unescape JSON slashes so any URLs hiding in React state are perfectly readable
         const cleanHtml = postHtml.replace(/\\\//g, '/');
-        const matches = [...cleanHtml.matchAll(fullRegex)];
 
-        // 4. Deduplicate by Image ID so we only keep the highest resolution version of each photo
+        // 1. The Sandbox: Throw away the <head> to completely avoid avatar/metadata hijacking
+        const parts = cleanHtml.split('</head>');
+        const bodyText = parts.length > 1 ? parts[1] : cleanHtml;
+
+        // 2. Pure Text Scan: Find the VERY FIRST valid Vero image URL in the body text.
+        // This completely ignores HTML tags. It just looks for the raw URL signature: domain / folder-uuid / image-uuid
+        const urlSignature = /https:\/\/[a-z0-9.-]+\/(?:thumb\/|public\/)?([a-f0-9\-]{36})\/([a-f0-9\-]{36})_[^\s"'<>,]+/i;
+        const firstMatch = bodyText.match(urlSignature);
+
+        if (!firstMatch) {
+            return res.status(404).json({ error: 'Error extracting photos. Make sure the post link is valid.' });
+        }
+
+        const folderId = firstMatch[1]; // The exact Folder ID for this carousel
+
+        // 3. Sweep the ENTIRE document (including the JSON block) for all URLs sharing this Folder ID
+        const regexString = `https://[a-z0-9.-]+/(?:thumb/|public/)?${folderId}/([a-f0-9\\-]{36})_[^\\s"'<>,\\\\]+`;
+        const globalRegex = new RegExp(regexString, 'gi');
+        const allMatches = [...cleanHtml.matchAll(globalRegex)];
+
+        // 4. Deduplicate by Image ID. 
+        // Because srcSet strings list lowest-to-highest resolution, overwriting the Map keeps the LAST (highest quality) URL for each photo!
         const uniqueImages = new Map();
-        for (const m of matches) {
-            uniqueImages.set(m[1], m[0]); 
+        for (const match of allMatches) {
+            uniqueImages.set(match[1], match[0]); // match[1] is Image ID, match[0] is full URL
         }
 
         const finalImages = Array.from(uniqueImages.values());
