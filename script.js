@@ -383,15 +383,45 @@ async function fetchSinglePhoto(btn) {
                             </p>
                             <img id="finalFetchImage" src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer;">
                         `;
+
+                        // 1. Grab both main buttons
+                        const allBtns = btn.closest('.page-section').querySelectorAll('button');
+                        const btn1 = allBtns[0]; // The Single Photo button
+                        const btn2 = allBtns[1]; // The Carousel button
                         
+                        // 2. Save their original state
+                        const origBtn1Click = btn1.onclick;
+                        const origBtn2Click = btn2.onclick;
+                        const origBtn2Text = btn2.innerText; 
+                        
+                        // 3. Morph buttons
+                        btn1.innerText = "TinEye";
+                        btn1.disabled = false;
+                        btn1.onclick = (e) => {
+                            e.preventDefault();
+                            window.open(`https://tineye.com/search?url=${encodeURIComponent(imgUrl)}`, '_blank');
+                        };
+                        
+                        btn2.innerText = "Google Lens";
+                        btn2.disabled = false;
+                        btn2.onclick = (e) => {
+                            e.preventDefault();
+                            window.open(`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(imgUrl)}`, '_blank');
+                        };
+                        
+                        // 4. Restore everything when the photo is tapped
                         document.getElementById('finalFetchImage').onclick = () => {
                             previewBox.innerHTML = '';
                             previewBox.style.display = 'none';
+                            
+                            btn1.innerText = "Fetch Single Photo 🖼️";
+                            btn1.onclick = origBtn1Click;
+                            
+                            btn2.innerText = origBtn2Text;
+                            btn2.onclick = origBtn2Click;
                         };
-                        
-                        btn.innerText = "✓ Ready to Save!";
-                        setTimeout(() => { btn.innerText = "Fetch Single Photo 🖼️"; btn.disabled = false; }, 2000);
                     };
+
                     img.src = URL.createObjectURL(blob);
                 }
             };
@@ -516,7 +546,6 @@ async function fetchAndDownloadPhoto(btn) {
                         
                         const pngUrl = canvas.toDataURL('image/png');
                         
-                        // 3. Inject the high-res image into the dedicated area, leaving thumbnails alone
                         activePreviewArea.style.textAlign = 'center';
                         activePreviewArea.style.marginBottom = '16px';
                         activePreviewArea.innerHTML = `
@@ -526,17 +555,44 @@ async function fetchAndDownloadPhoto(btn) {
                             <img id="finalFetchImage" src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer;">
                         `;
                         
-                        // Optional: smoothly scroll up so the user sees the big image
                         activePreviewArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                         
-                        // 4. Clicking the big image only clears the big image area
-                        document.getElementById('finalFetchImage').onclick = () => {
-                            activePreviewArea.innerHTML = '';
+                        // 1. Grab both main buttons
+                        const allBtns = btn.closest('.page-section').querySelectorAll('button');
+                        const btn1 = allBtns[0]; // The Single Photo button
+                        const btn2 = allBtns[1]; // The Carousel button
+                        
+                        // 2. Save their original state
+                        const origBtn1Click = btn1.onclick;
+                        const origBtn2Click = btn2.onclick;
+                        
+                        // 3. Morph buttons
+                        btn1.innerText = "TinEye";
+                        btn1.disabled = false;
+                        btn1.onclick = (e) => {
+                            e.preventDefault();
+                            window.open(`https://tineye.com/search?url=${encodeURIComponent(imgUrl)}`, '_blank');
                         };
                         
-                        btn.innerText = "✓ Ready to Save!";
-                        setTimeout(() => { btn.innerText = "Close Carousel ❌"; btn.disabled = false; }, 2000);
+                        btn2.innerText = "Google Lens";
+                        btn2.disabled = false;
+                        btn2.onclick = (e) => {
+                            e.preventDefault();
+                            window.open(`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(imgUrl)}`, '_blank');
+                        };
+                        
+                        // 4. Restore everything when the big photo is tapped
+                        document.getElementById('finalFetchImage').onclick = () => {
+                            activePreviewArea.innerHTML = '';
+                            
+                            btn1.innerText = "Fetch Single Photo 🖼️";
+                            btn1.onclick = origBtn1Click;
+                            
+                            btn2.innerText = "Close Carousel ❌";
+                            btn2.onclick = origBtn2Click;
+                        };
                     };
+                    
                     img.src = URL.createObjectURL(blob);
                 };
                 
