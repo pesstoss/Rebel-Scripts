@@ -22,17 +22,30 @@ export default async function handler(req, res) {
             }
         });
         const postHtml = await postReq.text();
+        
+        // Unescape JSON slashes so we can read URLs hidden in the React state block
+        const cleanHtml = postHtml.replace(/\\\//g, '/');
 
-        // 1. Cut the page in half to avoid the bottom Discovery grid
-        const topHalf = postHtml.split('_user-post-content-container_')[0];
+        // 1. Cut the page in half just to find the main post's unique folder ID
+        const topHalf = cleanHtml.split('_user-post-content-container_')[0];
+        const idRegex = /https:\/\/(?:d1dpu3msttfsqg\.cloudfront\.net|media\.verocdn\.com)(?:\/thumb|\/public)?\/([a-z0-9\-]{36})\/([a-z0-9\-]{36})_/i;
+        const firstImageMatch = topHalf.match(idRegex);
 
-        // 2. A much more forgiving regex. It ignores <picture> and just hunts for the literal srcset attribute. 
-        // The "i" at the end makes it case-insensitive so it catches both srcSet and srcset.
-        const regex = /srcset=["'](https:\/\/[^\s",]+)/gi;
-        const matches = [...topHalf.matchAll(regex)];
+        if (!firstImageMatch) return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
 
-        // 3. Keep the URLs completely unmodified and deduplicate them
-        const finalImages = [...new Set(matches.map(m => m[1]))];
+        const folderId = firstImageMatch[1]; // The unique gallery ID for this specific post
+
+        // 2. Now sweep the ENTIRE page (including the JSON block) for ANY image sharing this exact folder ID
+        const fullRegex = new RegExp(`https://(?:d1dpu3msttfsqg\\.cloudfront\\.net|media\\.verocdn\\.com)(?:/thumb|/public)?/${folderId}/([a-z0-9\\-]{36})_[^\\s",]+?(?:\\.webp|\\.jpg)`, 'gi');
+        const matches = [...cleanHtml.matchAll(fullRegex)];
+
+        // 3. Deduplicate by Image ID. By overwriting the Map as we scan left-to-right, we automatically keep the LAST url in the srcset, which is the highest resolution!
+        const uniqueImages = new Map();
+        for (const match of matches) {
+            uniqueImages.set(match[1], match[0]); // match[1] is the Image ID, match[0] is the full URL
+        }
+
+        const finalImages = Array.from(uniqueImages.values());
 
         if (finalImages.length === 0) return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
 
