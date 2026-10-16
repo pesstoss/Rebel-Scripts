@@ -22,27 +22,29 @@ export default async function handler(req, res) {
             }
         });
         const postHtml = await postReq.text();
-        
-        // Unescape JSON slashes so we can read URLs hidden in the React state block
         const cleanHtml = postHtml.replace(/\\\//g, '/');
 
-        // 1. Cut the page in half just to find the main post's unique folder ID
+        // 1. Isolate the top half
         const topHalf = cleanHtml.split('_user-post-content-container_')[0];
-        const idRegex = /https:\/\/(?:d1dpu3msttfsqg\.cloudfront\.net|media\.verocdn\.com)(?:\/thumb|\/public)?\/([a-z0-9\-]{36})\/([a-z0-9\-]{36})_/i;
-        const firstImageMatch = topHalf.match(idRegex);
 
-        if (!firstImageMatch) return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
+        // 2. Extract the Folder ID strictly from the first <picture> tag to bypass avatars
+        const pictureRegex = /<picture><source[^>]*srcSet="https:\/\/[^\/]+\/(?:thumb\/|public\/)?([a-z0-9\-]{36})\/([a-z0-9\-]{36})_/i;
+        const idMatch = topHalf.match(pictureRegex);
 
-        const folderId = firstImageMatch[1]; // The unique gallery ID for this specific post
+        if (!idMatch) return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
 
-        // 2. Now sweep the ENTIRE page (including the JSON block) for ANY image sharing this exact folder ID
-        const fullRegex = new RegExp(`https://(?:d1dpu3msttfsqg\\.cloudfront\\.net|media\\.verocdn\\.com)(?:/thumb|/public)?/${folderId}/([a-z0-9\\-]{36})_[^\\s",]+?(?:\\.webp|\\.jpg)`, 'gi');
+        const folderId = idMatch[1]; // The main post's unique folder ID
+
+        // 3. Sweep the ENTIRE document (including JSON) for any URLs sharing this Folder ID
+        const fullRegex = new RegExp(`(https:\/\/[^/]+\/(?:thumb\/|public\/)?${folderId}\/([a-z0-9\\-]{36})_[^\\s",]+)`, 'gi');
         const matches = [...cleanHtml.matchAll(fullRegex)];
 
-        // 3. Deduplicate by Image ID. By overwriting the Map as we scan left-to-right, we automatically keep the LAST url in the srcset, which is the highest resolution!
+        // 4. Deduplicate by Image ID (match[2]), keeping only the very first one it finds (the highest resolution)
         const uniqueImages = new Map();
         for (const match of matches) {
-            uniqueImages.set(match[1], match[0]); // match[1] is the Image ID, match[0] is the full URL
+            if (!uniqueImages.has(match[2])) {
+                uniqueImages.set(match[2], match[1]); // Store by Image ID -> URL
+            }
         }
 
         const finalImages = Array.from(uniqueImages.values());
