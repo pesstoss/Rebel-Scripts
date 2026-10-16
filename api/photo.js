@@ -22,42 +22,33 @@ export default async function handler(req, res) {
             }
         });
         const postHtml = await postReq.text();
-        
-        // Unescape JSON slashes so any URLs hiding in React state are perfectly readable
         const cleanHtml = postHtml.replace(/\\\//g, '/');
 
-        // 1. The Sandbox: Throw away the <head> to completely avoid avatar/metadata hijacking
-        const parts = cleanHtml.split('</head>');
-        const bodyText = parts.length > 1 ? parts[1] : cleanHtml;
+        // 1. THE SANDBOX: Strip the <head> to completely blind the scraper to the avatar metadata
+        const bodyOnly = cleanHtml.split('</head>')[1] || cleanHtml;
 
-        // 2. Pure Text Scan: Find the VERY FIRST valid Vero image URL in the body text.
-        // This completely ignores HTML tags. It just looks for the raw URL signature: domain / folder-uuid / image-uuid
-        const urlSignature = /https:\/\/[a-z0-9.-]+\/(?:thumb\/|public\/)?([a-f0-9\-]{36})\/([a-f0-9\-]{36})_[^\s"'<>,]+/i;
-        const firstMatch = bodyText.match(urlSignature);
+        // 2. ISOLATE MEDIA BLOCK: Vero renders the photos at the very top of the body, followed by a specific container for the caption and bottom grid.
+        // By splitting here, we throw the bottom grid in the trash. What remains is ONLY the main post media!
+        const mediaBlock = bodyOnly.split(/_user-post-content-(?:container|header)_/)[0];
 
-        if (!firstMatch) {
+        // 3. PURE TEXT SCAN: Sweep this perfectly isolated block for ANY valid Vero image URL.
+        // This ignores HTML tags completely, making it immune to formatting changes.
+        // Group 1 captures the Image ID to use for deduplication.
+        const urlRegex = /https:\/\/[a-z0-9.-]+\/(?:thumb\/|public\/)?[a-f0-9\-]{36}\/([a-f0-9\-]{36})_[^\s"'<>,\\\\]+/gi;
+        const matches = [...mediaBlock.matchAll(urlRegex)];
+
+        if (matches.length === 0) {
             return res.status(404).json({ error: 'Error extracting photos. Make sure the post link is valid.' });
         }
 
-        const folderId = firstMatch[1]; // The exact Folder ID for this carousel
-
-        // 3. Sweep the ENTIRE document (including the JSON block) for all URLs sharing this Folder ID
-        const regexString = `https://[a-z0-9.-]+/(?:thumb/|public/)?${folderId}/([a-f0-9\\-]{36})_[^\\s"'<>,\\\\]+`;
-        const globalRegex = new RegExp(regexString, 'gi');
-        const allMatches = [...cleanHtml.matchAll(globalRegex)];
-
-        // 4. Deduplicate by Image ID. 
-        // Because srcSet strings list lowest-to-highest resolution, overwriting the Map keeps the LAST (highest quality) URL for each photo!
+        // 4. Deduplicate by Image ID (match[1]).
+        // Because responsive URLs go from smallest to largest in the code, overwriting the Map keeps the LAST (highest quality) version of each photo!
         const uniqueImages = new Map();
-        for (const match of allMatches) {
-            uniqueImages.set(match[1], match[0]); // match[1] is Image ID, match[0] is full URL
+        for (const match of matches) {
+            uniqueImages.set(match[1], match[0]); 
         }
 
         const finalImages = Array.from(uniqueImages.values());
-
-        if (finalImages.length === 0) {
-            return res.status(404).json({ error: 'Error extracting photos. Make sure the post link is valid.' });
-        }
 
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.status(200).json({ images: finalImages });
