@@ -5,7 +5,8 @@ export default async function handler(req, res) {
         try {
             const imgReq = await fetch(targetImage);
             const buffer = await imgReq.arrayBuffer();
-            res.setHeader('Content-Type', 'image/jpeg');
+            // Pass the original content type through or default to jpeg/webp depending on your app's needs
+            res.setHeader('Content-Type', 'image/jpeg'); 
             res.setHeader('Access-Control-Allow-Origin', '*');
             return res.send(Buffer.from(buffer));
         } catch (error) {
@@ -26,8 +27,8 @@ export default async function handler(req, res) {
         // 1. Cut the page in half to avoid the bottom Discovery grid
         const topHalf = postHtml.split('_user-post-content-container_')[0];
 
-        // 2. Grab the EXACT first URL inside the srcSet attribute, stopping at the first space or comma
-        const regex = /srcSet="(https:\/\/[^\s",]+)/gi;
+        // 2. Lock onto the <picture> tags directly to avoid grabbing avatars, capturing the literal first URL regardless of extension (.webp or .jpg)
+        const regex = /<picture><source[^>]*srcSet="(https:\/\/[^\s",]+)/gi;
         const matches = [...topHalf.matchAll(regex)];
 
         // 3. Keep the URLs completely unmodified and deduplicate them
