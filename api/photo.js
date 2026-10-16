@@ -23,19 +23,43 @@ export default async function handler(req, res) {
         });
         const postHtml = await postReq.text();
 
-        // 1. THE SANDBOX: Strip away the <head> to prevent meta tag hijacking, and cut the bottom to avoid the Discovery grid
+        // 1. Skip the <head> entirely to prevent metadata hijacking
         const bodyOnly = postHtml.split('</head>')[1] || postHtml;
-        const mainContentArea = bodyOnly.split('_user-post-content-container_')[0];
 
-        // 2. Grab the srcSet attribute from EVERY <picture> tag inside this isolated sandbox
-        const srcSetRegex = /<picture>[\s\S]*?srcSet=["']([^"']+)["']/gi;
-        const matches = [...mainContentArea.matchAll(srcSetRegex)];
+        // 2. Find the VERY FIRST <picture> tag to safely grab the main post's Folder ID.
+        const firstImageMatch = bodyOnly.match(/<picture><source[^>]+srcSet=["']([^"']+)["']/i);
+        if (!firstImageMatch) {
+            return res.status(404).json({ error: 'Error extracting photos. Make sure the post link is valid.' });
+        }
 
-        // 3. Extract the first URL (stopping at the space) from each srcSet and deduplicate
-        const finalImages = [...new Set(matches.map(match => match[1].split(' ')[0]))];
+        // Extract the Folder ID from that first string
+        const firstUrl = firstImageMatch[1].split(' ')[0];
+        const idMatch = firstUrl.match(/\/([a-f0-9\-]{36})\/[a-f0-9\-]{36}_/i);
+        if (!idMatch) {
+            return res.status(404).json({ error: 'Error extracting photos. Make sure the post link is valid.' });
+        }
+
+        const folderId = idMatch[1]; // We now have the undisputed correct Folder ID for this post
+
+        // 3. Sweep the ENTIRE document for any image URLs sharing this Folder ID.
+        // This naturally captures the whole carousel while ignoring avatars and the Discovery grid.
+        const regexStr = `https://[^"'\\s,>]+?/${folderId}/([a-f0-9\\-]{36})_[^"'\\s,>]+`;
+        const fullRegex = new RegExp(regexStr, 'gi');
+        
+        // Unescape JSON slashes just in case they are hiding in React state
+        const cleanHtml = postHtml.replace(/\\\//g, '/');
+        const matches = [...cleanHtml.matchAll(fullRegex)];
+
+        // 4. Deduplicate by Image ID so we only keep the highest resolution version of each photo
+        const uniqueImages = new Map();
+        for (const m of matches) {
+            uniqueImages.set(m[1], m[0]); 
+        }
+
+        const finalImages = Array.from(uniqueImages.values());
 
         if (finalImages.length === 0) {
-            return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
+            return res.status(404).json({ error: 'Error extracting photos. Make sure the post link is valid.' });
         }
 
         res.setHeader('Access-Control-Allow-Origin', '*');
