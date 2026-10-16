@@ -22,36 +22,34 @@ export default async function handler(req, res) {
             }
         });
         const postHtml = await postReq.text();
-        const cleanHtml = postHtml.replace(/\\\//g, '/');
+        
+        // Clean any escaped JSON quotes/slashes so our Regex reads the text perfectly
+        const cleanHtml = postHtml.replace(/\\"/g, '"').replace(/\\\//g, '/');
 
-        // 1. FAST COUNT: Split by the exact dot string. 2 dots = split array of 3. Minus 1 gives us exactly 2 images.
-        const dotsCount = cleanHtml.split('data-dot="true"').length - 1;
-        const imageCount = Math.max(1, dotsCount);
+        // 1. COUNT DOTS: Determine carousel length (defaults to 1 for single photos)
+        const dotsMatch = cleanHtml.match(/data-dot="true"/gi);
+        const imageCount = Math.max(1, dotsMatch ? dotsMatch.length : 1);
 
-        // 2. RAW SPLIT: Break the entire document into chunks starting with <picture>. No regex required.
-        const pictures = cleanHtml.split('<picture>');
-        if (pictures.length < 2) {
+        // 2. EXTRACT ALL SRCSETS: This naturally bypasses avatars/metadata which use standard 'src'
+        const srcSetRegex = /srcSet=["']([^"']+)["']/gi;
+        const matches = [...cleanHtml.matchAll(srcSetRegex)];
+
+        if (matches.length === 0) {
             return res.status(404).json({ error: 'Error extracting photos. Make sure the post link is valid.' });
         }
-        pictures.shift(); // Throw away the header/metadata chunk before the first picture tag
 
-        // 3. EXTRACT URLs: Process just the short chunks to find the srcSet string safely
-        const extractedUrls = [];
-        for (const pic of pictures) {
-            const srcSetMatch = pic.match(/srcSet=["']([^"']+)["']/i);
-            if (srcSetMatch) {
-                const srcSet = srcSetMatch[1];
-                // Split the srcSet by commas to separate resolutions, grab the final one (highest quality)
-                const urls = srcSet.split(',').map(s => s.trim().split(' ')[0]);
-                extractedUrls.push(urls[urls.length - 1]);
-            }
-        }
+        // 3. GET HIGHEST RESOLUTION: Take the very last URL from each srcSet string
+        const extractedUrls = matches.map(match => {
+            const urls = match[1].split(',').map(s => s.trim().split(' ')[0]);
+            return urls[urls.length - 1]; 
+        });
 
-        // 4. SAFETY NET: If the avatar or grid thumbs somehow used a <picture> tag, they will be 150x or 250x. Filter them out.
-        const highResUrls = extractedUrls.filter(u => !u.includes('_150x') && !u.includes('_250x') && !u.includes('avatar'));
+        // 4. DEDUPLICATE: Because of responsive desktop/mobile views, images often appear twice in the HTML
+        const uniqueUrls = [...new Set(extractedUrls)].filter(u => u && u.startsWith('http'));
 
-        // 5. SLICE: Keep exactly the number of images we counted. The bottom grid is automatically thrown away.
-        const finalImages = highResUrls.slice(0, imageCount);
+        // 5. SLICE & DICE: The main post is always at the top of the document.
+        // Keeping only the first `imageCount` URLs automatically throws away any previous grid thumbnails below!
+        const finalImages = uniqueUrls.slice(0, imageCount);
 
         if (finalImages.length === 0) {
             return res.status(404).json({ error: 'Error extracting photos. Make sure the post link is valid.' });
