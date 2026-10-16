@@ -23,39 +23,39 @@ export default async function handler(req, res) {
         });
         const postHtml = await postReq.text();
         
-        // Unescape JSON slashes to read URLs hidden in the React state block
+        // Unescape JSON slashes so we can read URLs hidden in the React state block
         const cleanHtml = postHtml.replace(/\\\//g, '/');
 
-        // 1. Find the srcSet of the very first <picture> tag to bypass meta tags and avatars
-        const pictureMatch = cleanHtml.match(/<picture><source[^>]*srcSet="([^"]+)"/i);
-        if (!pictureMatch) return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
+        // 1. Sweep the ENTIRE document for any URL containing the "UUID/UUID_" signature.
+        // Group 1: Full URL | Group 2: Folder ID (36 chars) | Group 3: Image ID (36 chars)
+        const regex = /(https:\/\/[^"'\s,\\>]+?\/([a-f0-9\-]{36})\/([a-f0-9\-]{36})_[^"'\s,\\>]+)/gi;
+        const matches = [...cleanHtml.matchAll(regex)];
 
-        // 2. Grab the first URL from that srcSet and extract the Folder ID
-        const firstUrl = pictureMatch[1].split(' ')[0];
-        const idMatch = firstUrl.match(/\/([a-z0-9\-]{36})\/([a-z0-9\-]{36})_/i);
-        if (!idMatch) return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
+        if (matches.length === 0) {
+            return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
+        }
 
-        const folderId = idMatch[1]; // The unique gallery ID for this specific post
+        // 2. The very first match in the document is guaranteed to be the main post (usually from the <head> meta tags)
+        const mainFolderId = matches[0][2];
 
-        // 3. Sweep the ENTIRE document (including JSON) for any URL sharing this folder ID.
-        // Double backslashes used correctly to ensure \\s evaluates to whitespace in the Regex engine.
-        const fullRegex = new RegExp(`https://[^\\s",]+?/${folderId}/[a-z0-9\\-]+_[^\\s",]+`, 'gi');
-        const matches = [...cleanHtml.matchAll(fullRegex)];
-
-        // 4. Deduplicate by the Image ID so we only get the very first (largest) version of each photo
+        // 3. Filter matches to only keep URLs from this specific post's folder ID, ignoring Discovery grid photos.
+        // Deduplicate by Image ID so we only keep the first (highest resolution) version of each photo.
         const uniqueImages = new Map();
         for (const match of matches) {
-            const fullUrl = match[0];
-            const imgIdMatch = fullUrl.match(/\/([a-z0-9\-]{36})_/i);
-            
-            if (imgIdMatch && !uniqueImages.has(imgIdMatch[1])) {
-                uniqueImages.set(imgIdMatch[1], fullUrl); 
+            const fullUrl = match[1];
+            const folderId = match[2];
+            const imageId = match[3];
+
+            if (folderId === mainFolderId && !uniqueImages.has(imageId)) {
+                uniqueImages.set(imageId, fullUrl);
             }
         }
 
         const finalImages = Array.from(uniqueImages.values());
 
-        if (finalImages.length === 0) return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
+        if (finalImages.length === 0) {
+            return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
+        }
 
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.status(200).json({ images: finalImages });
