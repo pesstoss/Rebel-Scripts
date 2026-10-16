@@ -22,28 +22,34 @@ export default async function handler(req, res) {
             }
         });
         const postHtml = await postReq.text();
+        
+        // Unescape JSON slashes to read URLs hidden in the React state block
         const cleanHtml = postHtml.replace(/\\\//g, '/');
 
-        // 1. Isolate the top half
-        const topHalf = cleanHtml.split('_user-post-content-container_')[0];
+        // 1. Find the srcSet of the very first <picture> tag to bypass meta tags and avatars
+        const pictureMatch = cleanHtml.match(/<picture><source[^>]*srcSet="([^"]+)"/i);
+        if (!pictureMatch) return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
 
-        // 2. Extract the Folder ID strictly from the first <picture> tag to bypass avatars
-        const pictureRegex = /<picture><source[^>]*srcSet="https:\/\/[^\/]+\/(?:thumb\/|public\/)?([a-z0-9\-]{36})\/([a-z0-9\-]{36})_/i;
-        const idMatch = topHalf.match(pictureRegex);
-
+        // 2. Grab the first URL from that srcSet and extract the Folder ID
+        const firstUrl = pictureMatch[1].split(' ')[0];
+        const idMatch = firstUrl.match(/\/([a-z0-9\-]{36})\/([a-z0-9\-]{36})_/i);
         if (!idMatch) return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
 
-        const folderId = idMatch[1]; // The main post's unique folder ID
+        const folderId = idMatch[1]; // The unique gallery ID for this specific post
 
-        // 3. Sweep the ENTIRE document (including JSON) for any URLs sharing this Folder ID
-        const fullRegex = new RegExp(`(https:\/\/[^/]+\/(?:thumb\/|public\/)?${folderId}\/([a-z0-9\\-]{36})_[^\\s",]+)`, 'gi');
+        // 3. Sweep the ENTIRE document (including JSON) for any URL sharing this folder ID.
+        // Double backslashes used correctly to ensure \\s evaluates to whitespace in the Regex engine.
+        const fullRegex = new RegExp(`https://[^\\s",]+?/${folderId}/[a-z0-9\\-]+_[^\\s",]+`, 'gi');
         const matches = [...cleanHtml.matchAll(fullRegex)];
 
-        // 4. Deduplicate by Image ID (match[2]), keeping only the very first one it finds (the highest resolution)
+        // 4. Deduplicate by the Image ID so we only get the very first (largest) version of each photo
         const uniqueImages = new Map();
         for (const match of matches) {
-            if (!uniqueImages.has(match[2])) {
-                uniqueImages.set(match[2], match[1]); // Store by Image ID -> URL
+            const fullUrl = match[0];
+            const imgIdMatch = fullUrl.match(/\/([a-z0-9\-]{36})_/i);
+            
+            if (imgIdMatch && !uniqueImages.has(imgIdMatch[1])) {
+                uniqueImages.set(imgIdMatch[1], fullUrl); 
             }
         }
 
