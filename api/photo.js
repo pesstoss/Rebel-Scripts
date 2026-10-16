@@ -22,37 +22,45 @@ export default async function handler(req, res) {
             }
         });
         const postHtml = await postReq.text();
-        
-        // Clean any escaped JSON quotes/slashes so our Regex reads the text perfectly
-        const cleanHtml = postHtml.replace(/\\"/g, '"').replace(/\\\//g, '/');
+        const cleanHtml = postHtml.replace(/\\\//g, '/');
 
-        // 1. COUNT DOTS: Determine carousel length (defaults to 1 for single photos)
-        const dotsMatch = cleanHtml.match(/data-dot="true"/gi);
-        const imageCount = Math.max(1, dotsMatch ? dotsMatch.length : 1);
+        // 1. THE SANDBOX: Strip away the <head> completely to prevent meta tags from hijacking the scraper
+        const bodyOnly = cleanHtml.split('</head>')[1] || cleanHtml;
 
-        // 2. EXTRACT ALL SRCSETS: This naturally bypasses avatars/metadata which use standard 'src'
-        const srcSetRegex = /srcSet=["']([^"']+)["']/gi;
-        const matches = [...cleanHtml.matchAll(srcSetRegex)];
+        // 2. Strip away the bottom half to avoid the Discovery grid
+        const mainContentArea = bodyOnly.split('_user-post-content-container_')[0];
 
-        if (matches.length === 0) {
-            return res.status(404).json({ error: 'Error extracting photos. Make sure the post link is valid.' });
+        // 3. Grab the VERY FIRST Folder ID strictly from this isolated body area
+        const folderMatch = mainContentArea.match(/\/([a-f0-9\-]{36})\/([a-f0-9\-]{36})_/i);
+
+        if (!folderMatch) {
+            return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
         }
 
-        // 3. GET HIGHEST RESOLUTION: Take the very last URL from each srcSet string
-        const extractedUrls = matches.map(match => {
-            const urls = match[1].split(',').map(s => s.trim().split(' ')[0]);
-            return urls[urls.length - 1]; 
-        });
+        const mainFolderId = folderMatch[1]; // We now have the undisputed correct ID
 
-        // 4. DEDUPLICATE: Because of responsive desktop/mobile views, images often appear twice in the HTML
-        const uniqueUrls = [...new Set(extractedUrls)].filter(u => u && u.startsWith('http'));
+        // 4. Sweep the ENTIRE original document (including the JSON block) for any URLs matching this specific Folder ID
+        const fullRegex = new RegExp(`(https:\\/\\/[^"'\\s,\\>]+?\\/${mainFolderId}\\/[a-f0-9\\-]{36}_[^"'\\s,\\>]+)`, 'gi');
+        const matches = [...cleanHtml.matchAll(fullRegex)];
 
-        // 5. SLICE & DICE: The main post is always at the top of the document.
-        // Keeping only the first `imageCount` URLs automatically throws away any previous grid thumbnails below!
-        const finalImages = uniqueUrls.slice(0, imageCount);
+        // 5. Deduplicate by Image ID so we only keep the highest resolution version of each unique photo
+        const uniqueImages = new Map();
+        for (const match of matches) {
+            const fullUrl = match[1];
+            const imageIdMatch = fullUrl.match(/\/([a-f0-9\-]{36})_/i);
+            
+            if (imageIdMatch) {
+                const imageId = imageIdMatch[1];
+                if (!uniqueImages.has(imageId)) {
+                    uniqueImages.set(imageId, fullUrl);
+                }
+            }
+        }
+
+        const finalImages = Array.from(uniqueImages.values());
 
         if (finalImages.length === 0) {
-            return res.status(404).json({ error: 'Error extracting photos. Make sure the post link is valid.' });
+            return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
         }
 
         res.setHeader('Access-Control-Allow-Origin', '*');
