@@ -24,40 +24,38 @@ export default async function handler(req, res) {
         const postHtml = await postReq.text();
         const cleanHtml = postHtml.replace(/\\\//g, '/');
 
-        // 1. THE RESOLUTION FILTER: 
-        // We only extract Vero image URLs that explicitly end in 1080x, 650x, or orig.
-        // This makes the script entirely blind to tiny avatars and old grid thumbnails.
-        // Group 1 captures the Image UUID (for deduplication). Group 2 captures the size.
-        const highResRegex = /https:\/\/[a-z0-9.-]+\/(?:thumb\/|public\/)?[a-f0-9\-]{36}\/([a-f0-9\-]{36})_(1080x|650x|orig)[^\s"'<>,\\\\]+/gi;
-        const matches = [...cleanHtml.matchAll(highResRegex)];
+        // 1. FAST COUNT: Split by the exact dot string. 2 dots = split array of 3. Minus 1 gives us exactly 2 images.
+        const dotsCount = cleanHtml.split('data-dot="true"').length - 1;
+        const imageCount = Math.max(1, dotsCount);
 
-        if (matches.length === 0) {
+        // 2. RAW SPLIT: Break the entire document into chunks starting with <picture>. No regex required.
+        const pictures = cleanHtml.split('<picture>');
+        if (pictures.length < 2) {
             return res.status(404).json({ error: 'Error extracting photos. Make sure the post link is valid.' });
         }
+        pictures.shift(); // Throw away the header/metadata chunk before the first picture tag
 
-        // 2. Deduplicate by Image ID and keep the highest resolution
-        const uniqueImages = new Map();
-
-        for (const match of matches) {
-            const fullUrl = match[0];
-            const imageId = match[1];
-            const resMarker = match[2]; // '1080x', '650x', or 'orig'
-
-            // Assign a numerical weight so we can prioritize the best quality
-            let weight = 1; 
-            if (resMarker === '1080x') weight = 2;
-            if (resMarker === 'orig') weight = 3;
-
-            const existing = uniqueImages.get(imageId);
-            
-            // Save if it's a new image, or overwrite if this version has a higher resolution
-            if (!existing || weight > existing.weight) {
-                uniqueImages.set(imageId, { url: fullUrl, weight: weight });
+        // 3. EXTRACT URLs: Process just the short chunks to find the srcSet string safely
+        const extractedUrls = [];
+        for (const pic of pictures) {
+            const srcSetMatch = pic.match(/srcSet=["']([^"']+)["']/i);
+            if (srcSetMatch) {
+                const srcSet = srcSetMatch[1];
+                // Split the srcSet by commas to separate resolutions, grab the final one (highest quality)
+                const urls = srcSet.split(',').map(s => s.trim().split(' ')[0]);
+                extractedUrls.push(urls[urls.length - 1]);
             }
         }
 
-        // 3. Extract just the URLs into our final array
-        const finalImages = Array.from(uniqueImages.values()).map(item => item.url);
+        // 4. SAFETY NET: If the avatar or grid thumbs somehow used a <picture> tag, they will be 150x or 250x. Filter them out.
+        const highResUrls = extractedUrls.filter(u => !u.includes('_150x') && !u.includes('_250x') && !u.includes('avatar'));
+
+        // 5. SLICE: Keep exactly the number of images we counted. The bottom grid is automatically thrown away.
+        const finalImages = highResUrls.slice(0, imageCount);
+
+        if (finalImages.length === 0) {
+            return res.status(404).json({ error: 'Error extracting photos. Make sure the post link is valid.' });
+        }
 
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.status(200).json({ images: finalImages });
