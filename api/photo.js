@@ -43,7 +43,13 @@ export default async function handler(req, res) {
         const fullRegex = new RegExp(`(https:\\/\\/[^"'\\s,\\>]+?\\/${mainFolderId}\\/[a-f0-9\\-]{36}_[^"'\\s,\\>]+)`, 'gi');
         const matches = [...cleanHtml.matchAll(fullRegex)];
 
-        // 5. Deduplicate by Image ID so we only keep the highest resolution version of each unique photo
+        // 5. Deduplicate by Image ID while safely scoring the resolution from your original matches
+        const getResolutionScore = (url) => {
+            // This safely grabs the number before the "x" (e.g., 1620 from _1620x.jpg)
+            const sizeMatch = url.match(/_(\d+)x/i);
+            return sizeMatch ? parseInt(sizeMatch[1], 10) : 0;
+        };
+
         const uniqueImages = new Map();
         for (const match of matches) {
             const fullUrl = match[1];
@@ -51,8 +57,18 @@ export default async function handler(req, res) {
             
             if (imageIdMatch) {
                 const imageId = imageIdMatch[1];
-                if (!uniqueImages.has(imageId)) {
+                const currentBest = uniqueImages.get(imageId);
+
+                if (!currentBest) {
                     uniqueImages.set(imageId, fullUrl);
+                } else {
+                    const currentScore = getResolutionScore(currentBest);
+                    const newScore = getResolutionScore(fullUrl);
+
+                    // Only replace the saved image if the new one is mathematically larger
+                    if (newScore > currentScore) {
+                        uniqueImages.set(imageId, fullUrl);
+                    }
                 }
             }
         }
