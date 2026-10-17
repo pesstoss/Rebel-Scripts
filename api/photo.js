@@ -1,4 +1,4 @@
-Export default async function handler(req, res) {
+export default async function handler(req, res) {
 
 const { url, targetImage } = req.query;
 
@@ -88,30 +88,39 @@ const matches = [...cleanHtml.matchAll(fullRegex)];
 
 
 
-// 5. Deduplicate by Image ID so we only keep the highest resolution version of each unique photo
+// 5. Deduplicate by Image ID while prioritizing the highest resolution
+        const getResolutionScore = (url) => {
+            // Check for explicit pixel dimensions like _2048x, _1280x, _650x
+            const resMatch = url.match(/_(\d+)x\./i);
+            if (resMatch) {
+                return parseInt(resMatch[1], 10);
+            }
+            // Suffixes without explicit resize dimensions usually indicate the full original file
+            return 99999;
+        };
 
-const uniqueImages = new Map();
+        const uniqueImages = new Map();
+        for (const match of matches) {
+            const fullUrl = match[1];
+            const imageIdMatch = fullUrl.match(/\/([a-f0-9\-]{36})_/i);
+            
+            if (imageIdMatch) {
+                const imageId = imageIdMatch[1];
+                const currentBest = uniqueImages.get(imageId);
 
-for (const match of matches) {
+                if (!currentBest) {
+                    uniqueImages.set(imageId, fullUrl);
+                } else {
+                    const currentScore = getResolutionScore(currentBest);
+                    const newScore = getResolutionScore(fullUrl);
 
-const fullUrl = match[1];
-
-const imageIdMatch = fullUrl.match(/\/([a-f0-9\-]{36})_/i);
-
-
-if (imageIdMatch) {
-
-const imageId = imageIdMatch[1];
-
-if (!uniqueImages.has(imageId)) {
-
-uniqueImages.set(imageId, fullUrl);
-
-}
-
-}
-
-}
+                    // If the new URL is higher resolution, replace the lower one
+                    if (newScore > currentScore) {
+                        uniqueImages.set(imageId, fullUrl);
+                    }
+                }
+            }
+        }
 
 
 
