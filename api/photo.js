@@ -39,23 +39,41 @@ export default async function handler(req, res) {
 
         const mainFolderId = folderMatch[1]; // We now have the undisputed correct ID
 
-       // 4. Sweep the isolated content area for any URLs matching this specific Folder ID
-        const fullRegex = new RegExp(`(https:\\/\\/[^"'\\s,\\>]+?\\/${mainFolderId}\\/[a-f0-9\\-]{36}_[^"'\\s,\\>]+)`, 'gi');
-        const matches = [...cleanHtml.matchAll(fullRegex)];
+       // 4. Find all srcSet attributes in the safe content area that belong to this specific post
+        // This explicitly targets the exact block you showed in your screenshot
+        const srcSetRegex = new RegExp(`srcSet="([^"]+${mainFolderId}[^"]+)"`, 'gi');
+        const srcSetMatches = [...mainContentArea.matchAll(srcSetRegex)];
 
-        // 5. Deduplicate by Image ID, always keeping the LAST match
+        if (srcSetMatches.length === 0) {
+            return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
+        }
+
+        // 5. Extract the highest-res URL from each srcSet
         const uniqueImages = new Map();
-        for (const match of matches) {
-            const fullUrl = match[1];
-            const imageIdMatch = fullUrl.match(/\/([a-f0-9\-]{36})_/i);
+        for (const match of srcSetMatches) {
+            const srcSetString = match[1]; 
             
+            // Split the srcSet by comma to separate the different sizes
+            const sources = srcSetString.split(',');
+            
+            // Grab the absolute LAST item in the srcSet, which is the highest resolution
+            const bestSource = sources[sources.length - 1].trim(); 
+            
+            // A srcSet item looks like "https://..._1080x.webp 1080w". We split by space to drop the "1080w".
+            const fullUrl = bestSource.split(' ')[0];
+
+            // Extract the Image ID to deduplicate (so we don't get the same photo twice)
+            const imageIdMatch = fullUrl.match(/\/([a-f0-9\-]{36})_/i);
             if (imageIdMatch) {
                 const imageId = imageIdMatch[1];
-                
-                // By unconditionally setting the map, it constantly overwrites smaller versions.
-                // It will naturally finish on the last, highest-resolution URL in the srcSet.
                 uniqueImages.set(imageId, fullUrl);
             }
+        }
+
+        const finalImages = Array.from(uniqueImages.values());
+
+        if (finalImages.length === 0) {
+            return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
         }
 
         const finalImages = Array.from(uniqueImages.values());
