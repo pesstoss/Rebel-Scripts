@@ -5,8 +5,13 @@ export default async function handler(req, res) {
         try {
             const imgReq = await fetch(targetImage);
             const buffer = await imgReq.arrayBuffer();
-            res.setHeader('Content-Type', 'image/jpeg'); 
+            
+            // PIXEL FIX: Dynamically pass the correct content type, but force the browser to see a safe image file
+            const contentType = imgReq.headers.get('content-type') || 'image/jpeg';
+            res.setHeader('Content-Type', contentType); 
+            res.setHeader('Content-Disposition', 'inline; filename="featured_photo.png"');
             res.setHeader('Access-Control-Allow-Origin', '*');
+            
             return res.send(Buffer.from(buffer));
         } catch (error) {
             return res.status(500).json({ error: 'Failed to proxy image' });
@@ -39,14 +44,14 @@ export default async function handler(req, res) {
 
         const mainFolderId = folderMatch[1]; // We now have the undisputed correct ID
 
-        // 4. Sweep the ENTIRE original document (including the JSON block) for any URLs matching this specific Folder ID
+        // 4. Sweep the ENTIRE original document for any URLs matching this specific Folder ID
         const fullRegex = new RegExp(`(https:\\/\\/[^"'\\s,\\>]+?\\/${mainFolderId}\\/[a-f0-9\\-]{36}_[^"'\\s,\\>]+)`, 'gi');
         const matches = [...cleanHtml.matchAll(fullRegex)];
 
-        // 5. Deduplicate by Image ID while safely scoring the resolution from your original matches
+        // 5. BULLETPROOF SCORING: Aggressively hunt for the numerical width
         const getResolutionScore = (url) => {
-            // This safely grabs the number before the "x" (e.g., 1620 from _1620x.jpg)
-            const sizeMatch = url.match(/_(\d+)x/i);
+            // Matches any number right before an 'x' or 'w' (e.g., _1620x.webp, -1950w.jpg)
+            const sizeMatch = url.match(/[_-](\d+)[xw]/i);
             return sizeMatch ? parseInt(sizeMatch[1], 10) : 0;
         };
 

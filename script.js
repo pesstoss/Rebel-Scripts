@@ -339,7 +339,6 @@ async function fetchSinglePhoto(btn) {
 
         let found = false;
 
-        // Create or clear the preview box at the bottom of Page 3
         let previewBox = document.getElementById('carouselPreviewBox');
         if (!previewBox) {
             previewBox = document.createElement('div');
@@ -357,7 +356,6 @@ async function fetchSinglePhoto(btn) {
             tempImg.onload = async () => {
                 if (found) return;
 
-                // Pass anything 400px or larger
                 if (tempImg.naturalWidth >= 400 || tempImg.naturalHeight >= 400) {
                     found = true;
                     btn.innerText = "Processing...";
@@ -375,26 +373,39 @@ async function fetchSinglePhoto(btn) {
 
                         const pngUrl = canvas.toDataURL('image/png');
                         
+                        // --- NEW TIMESTAMP NAMING LOGIC ---
+                        const now = new Date();
+                        const timestamp = now.getFullYear() +
+                            String(now.getMonth() + 1).padStart(2, '0') +
+                            String(now.getDate()).padStart(2, '0') + "_" +
+                            String(now.getHours()).padStart(2, '0') +
+                            String(now.getMinutes()).padStart(2, '0') +
+                            String(now.getSeconds()).padStart(2, '0');
+                        const filename = `featured_photo_${timestamp}.png`;
+                        
                         previewBox.style.display = 'block'; 
                         previewBox.style.textAlign = 'center';
+                        
+                        // Replaced the long-press text with a dedicated download button
                         previewBox.innerHTML = `
-                            <p style="color: #10b981; font-size: 0.8rem; margin-bottom: 8px; font-weight: 600;">
-                                👆 Long-press to save, tap photo to close
-                            </p>
-                            <img id="finalFetchImage" src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer;">
+                            <a href="${pngUrl}" download="${filename}" style="display: inline-block; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-bottom: 12px; width: 100%; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+                                ⬇️ Download ${filename}
+                            </a>
+                            <br>
+                            <img src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                            <div id="closeFetchPreview" style="margin-top: 12px; color: #ef4444; font-weight: bold; cursor: pointer; padding: 8px;">
+                                ✖ Tap here to close
+                            </div>
                         `;
 
-                        // 1. Grab both main buttons
                         const allBtns = btn.closest('.page-section').querySelectorAll('button');
-                        const btn1 = allBtns[0]; // The Single Photo button
-                        const btn2 = allBtns[1]; // The Carousel button
+                        const btn1 = allBtns[0]; 
+                        const btn2 = allBtns[1]; 
                         
-                        // 2. Save their original state
                         const origBtn1Click = btn1.onclick;
                         const origBtn2Click = btn2.onclick;
                         const origBtn2Text = btn2.innerText; 
                         
-                        // 3. Morph buttons
                         btn1.innerText = "TinEye Check 🔍";
                         btn1.disabled = false;
                         btn1.onclick = (e) => {
@@ -409,8 +420,8 @@ async function fetchSinglePhoto(btn) {
                             window.open(`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(imgUrl)}`, '_blank');
                         };
                         
-                        // 4. Restore everything when the photo is tapped
-                        document.getElementById('finalFetchImage').onclick = () => {
+                        // Close function moved to the new close button
+                        document.getElementById('closeFetchPreview').onclick = () => {
                             previewBox.innerHTML = '';
                             previewBox.style.display = 'none';
                             
@@ -420,7 +431,6 @@ async function fetchSinglePhoto(btn) {
                             btn2.innerText = origBtn2Text;
                             btn2.onclick = origBtn2Click;
 
-                            // --- NEW HIVE CHECK BUTTON LOGIC ---
                             let hiveBtn = document.getElementById('hiveCheckBtn');
                             if (!hiveBtn) {
                                 hiveBtn = document.createElement('button');
@@ -586,13 +596,29 @@ async function fetchAndDownloadPhoto(btn) {
                         
                         const pngUrl = canvas.toDataURL('image/png');
                         
+                        // --- NEW TIMESTAMP NAMING LOGIC ---
+                        const now = new Date();
+                        const timestamp = now.getFullYear() +
+                            String(now.getMonth() + 1).padStart(2, '0') +
+                            String(now.getDate()).padStart(2, '0') + "_" +
+                            String(now.getHours()).padStart(2, '0') +
+                            String(now.getMinutes()).padStart(2, '0') +
+                            String(now.getSeconds()).padStart(2, '0');
+                        const filename = `featured_photo_${timestamp}.png`;
+                        
                         activePreviewArea.style.textAlign = 'center';
                         activePreviewArea.style.marginBottom = '16px';
+                        
+                        // Replaced the long-press text with a dedicated download button
                         activePreviewArea.innerHTML = `
-                            <p style="color: #10b981; font-size: 0.8rem; margin-bottom: 8px; font-weight: 600;">
-                                👆 Long-press to save, tap photo to close
-                            </p>
-                            <img id="finalFetchImage" src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer;">
+                            <a href="${pngUrl}" download="${filename}" style="display: inline-block; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-bottom: 12px; width: 100%; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+                                ⬇️ Download ${filename}
+                            </a>
+                            <br>
+                            <img src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                            <div id="closeFetchPreview" style="margin-top: 12px; color: #ef4444; font-weight: bold; cursor: pointer; padding: 8px;">
+                                ✖ Tap here to close
+                            </div>
                         `;
                         
                         activePreviewArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -612,8 +638,8 @@ async function fetchAndDownloadPhoto(btn) {
                             window.open(`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(imgUrl)}`, '_blank');
                         };
                         
-                        // 3. Restore everything when the big photo is tapped
-                        document.getElementById('finalFetchImage').onclick = () => {
+                        // 3. Restore everything when the close button is tapped
+                        document.getElementById('closeFetchPreview').onclick = () => {
                             activePreviewArea.innerHTML = '';
                             
                             btn1.innerText = "Fetch Single Photo 🖼️";
