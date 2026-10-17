@@ -39,48 +39,26 @@ export default async function handler(req, res) {
 
         const mainFolderId = folderMatch[1]; // We now have the undisputed correct ID
 
-       // 4. Sweep the ENTIRE document for any URLs matching the specific mainFolderId
-        // Because we require the exact mainFolderId, this CANNOT accidentally fetch avatars or unrelated images
-        const fullRegex = new RegExp(`(https:\\/\\/[^"'\\s,\\>]+?\\/${mainFolderId}\\/[a-f0-9\\-]{36}[^"'\\s,\\>]*)`, 'gi');
+       // 4. Sweep the isolated content area for any URLs matching this specific Folder ID
+        const fullRegex = new RegExp(`(https:\\/\\/[^"'\\s,\\>]+?\\/${mainFolderId}\\/[a-f0-9\\-]{36}_[^"'\\s,\\>]+)`, 'gi');
         const matches = [...cleanHtml.matchAll(fullRegex)];
 
-        if (matches.length === 0) {
-            return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
-        }
-
-        // 5. Deduplicate and score to find the absolute largest version (including the uncompressed original)
-        const getResolutionScore = (url) => {
-            const resMatch = url.match(/_(\d+)x\./i);
-            if (resMatch) {
-                return parseInt(resMatch[1], 10);
-            }
-            // Suffixes like _original or URLs missing a size suffix indicate the raw, uncompressed file
-            return 99999; 
-        };
-
+        // 5. Deduplicate by Image ID, always keeping the LAST match
         const uniqueImages = new Map();
         for (const match of matches) {
             const fullUrl = match[1];
-            
-            // Extract the image ID (handling cases where it's followed by an underscore OR directly by a file extension)
-            const imageIdMatch = fullUrl.match(/\/([a-f0-9\-]{36})(?:_|\.)/i);
+            const imageIdMatch = fullUrl.match(/\/([a-f0-9\-]{36})_/i);
             
             if (imageIdMatch) {
                 const imageId = imageIdMatch[1];
-                const currentBest = uniqueImages.get(imageId);
-
-                if (!currentBest) {
-                    uniqueImages.set(imageId, fullUrl);
-                } else {
-                    const currentScore = getResolutionScore(currentBest);
-                    const newScore = getResolutionScore(fullUrl);
-
-                    if (newScore > currentScore) {
-                        uniqueImages.set(imageId, fullUrl);
-                    }
-                }
+                
+                // By unconditionally setting the map, it constantly overwrites smaller versions.
+                // It will naturally finish on the last, highest-resolution URL in the srcSet.
+                uniqueImages.set(imageId, fullUrl);
             }
         }
+
+        const finalImages = Array.from(uniqueImages.values());
 
         const finalImages = Array.from(uniqueImages.values());
 
