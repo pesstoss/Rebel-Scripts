@@ -39,52 +39,44 @@ export default async function handler(req, res) {
 
         const mainFolderId = folderMatch[1]; // We now have the undisputed correct ID
 
-       // 4. Find the SPECIFIC <picture> block that contains the target folder and image ID
-        // This regex captures everything from <picture> to </picture> that includes your image
-        const pictureBlockRegex = new RegExp(`<picture[^>]*>.*?${mainFolderId}\\/[a-f0-9\\-]{36}_.*?<\\/picture>`, 'gi');
-        const pictureBlocks = [...cleanHtml.matchAll(pictureBlockRegex)];
+       // 4. Sweep the ENTIRE document for any URLs matching the specific mainFolderId
+        // Because we require the exact mainFolderId, this CANNOT accidentally fetch avatars or unrelated images
+        const fullRegex = new RegExp(`(https:\\/\\/[^"'\\s,\\>]+?\\/${mainFolderId}\\/[a-f0-9\\-]{36}[^"'\\s,\\>]*)`, 'gi');
+        const matches = [...cleanHtml.matchAll(fullRegex)];
 
-        if (pictureBlocks.length === 0) {
+        if (matches.length === 0) {
             return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
         }
 
-        // 5. Extract URLs ONLY from within those isolated <picture> blocks
-        const uniqueImages = new Map();
-        
+        // 5. Deduplicate and score to find the absolute largest version (including the uncompressed original)
         const getResolutionScore = (url) => {
             const resMatch = url.match(/_(\d+)x\./i);
             if (resMatch) {
                 return parseInt(resMatch[1], 10);
             }
+            // Suffixes like _original or URLs missing a size suffix indicate the raw, uncompressed file
             return 99999; 
         };
 
-        for (const blockMatch of pictureBlocks) {
-            const pictureHtml = blockMatch[0];
+        const uniqueImages = new Map();
+        for (const match of matches) {
+            const fullUrl = match[1];
             
-            // Now we search for URLs strictly inside this specific picture block
-            const urlRegex = /(https:\/\/[^"'\s,\>]+)/gi;
-            const urls = [...pictureHtml.matchAll(urlRegex)];
+            // Extract the image ID (handling cases where it's followed by an underscore OR directly by a file extension)
+            const imageIdMatch = fullUrl.match(/\/([a-f0-9\-]{36})(?:_|\.)/i);
+            
+            if (imageIdMatch) {
+                const imageId = imageIdMatch[1];
+                const currentBest = uniqueImages.get(imageId);
 
-            for (const urlMatch of urls) {
-                const fullUrl = urlMatch[1];
-                
-                // Only process URLs that actually contain an image ID
-                const imageIdMatch = fullUrl.match(/\/([a-f0-9\-]{36})_/i);
-                
-                if (imageIdMatch) {
-                    const imageId = imageIdMatch[1];
-                    const currentBest = uniqueImages.get(imageId);
+                if (!currentBest) {
+                    uniqueImages.set(imageId, fullUrl);
+                } else {
+                    const currentScore = getResolutionScore(currentBest);
+                    const newScore = getResolutionScore(fullUrl);
 
-                    if (!currentBest) {
+                    if (newScore > currentScore) {
                         uniqueImages.set(imageId, fullUrl);
-                    } else {
-                        const currentScore = getResolutionScore(currentBest);
-                        const newScore = getResolutionScore(fullUrl);
-
-                        if (newScore > currentScore) {
-                            uniqueImages.set(imageId, fullUrl);
-                        }
                     }
                 }
             }
