@@ -80,25 +80,29 @@ const mainFolderId = folderMatch[1]; // We now have the undisputed correct ID
 
 
 
-// 4. Sweep the ENTIRE document (including JSON state) for ANY URL matching this specific Folder ID
-        const fullRegex = new RegExp(`(https:\\/\\/[^"'\\s,\\>]+?\\/${mainFolderId}\\/[a-f0-9\\-]{36}[^"'\\s,\\>]*)`, 'gi');
-        const matches = [...cleanHtml.matchAll(fullRegex)];
+// 4. Sweep the ENTIRE original document (including the JSON block) for any URLs matching this specific Folder ID
 
-        // 5. Safely deduplicate by Image ID and strictly score by pixel width
+const fullRegex = new RegExp(`(https:\\/\\/[^"'\\s,\\>]+?\\/${mainFolderId}\\/[a-f0-9\\-]{36}_[^"'\\s,\\>]+)`, 'gi');
+
+const matches = [...cleanHtml.matchAll(fullRegex)];
+
+
+
+// 5. Deduplicate by Image ID while prioritizing the highest resolution
         const getResolutionScore = (url) => {
-            const sizeMatch = url.match(/_(\d+)x/i);
-            if (sizeMatch) return parseInt(sizeMatch[1], 10);
-            
-            const lowerUrl = url.toLowerCase();
-            if (lowerUrl.includes('original') || lowerUrl.includes('max')) return 99999;
-            if (lowerUrl.includes('thumb') || lowerUrl.includes('placeholder')) return -1;
-            return 0;
+            // Check for explicit pixel dimensions like _2048x, _1280x, _650x
+            const resMatch = url.match(/_(\d+)x\./i);
+            if (resMatch) {
+                return parseInt(resMatch[1], 10);
+            }
+            // Suffixes without explicit resize dimensions usually indicate the full original file
+            return 99999;
         };
 
         const uniqueImages = new Map();
         for (const match of matches) {
             const fullUrl = match[1];
-            const imageIdMatch = fullUrl.match(/\/([a-f0-9\-]{36})(?:_|\.)/i);
+            const imageIdMatch = fullUrl.match(/\/([a-f0-9\-]{36})_/i);
             
             if (imageIdMatch) {
                 const imageId = imageIdMatch[1];
@@ -110,6 +114,7 @@ const mainFolderId = folderMatch[1]; // We now have the undisputed correct ID
                     const currentScore = getResolutionScore(currentBest);
                     const newScore = getResolutionScore(fullUrl);
 
+                    // If the new URL is higher resolution, replace the lower one
                     if (newScore > currentScore) {
                         uniqueImages.set(imageId, fullUrl);
                     }
@@ -117,15 +122,24 @@ const mainFolderId = folderMatch[1]; // We now have the undisputed correct ID
             }
         }
 
-        const finalImages = Array.from(uniqueImages.values());
 
-        if (finalImages.length === 0) {
-            return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
-        }
 
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.status(200).json({ images: finalImages });
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to scrape Vero link' });
-    }
+const finalImages = Array.from(uniqueImages.values());
+
+
+
+if (finalImages.length === 0) {
+
+return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
+
 }
+
+
+
+res.setHeader('Access-Control-Allow-Origin', '*');
+
+res.status(200).json({ images: finalImages });
+
+} catch (error) {
+
+res.status(500).json({ error: 'Failed to scrape Vero link' });
