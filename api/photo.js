@@ -25,30 +25,33 @@ export default async function handler(req, res) {
         });
         const cleanHtml = (await postReq.text()).replace(/\\\//g, '/');
 
-        const allLinksRegex = /(https:\/\/[^"'\s,>]+\/[a-f0-9\-]{36}\/[a-f0-9\-]{36}_[^"'\s,>]+)/gi;
-        const matches = [...cleanHtml.matchAll(allLinksRegex)];
+        // Grab ALL image links ending in jpg, jpeg, png, or webp
+        const allLinksRegex = /https:\/\/[^"'\s,>]+\.(?:jpg|jpeg|png|webp)/gi;
+        const matches = [...new Set(cleanHtml.match(allLinksRegex) || [])];
 
         const bestImages = new Map();
 
-        for (const match of matches) {
-            const fullUrl = match[1];
-            const idMatch = fullUrl.match(/\/([a-f0-9\-]{36})_/i);
-            
-            // If we find an ID, process it even if there is no w/x size marker
-            if (idMatch) {
-                const id = idMatch[1];
-                const sizeMatch = fullUrl.match(/[_-](\d+)[xw]/i);
-                const size = sizeMatch ? parseInt(sizeMatch[1], 10) : 0;
+        for (const fullUrl of matches) {
+            // Skip UI elements
+            if (fullUrl.includes('/avatars/') || fullUrl.includes('icon')) continue;
 
-                const existing = bestImages.get(id);
-                // Keep the one with the highest size score
-                if (!existing || size > existing.size) {
-                    bestImages.set(id, { id, url: fullUrl, size });
-                }
+            const urlParts = fullUrl.split('/');
+            const filename = urlParts.pop();
+            
+            // Group by the unique prefix (e.g., "1d938efc") or fallback to parent folder
+            const baseIdMatch = filename.match(/^([a-z0-9]+)_/i);
+            const groupId = baseIdMatch ? baseIdMatch[1] : urlParts.pop();
+
+            // Extract all numbers from the filename to score resolution
+            const numbers = [...filename.matchAll(/(\d+)/g)].map(m => parseInt(m[1], 10));
+            const size = numbers.length > 0 ? Math.max(...numbers) : 0;
+
+            const existing = bestImages.get(groupId);
+            if (!existing || size > existing.size) {
+                bestImages.set(groupId, { url: fullUrl, size });
             }
         }
 
-        // Sort the remaining images from largest to smallest, no strict filters!
         const finalImages = Array.from(bestImages.values())
             .sort((a, b) => b.size - a.size)
             .map(img => img.url);
