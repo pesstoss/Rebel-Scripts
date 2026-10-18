@@ -372,7 +372,7 @@ async function fetchSinglePhoto(btn) {
                 String(now.getHours()).padStart(2, '0') +
                 String(now.getMinutes()).padStart(2, '0') +
                 String(now.getSeconds()).padStart(2, '0');
-            const filename = `featured_photo_${timestamp}.png`;
+            const filename = `feature_${timestamp}.png`;
             
             previewBox.innerHTML = `
                 <button id="nativeDownloadBtn" style="display: block; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-size: 1rem; font-weight: bold; margin-bottom: 12px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: pointer; transition: background 0.3s;">
@@ -594,7 +594,7 @@ async function fetchAndDownloadPhoto(btn) {
                                 String(now.getHours()).padStart(2, '0') +
                                 String(now.getMinutes()).padStart(2, '0') +
                                 String(now.getSeconds()).padStart(2, '0');
-                            const filename = `featured_photo_${timestamp}.png`;
+                            const filename = `feature_${timestamp}.png`;
                             
                             activePreviewArea.style.textAlign = 'center';
                             activePreviewArea.style.marginBottom = '16px';
