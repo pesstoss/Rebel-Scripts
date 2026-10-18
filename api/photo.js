@@ -18,25 +18,34 @@ export default async function handler(req, res) {
     if (!url) return res.status(400).json({ error: 'No URL provided' });
 
     try {
+        // Disguise the server request as a real Chrome browser to bypass Cloudflare
         const postReq = await fetch(url, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Sec-Fetch-Dest': 'document',
+                'Sec-Fetch-Mode': 'navigate',
+                'Sec-Fetch-Site': 'none',
+                'Sec-Fetch-User': '?1',
+                'Upgrade-Insecure-Requests': '1'
             }
         });
-        const cleanHtml = (await postReq.text()).replace(/\\\//g, '/');
 
-        // Extract the contents of the image/jpeg srcSet attribute
+        if (!postReq.ok) {
+            return res.status(403).json({ error: 'Cloudflare blocked the Vercel server.' });
+        }
+
+        const cleanHtml = await postReq.text();
+
+        // Extract the explicit size data Vero provides
         const srcSetMatch = cleanHtml.match(/<source[^>]*type="image\/jpeg"[^>]*srcSet="([^"]+)"/i);
         
         if (!srcSetMatch) {
-            return res.status(404).json({ error: 'Could not find high-res image source.' });
+            return res.status(404).json({ error: 'Blocked by Cloudflare or could not find image source.' });
         }
 
-        const srcSetData = srcSetMatch[1];
-        
-        // Split the srcSet by commas to evaluate each URL and its stated width
-        const imageOptions = srcSetData.split(',').map(entry => entry.trim());
-        
+        const imageOptions = srcSetMatch[1].split(',').map(entry => entry.trim());
         let largestUrl = null;
         let maxWidth = 0;
 
@@ -44,7 +53,6 @@ export default async function handler(req, res) {
             const parts = option.split(' ');
             if (parts.length === 2) {
                 const imgUrl = parts[0];
-                // Remove the "w" and parse the number
                 const width = parseInt(parts[1].replace('w', ''), 10);
                 
                 if (width > maxWidth) {
@@ -54,14 +62,10 @@ export default async function handler(req, res) {
             }
         }
 
-        if (!largestUrl) {
-             return res.status(404).json({ error: 'Failed to parse image sizes.' });
-        }
+        if (!largestUrl) return res.status(404).json({ error: 'Failed to parse image sizes.' });
 
         res.setHeader('Access-Control-Allow-Origin', '*');
-        // Return as an array to match the frontend expectations
         res.status(200).json({ images: [largestUrl] });
-
     } catch (error) {
         res.status(500).json({ error: 'Failed to scrape Vero link' });
     }
