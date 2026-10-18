@@ -28,19 +28,20 @@ export default async function handler(req, res) {
         const postHtml = await postReq.text();
         const cleanHtml = postHtml.replace(/\\\//g, '/');
 
-        const bodyOnly = cleanHtml.split('</head>')[1] || cleanHtml;
-        const mainContentArea = bodyOnly.split('_user-post-content-container_')[0];
-        const folderMatch = mainContentArea.match(/\/([a-f0-9\-]{36})\/([a-f0-9\-]{36})_/i);
+        // 1. Grab the very first folder ID (which always belongs to the featured post)
+        const folderMatch = cleanHtml.match(/\/([a-f0-9\-]{36})\/([a-f0-9\-]{36})_/i);
 
         if (!folderMatch) {
             return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
         }
 
-        const mainFolderId = folderMatch[1]; 
+        const mainFolderId = folderMatch[1];
+
+        // 2. Sweep the ENTIRE document for any URLs matching this specific Folder ID
         const fullRegex = new RegExp(`(https:\\/\\/[^"'\\s,\\>]+?\\/${mainFolderId}\\/[a-f0-9\\-]{36}_[^"'\\s,\\>]+)`, 'gi');
         const matches = [...cleanHtml.matchAll(fullRegex)];
 
-        // THE MATH FIX: Aggressively hunt for the numerical width
+        // 3. Score the width and keep the absolute largest
         const getResolutionScore = (url) => {
             const sizeMatch = url.match(/[_-](\d+)[xw]/i);
             return sizeMatch ? parseInt(sizeMatch[1], 10) : 0;
