@@ -25,51 +25,43 @@ export default async function handler(req, res) {
         });
         const cleanHtml = (await postReq.text()).replace(/\\\//g, '/');
 
-        // 1. Grab ALL image links
-        const allLinksRegex = /https:\/\/[^"'\s,>]+\.(?:jpg|jpeg|png|webp)/gi;
-        const matches = [...new Set(cleanHtml.match(allLinksRegex) || [])];
+        // 1. Find the FIRST UUID in the page. This is always the main post's folder.
+        const uuidMatch = cleanHtml.match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i);
+        const mainFolderId = uuidMatch ? uuidMatch[0] : null;
 
-        // 2. Filter out avatars and UI icons
-        const validLinks = matches.filter(fullUrl => !fullUrl.includes('/avatars/') && !fullUrl.includes('/icons/'));
+        // 2. Grab all raw URLs
+        const allUrls = cleanHtml.match(/https:\/\/[^"'\s,>]+/gi) || [];
 
-        // 3. Lock onto the Main Post's Folder ID (This kills the "More from Author" grid)
-        let mainFolderId = null;
-        for (const link of validLinks) {
-            // Looks for the standard 36-character UUID format used by Vero folders
-            const folderMatch = link.match(/\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\//i);
-            if (folderMatch) {
-                mainFolderId = folderMatch[1];
-                break; // Stop at the very first one, which is always the main post
-            }
-        }
+        // 3. Filter for images that belong ONLY to the main post (avoids the other birds)
+        const imageLinks = allUrls.filter(link => 
+            (mainFolderId ? link.includes(mainFolderId) : true) && 
+            /\.(jpg|jpeg|png|webp)/i.test(link) &&
+            !link.includes('/avatars/') &&
+            !link.includes('/icons/')
+        );
 
-        // Only process links that belong to the main post's folder
-        const postLinks = mainFolderId ? validLinks.filter(link => link.includes(mainFolderId)) : validLinks;
         const bestImages = new Map();
 
-        for (const fullUrl of postLinks) {
-            const filename = fullUrl.substring(fullUrl.lastIndexOf('/') + 1);
+        for (const link of imageLinks) {
+            const cleanLink = link.replace(/[\\)\]]+$/, ''); // Clean trailing characters
+            const parts = cleanLink.split('/');
+            const filename = parts.pop();
             
-            // Extract the 8-character image ID
-            const baseIdMatch = filename.match(/^([a-z0-9]+)_/i);
-            if (!baseIdMatch) continue;
-            const imageId = baseIdMatch[1];
+            // Group by the image prefix (everything before the first underscore)
+            const groupId = filename.split('_')[0];
 
-            // THE FIX: Strictly extract the resolution (e.g., 1620 from _1620x.webp or _1620.jpg)
-            const resMatch = filename.match(/_(\d+)(?:[xw]|\.)/i);
-            const size = resMatch ? parseInt(resMatch[1], 10) : 0;
+            // Extract all numbers to find the resolution
+            const numbers = [...filename.matchAll(/(\d+)/g)].map(m => parseInt(m[1], 10));
+            const size = numbers.length > 0 ? Math.max(...numbers) : 0;
 
-            const existing = bestImages.get(imageId);
+            const existing = bestImages.get(groupId);
             if (!existing) {
-                // Keep original index to maintain proper carousel order
-                bestImages.set(imageId, { url: fullUrl, size: size, index: bestImages.size });
+                bestImages.set(groupId, { url: cleanLink, size, index: bestImages.size });
             } else if (size > existing.size) {
-                existing.url = fullUrl;
-                existing.size = size;
+                bestImages.set(groupId, { url: cleanLink, size, index: existing.index });
             }
         }
 
-        // 4. Sort by original carousel order and return
         const finalImages = Array.from(bestImages.values())
             .sort((a, b) => a.index - b.index)
             .map(img => img.url);
