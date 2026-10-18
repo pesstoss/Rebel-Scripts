@@ -25,53 +25,43 @@ export default async function handler(req, res) {
         });
         const cleanHtml = (await postReq.text()).replace(/\\\//g, '/');
 
-        // 1. Find the FIRST UUID in the page. This is always the main post's folder.
-        const uuidMatch = cleanHtml.match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/i);
-        const mainFolderId = uuidMatch ? uuidMatch[0] : null;
+        // Extract the contents of the image/jpeg srcSet attribute
+        const srcSetMatch = cleanHtml.match(/<source[^>]*type="image\/jpeg"[^>]*srcSet="([^"]+)"/i);
+        
+        if (!srcSetMatch) {
+            return res.status(404).json({ error: 'Could not find high-res image source.' });
+        }
 
-        // 2. Grab all raw URLs
-        const allUrls = cleanHtml.match(/https:\/\/[^"'\s,>]+/gi) || [];
+        const srcSetData = srcSetMatch[1];
+        
+        // Split the srcSet by commas to evaluate each URL and its stated width
+        const imageOptions = srcSetData.split(',').map(entry => entry.trim());
+        
+        let largestUrl = null;
+        let maxWidth = 0;
 
-        // 3. Filter for images that belong ONLY to the main post (avoids the other birds)
-        const imageLinks = allUrls.filter(link => 
-            (mainFolderId ? link.includes(mainFolderId) : true) && 
-            /\.(jpg|jpeg|png|webp)/i.test(link) &&
-            !link.includes('/avatars/') &&
-            !link.includes('/icons/')
-        );
-
-        const bestImages = new Map();
-
-        for (const link of imageLinks) {
-            const cleanLink = link.replace(/[\\)\]]+$/, ''); // Clean trailing characters
-            const parts = cleanLink.split('/');
-            const filename = parts.pop();
-            
-            // Group by the image prefix (everything before the first underscore)
-            const groupId = filename.split('_')[0];
-
-            // Extract all numbers to find the resolution
-            const numbers = [...filename.matchAll(/(\d+)/g)].map(m => parseInt(m[1], 10));
-            const size = numbers.length > 0 ? Math.max(...numbers) : 0;
-
-            const existing = bestImages.get(groupId);
-            if (!existing) {
-                bestImages.set(groupId, { url: cleanLink, size, index: bestImages.size });
-            } else if (size > existing.size) {
-                bestImages.set(groupId, { url: cleanLink, size, index: existing.index });
+        for (const option of imageOptions) {
+            const parts = option.split(' ');
+            if (parts.length === 2) {
+                const imgUrl = parts[0];
+                // Remove the "w" and parse the number
+                const width = parseInt(parts[1].replace('w', ''), 10);
+                
+                if (width > maxWidth) {
+                    maxWidth = width;
+                    largestUrl = imgUrl;
+                }
             }
         }
 
-        const finalImages = Array.from(bestImages.values())
-            .sort((a, b) => a.index - b.index)
-            .map(img => img.url);
-
-        if (finalImages.length === 0) {
-            return res.status(404).json({ error: 'No images found.' });
+        if (!largestUrl) {
+             return res.status(404).json({ error: 'Failed to parse image sizes.' });
         }
 
         res.setHeader('Access-Control-Allow-Origin', '*');
-        res.status(200).json({ images: finalImages });
+        // Return as an array to match the frontend expectations
+        res.status(200).json({ images: [largestUrl] });
+
     } catch (error) {
         res.status(500).json({ error: 'Failed to scrape Vero link' });
     }
