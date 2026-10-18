@@ -5,12 +5,10 @@ export default async function handler(req, res) {
         try {
             const imgReq = await fetch(targetImage);
             const buffer = await imgReq.arrayBuffer();
-            
             const contentType = imgReq.headers.get('content-type') || 'image/jpeg';
             res.setHeader('Content-Type', contentType); 
             res.setHeader('Content-Disposition', 'inline; filename="featured_photo.png"');
             res.setHeader('Access-Control-Allow-Origin', '*');
-            
             return res.send(Buffer.from(buffer));
         } catch (error) {
             return res.status(500).json({ error: 'Failed to proxy image' });
@@ -25,54 +23,44 @@ export default async function handler(req, res) {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
             }
         });
-        const postHtml = await postReq.text();
-        const cleanHtml = postHtml.replace(/\\\//g, '/');
+        const cleanHtml = (await postReq.text()).replace(/\\\//g, '/');
 
-        // 1. Grab the very first folder ID (which always belongs to the featured post)
-        const folderMatch = cleanHtml.match(/\/([a-f0-9\-]{36})\/([a-f0-9\-]{36})_/i);
+        // 1. Grab EVERY image link on the entire page
+        const allLinksRegex = /(https:\/\/[^"'\s,>]+\/[a-f0-9\-]{36}\/[a-f0-9\-]{36}_[^"'\s,>]+)/gi;
+        const matches = [...cleanHtml.matchAll(allLinksRegex)];
 
-        if (!folderMatch) {
-            return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
-        }
-
-        const mainFolderId = folderMatch[1];
-
-        // 2. Sweep the ENTIRE document for any URLs matching this specific Folder ID
-        const fullRegex = new RegExp(`(https:\\/\\/[^"'\\s,\\>]+?\\/${mainFolderId}\\/[a-f0-9\\-]{36}_[^"'\\s,\\>]+)`, 'gi');
-        const matches = [...cleanHtml.matchAll(fullRegex)];
-
-        // 3. Score the width and keep the absolute largest
-        const getResolutionScore = (url) => {
-            const sizeMatch = url.match(/[_-](\d+)[xw]/i);
-            return sizeMatch ? parseInt(sizeMatch[1], 10) : 0;
-        };
-
-        const uniqueImages = new Map();
+        // 2. Build the array exactly as you suggested: get the ID, the URL, and the size number
+        const imageList = [];
         for (const match of matches) {
             const fullUrl = match[1];
-            const imageIdMatch = fullUrl.match(/\/([a-f0-9\-]{36})_/i);
-            
-            if (imageIdMatch) {
-                const imageId = imageIdMatch[1];
-                const currentBest = uniqueImages.get(imageId);
+            const idMatch = fullUrl.match(/\/([a-f0-9\-]{36})_/i);
+            const sizeMatch = fullUrl.match(/[_-](\d+)[xw]/i); // Extracts the number before x or w
 
-                if (!currentBest) {
-                    uniqueImages.set(imageId, fullUrl);
-                } else {
-                    const currentScore = getResolutionScore(currentBest);
-                    const newScore = getResolutionScore(fullUrl);
-
-                    if (newScore > currentScore) {
-                        uniqueImages.set(imageId, fullUrl);
-                    }
-                }
+            if (idMatch && sizeMatch) {
+                imageList.push({
+                    id: idMatch[1],
+                    url: fullUrl,
+                    size: parseInt(sizeMatch[1], 10)
+                });
             }
         }
 
-        const finalImages = Array.from(uniqueImages.values());
+        // 3. Deduplicate by keeping ONLY the array item with the highest size number
+        const bestImages = new Map();
+        for (const img of imageList) {
+            const existing = bestImages.get(img.id);
+            if (!existing || img.size > existing.size) {
+                bestImages.set(img.id, img);
+            }
+        }
+
+        // 4. Format the final list and instantly kill any tiny profile pics (under 600px)
+        const finalImages = Array.from(bestImages.values())
+            .filter(img => img.size >= 600)
+            .map(img => img.url);
 
         if (finalImages.length === 0) {
-            return res.status(404).json({ error: 'Error extracting photo. Make sure the post link is valid.' });
+            return res.status(404).json({ error: 'No high-res images found.' });
         }
 
         res.setHeader('Access-Control-Allow-Origin', '*');
