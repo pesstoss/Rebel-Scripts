@@ -25,42 +25,36 @@ export default async function handler(req, res) {
         });
         const cleanHtml = (await postReq.text()).replace(/\\\//g, '/');
 
-        // 1. Grab EVERY image link on the entire page
         const allLinksRegex = /(https:\/\/[^"'\s,>]+\/[a-f0-9\-]{36}\/[a-f0-9\-]{36}_[^"'\s,>]+)/gi;
         const matches = [...cleanHtml.matchAll(allLinksRegex)];
 
-        // 2. Build the array: get the ID, the URL, and the size number
-        const imageList = [];
+        const bestImages = new Map();
+
         for (const match of matches) {
             const fullUrl = match[1];
             const idMatch = fullUrl.match(/\/([a-f0-9\-]{36})_/i);
-            const sizeMatch = fullUrl.match(/[_-](\d+)[xw]/i); 
+            
+            // If we find an ID, process it even if there is no w/x size marker
+            if (idMatch) {
+                const id = idMatch[1];
+                const sizeMatch = fullUrl.match(/[_-](\d+)[xw]/i);
+                const size = sizeMatch ? parseInt(sizeMatch[1], 10) : 0;
 
-            if (idMatch && sizeMatch) {
-                imageList.push({
-                    id: idMatch[1],
-                    url: fullUrl,
-                    size: parseInt(sizeMatch[1], 10)
-                });
+                const existing = bestImages.get(id);
+                // Keep the one with the highest size score
+                if (!existing || size > existing.size) {
+                    bestImages.set(id, { id, url: fullUrl, size });
+                }
             }
         }
 
-        // 3. Deduplicate by keeping ONLY the array item with the highest size number
-        const bestImages = new Map();
-        for (const img of imageList) {
-            const existing = bestImages.get(img.id);
-            if (!existing || img.size > existing.size) {
-                bestImages.set(img.id, img);
-            }
-        }
-
-        // 4. Format the final list and instantly kill any tiny profile pics (under 600px)
+        // Sort the remaining images from largest to smallest, no strict filters!
         const finalImages = Array.from(bestImages.values())
-            .filter(img => img.size >= 600)
+            .sort((a, b) => b.size - a.size)
             .map(img => img.url);
 
         if (finalImages.length === 0) {
-            return res.status(404).json({ error: 'No high-res images found.' });
+            return res.status(404).json({ error: 'No images found.' });
         }
 
         res.setHeader('Access-Control-Allow-Origin', '*');
