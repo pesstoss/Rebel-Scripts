@@ -29,12 +29,12 @@ export default async function handler(req, res) {
         const allLinksRegex = /(https:\/\/[^"'\s,>]+\/[a-f0-9\-]{36}\/[a-f0-9\-]{36}_[^"'\s,>]+)/gi;
         const matches = [...cleanHtml.matchAll(allLinksRegex)];
 
-        // 2. Build the array exactly as you suggested: get the ID, the URL, and the size number
+        // 2. Build the array: get the ID, the URL, and the size number
         const imageList = [];
         for (const match of matches) {
             const fullUrl = match[1];
             const idMatch = fullUrl.match(/\/([a-f0-9\-]{36})_/i);
-            const sizeMatch = fullUrl.match(/[_-](\d+)[xw]/i); // Extracts the number before x or w
+            const sizeMatch = fullUrl.match(/[_-](\d+)[xw]/i); 
 
             if (idMatch && sizeMatch) {
                 imageList.push({
