@@ -332,7 +332,6 @@ async function fetchSinglePhoto(btn) {
     btn.disabled = true;
 
     try {
-        // Cache-buster added here
         const response = await fetch(`/api/photo?url=${encodeURIComponent(fullUrl)}&t=${Date.now()}`);
         const data = await response.json();
 
@@ -361,7 +360,8 @@ async function fetchSinglePhoto(btn) {
                     found = true;
                     btn.innerText = "Processing...";
 
-                    const proxyResp = await fetch(`/api/photo?targetImage=${encodeURIComponent(imgUrl)}`);
+                    // Cache-buster added to the proxy fetch here
+                    const proxyResp = await fetch(`/api/photo?targetImage=${encodeURIComponent(imgUrl)}&t=${Date.now()}`);
                     const blob = await proxyResp.blob();
                     const img = new Image();
 
@@ -384,9 +384,8 @@ async function fetchSinglePhoto(btn) {
                         previewBox.style.display = 'block'; 
                         previewBox.style.textAlign = 'center';
                         
-                        // New Native Button replaces long-press text
                         previewBox.innerHTML = `
-                            <button id="nativeDownloadBtn" style="display: block; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-size: 1rem; font-weight: bold; margin-bottom: 12px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: pointer;">
+                            <button id="nativeDownloadBtn" style="display: block; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-size: 1rem; font-weight: bold; margin-bottom: 12px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: pointer; transition: background 0.3s;">
                                 ⬇️ Download ${filename}
                             </button>
                             <br>
@@ -396,8 +395,13 @@ async function fetchSinglePhoto(btn) {
                             </div>
                         `;
 
-                        // Blob download logic for Android compatibility
-                        document.getElementById('nativeDownloadBtn').onclick = () => {
+                        // Visual feedback added to the download button
+                        document.getElementById('nativeDownloadBtn').onclick = (e) => {
+                            const btn = e.target;
+                            const originalText = btn.innerHTML;
+                            btn.innerHTML = "✅ Downloaded!";
+                            btn.style.background = "#059669"; 
+
                             canvas.toBlob((blob) => {
                                 const url = URL.createObjectURL(blob);
                                 const a = document.createElement('a');
@@ -409,6 +413,11 @@ async function fetchSinglePhoto(btn) {
                                 URL.revokeObjectURL(url);
                                 document.body.removeChild(a);
                             }, 'image/png');
+
+                            setTimeout(() => {
+                                btn.innerHTML = originalText;
+                                btn.style.background = "#10b981";
+                            }, 2000);
                         };
 
                         const allBtns = btn.closest('.page-section').querySelectorAll('button');
@@ -454,7 +463,7 @@ async function fetchSinglePhoto(btn) {
                             hiveBtn.innerText = "Hive Check 🤖";
                             hiveBtn.onclick = (e) => {
                                 e.preventDefault();
-                                hiveBtn.style.display = 'none'; // Instant hide
+                                hiveBtn.style.display = 'none';
                                 window.open('https://hivedetect.ai/', '_blank');
                             };
                         };
@@ -503,7 +512,7 @@ async function fetchAndDownloadPhoto(btn) {
         hiveBtn.innerText = "Hive Check 🤖";
         hiveBtn.onclick = (e) => {
             e.preventDefault();
-            hiveBtn.style.display = 'none'; // Instant hide
+            hiveBtn.style.display = 'none';
             window.open('https://hivedetect.ai/', '_blank');
         };
 
@@ -532,7 +541,6 @@ async function fetchAndDownloadPhoto(btn) {
     btn.disabled = true;
 
     try {
-        // Cache-buster added here
         const response = await fetch(`/api/photo?url=${encodeURIComponent(fullUrl)}&t=${Date.now()}`);
         const data = await response.json();
 
@@ -593,7 +601,8 @@ async function fetchAndDownloadPhoto(btn) {
                 thumb.onclick = async () => {
                     btn.innerText = "Processing...";
                     
-                    const proxyResp = await fetch(`/api/photo?targetImage=${encodeURIComponent(imgUrl)}`);
+                    // Cache-buster added to the proxy fetch here
+                    const proxyResp = await fetch(`/api/photo?targetImage=${encodeURIComponent(imgUrl)}&t=${Date.now()}`);
                     const blob = await proxyResp.blob();
                     const img = new Image();
                     
@@ -616,9 +625,8 @@ async function fetchAndDownloadPhoto(btn) {
                         activePreviewArea.style.textAlign = 'center';
                         activePreviewArea.style.marginBottom = '16px';
                         
-                        // New Native Button replaces long-press text
                         activePreviewArea.innerHTML = `
-                            <button id="nativeCarouselDownloadBtn" style="display: block; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-size: 1rem; font-weight: bold; margin-bottom: 12px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: pointer;">
+                            <button id="nativeCarouselDownloadBtn" style="display: block; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-size: 1rem; font-weight: bold; margin-bottom: 12px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: pointer; transition: background 0.3s;">
                                 ⬇️ Download ${filename}
                             </button>
                             <br>
@@ -630,8 +638,13 @@ async function fetchAndDownloadPhoto(btn) {
                         
                         activePreviewArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-                        // Blob download logic for Android compatibility
-                        document.getElementById('nativeCarouselDownloadBtn').onclick = () => {
+                        // Visual feedback added to the carousel download button
+                        document.getElementById('nativeCarouselDownloadBtn').onclick = (e) => {
+                            const btn = e.target;
+                            const originalText = btn.innerHTML;
+                            btn.innerHTML = "✅ Downloaded!";
+                            btn.style.background = "#059669"; 
+
                             canvas.toBlob((blob) => {
                                 const url = URL.createObjectURL(blob);
                                 const a = document.createElement('a');
@@ -643,6 +656,11 @@ async function fetchAndDownloadPhoto(btn) {
                                 URL.revokeObjectURL(url);
                                 document.body.removeChild(a);
                             }, 'image/png');
+
+                            setTimeout(() => {
+                                btn.innerHTML = originalText;
+                                btn.style.background = "#10b981";
+                            }, 2000);
                         };
                         
                         btn1.innerText = "TinEye Check 🔍";
@@ -680,7 +698,7 @@ async function fetchAndDownloadPhoto(btn) {
                             hiveBtn.innerText = "Hive Check ✨";
                             hiveBtn.onclick = (e) => {
                                 e.preventDefault();
-                                hiveBtn.style.display = 'none'; // Instant hide
+                                hiveBtn.style.display = 'none';
                                 window.open('https://hivedetect.ai/', '_blank');
                             };
                         };
