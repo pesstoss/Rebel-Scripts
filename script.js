@@ -332,7 +332,8 @@ async function fetchSinglePhoto(btn) {
     btn.disabled = true;
 
     try {
-        const response = await fetch(`/api/photo?url=${encodeURIComponent(fullUrl)}`);
+        // Cache-buster added here
+        const response = await fetch(`/api/photo?url=${encodeURIComponent(fullUrl)}&t=${Date.now()}`);
         const data = await response.json();
 
         if (!data.images || data.images.length === 0) throw new Error("No images found");
@@ -370,10 +371,7 @@ async function fetchSinglePhoto(btn) {
                         canvas.height = img.height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0);
-
-                        const pngUrl = canvas.toDataURL('image/png');
                         
-                        // --- NEW TIMESTAMP NAMING LOGIC ---
                         const now = new Date();
                         const timestamp = now.getFullYear() +
                             String(now.getMonth() + 1).padStart(2, '0') +
@@ -386,22 +384,36 @@ async function fetchSinglePhoto(btn) {
                         previewBox.style.display = 'block'; 
                         previewBox.style.textAlign = 'center';
                         
-                        // Replaced the long-press text with a dedicated download button
+                        // New Native Button replaces long-press text
                         previewBox.innerHTML = `
-                            <a href="${pngUrl}" download="${filename}" style="display: inline-block; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-bottom: 12px; width: 100%; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+                            <button id="nativeDownloadBtn" style="display: block; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-size: 1rem; font-weight: bold; margin-bottom: 12px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: pointer;">
                                 ⬇️ Download ${filename}
-                            </a>
+                            </button>
                             <br>
-                            <img src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                            <img src="${img.src}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
                             <div id="closeFetchPreview" style="margin-top: 12px; color: #ef4444; font-weight: bold; cursor: pointer; padding: 8px;">
                                 ✖ Tap here to close
                             </div>
                         `;
 
+                        // Blob download logic for Android compatibility
+                        document.getElementById('nativeDownloadBtn').onclick = () => {
+                            canvas.toBlob((blob) => {
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.style.display = 'none';
+                                a.href = url;
+                                a.download = filename;
+                                document.body.appendChild(a);
+                                a.click();
+                                URL.revokeObjectURL(url);
+                                document.body.removeChild(a);
+                            }, 'image/png');
+                        };
+
                         const allBtns = btn.closest('.page-section').querySelectorAll('button');
                         const btn1 = allBtns[0]; 
                         const btn2 = allBtns[1]; 
-                        
                         const origBtn1Click = btn1.onclick;
                         const origBtn2Click = btn2.onclick;
                         const origBtn2Text = btn2.innerText; 
@@ -420,7 +432,6 @@ async function fetchSinglePhoto(btn) {
                             window.open(`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(imgUrl)}`, '_blank');
                         };
                         
-                        // Close function moved to the new close button
                         document.getElementById('closeFetchPreview').onclick = () => {
                             previewBox.innerHTML = '';
                             previewBox.style.display = 'none';
@@ -443,8 +454,8 @@ async function fetchSinglePhoto(btn) {
                             hiveBtn.innerText = "Hive Check 🤖";
                             hiveBtn.onclick = (e) => {
                                 e.preventDefault();
+                                hiveBtn.style.display = 'none'; // Instant hide
                                 window.open('https://hivedetect.ai/', '_blank');
-                                setTimeout(() => { hiveBtn.style.display = 'none'; }, 500);
                             };
                         };
                     };
@@ -470,8 +481,8 @@ async function fetchSinglePhoto(btn) {
     }
 }
 
+
 async function fetchAndDownloadPhoto(btn) {
-    // 1. Check if it's already open, act as a Close button
     if (btn.innerText.includes("Close Carousel")) {
         const previewBox = document.getElementById('carouselPreviewBox');
         if (previewBox) {
@@ -492,8 +503,8 @@ async function fetchAndDownloadPhoto(btn) {
         hiveBtn.innerText = "Hive Check 🤖";
         hiveBtn.onclick = (e) => {
             e.preventDefault();
+            hiveBtn.style.display = 'none'; // Instant hide
             window.open('https://hivedetect.ai/', '_blank');
-            setTimeout(() => { hiveBtn.style.display = 'none'; }, 500);
         };
 
         return;
@@ -521,7 +532,8 @@ async function fetchAndDownloadPhoto(btn) {
     btn.disabled = true;
 
     try {
-        const response = await fetch(`/api/photo?url=${encodeURIComponent(fullUrl)}`);
+        // Cache-buster added here
+        const response = await fetch(`/api/photo?url=${encodeURIComponent(fullUrl)}&t=${Date.now()}`);
         const data = await response.json();
 
         if (!data.images || data.images.length === 0) throw new Error("No images found");
@@ -534,11 +546,10 @@ async function fetchAndDownloadPhoto(btn) {
             btn.closest('.page-section').appendChild(previewBox);
         }
         
-        previewBox.innerHTML = ''; // Clear previous searches
+        previewBox.innerHTML = ''; 
         previewBox.style.display = 'flex'; 
         previewBox.style.flexDirection = 'column';
         
-        // 2. Create a dedicated container for the high-res image ABOVE the carousel
         const activePreviewArea = document.createElement('div');
         activePreviewArea.id = 'activePreviewArea';
         previewBox.appendChild(activePreviewArea);
@@ -561,10 +572,9 @@ async function fetchAndDownloadPhoto(btn) {
         scrollContainer.style.paddingBottom = '8px';
         previewBox.appendChild(scrollContainer);
 
-        // 1. Grab both main buttons and save their state ONLY ONCE globally
         const allBtns = btn.closest('.page-section').querySelectorAll('button');
-        const btn1 = allBtns[0]; // The Single Photo button
-        const btn2 = allBtns[1]; // The Carousel button
+        const btn1 = allBtns[0]; 
+        const btn2 = allBtns[1]; 
         const origBtn1Click = btn1.onclick;
         const origBtn2Click = btn2.onclick;
 
@@ -594,9 +604,6 @@ async function fetchAndDownloadPhoto(btn) {
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0);
                         
-                        const pngUrl = canvas.toDataURL('image/png');
-                        
-                        // --- NEW TIMESTAMP NAMING LOGIC ---
                         const now = new Date();
                         const timestamp = now.getFullYear() +
                             String(now.getMonth() + 1).padStart(2, '0') +
@@ -609,21 +616,35 @@ async function fetchAndDownloadPhoto(btn) {
                         activePreviewArea.style.textAlign = 'center';
                         activePreviewArea.style.marginBottom = '16px';
                         
-                        // Replaced the long-press text with a dedicated download button
+                        // New Native Button replaces long-press text
                         activePreviewArea.innerHTML = `
-                            <a href="${pngUrl}" download="${filename}" style="display: inline-block; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-bottom: 12px; width: 100%; box-sizing: border-box; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+                            <button id="nativeCarouselDownloadBtn" style="display: block; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-size: 1rem; font-weight: bold; margin-bottom: 12px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: pointer;">
                                 ⬇️ Download ${filename}
-                            </a>
+                            </button>
                             <br>
-                            <img src="${pngUrl}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                            <img src="${img.src}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
                             <div id="closeFetchPreview" style="margin-top: 12px; color: #ef4444; font-weight: bold; cursor: pointer; padding: 8px;">
                                 ✖ Tap here to close
                             </div>
                         `;
                         
                         activePreviewArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+                        // Blob download logic for Android compatibility
+                        document.getElementById('nativeCarouselDownloadBtn').onclick = () => {
+                            canvas.toBlob((blob) => {
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.style.display = 'none';
+                                a.href = url;
+                                a.download = filename;
+                                document.body.appendChild(a);
+                                a.click();
+                                URL.revokeObjectURL(url);
+                                document.body.removeChild(a);
+                            }, 'image/png');
+                        };
                         
-                        // 2. Morph buttons using the exact imgUrl of this specific thumbnail
                         btn1.innerText = "TinEye Check 🔍";
                         btn1.disabled = false;
                         btn1.onclick = (e) => {
@@ -638,7 +659,6 @@ async function fetchAndDownloadPhoto(btn) {
                             window.open(`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(imgUrl)}`, '_blank');
                         };
                         
-                        // 3. Restore everything when the close button is tapped
                         document.getElementById('closeFetchPreview').onclick = () => {
                             activePreviewArea.innerHTML = '';
                             
@@ -648,7 +668,6 @@ async function fetchAndDownloadPhoto(btn) {
                             btn2.innerText = "Close Carousel ❌";
                             btn2.onclick = origBtn2Click;
 
-                            // --- NEW HIVE CHECK BUTTON LOGIC FOR CAROUSEL PHOTO CLOSE ---
                             let hiveBtn = document.getElementById('hiveCheckBtn');
                             if (!hiveBtn) {
                                 hiveBtn = document.createElement('button');
@@ -661,8 +680,8 @@ async function fetchAndDownloadPhoto(btn) {
                             hiveBtn.innerText = "Hive Check ✨";
                             hiveBtn.onclick = (e) => {
                                 e.preventDefault();
+                                hiveBtn.style.display = 'none'; // Instant hide
                                 window.open('https://hivedetect.ai/', '_blank');
-                                setTimeout(() => { hiveBtn.style.display = 'none'; }, 500);
                             };
                         };
                     };
@@ -676,7 +695,6 @@ async function fetchAndDownloadPhoto(btn) {
             thumb.src = imgUrl; 
         });
 
-        // Change the button to act as a close toggle
         btn.innerText = "Close Carousel ❌";
         btn.disabled = false;
 
