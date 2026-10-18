@@ -376,7 +376,7 @@ async function fetchSinglePhoto(btn) {
             
             previewBox.innerHTML = `
                 <button id="nativeDownloadBtn" style="display: block; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-size: 1rem; font-weight: bold; margin-bottom: 12px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: pointer; transition: background 0.3s;">
-                    ⬇️ Download ${filename}
+                    ⬇️ Download Photo
                 </button>
                 <br>
                 <img src="${img.src}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
@@ -601,7 +601,7 @@ async function fetchAndDownloadPhoto(btn) {
                             
                             activePreviewArea.innerHTML = `
                                 <button id="nativeCarouselDownloadBtn" style="display: block; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-size: 1rem; font-weight: bold; margin-bottom: 12px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: pointer; transition: background 0.3s;">
-                                    ⬇️ Download ${filename}
+                                    ⬇️ Download Photo
                                 </button>
                                 <br>
                                 <img src="${img.src}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
