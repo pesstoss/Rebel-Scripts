@@ -337,8 +337,6 @@ async function fetchSinglePhoto(btn) {
 
         if (!data.images || data.images.length === 0) throw new Error("No images found");
 
-        let found = false;
-
         let previewBox = document.getElementById('carouselPreviewBox');
         if (!previewBox) {
             previewBox = document.createElement('div');
@@ -349,130 +347,131 @@ async function fetchSinglePhoto(btn) {
         previewBox.innerHTML = '';
         previewBox.style.display = 'none';
 
+        let found = false;
+
+        // THE FIX: Process images sequentially so the small ones don't win the race
         for (const imgUrl of data.images) {
-            if (found) break;
+            const isValid = await new Promise((resolve) => {
+                const tempImg = new Image();
+                tempImg.onload = () => resolve(tempImg.naturalWidth >= 400 || tempImg.naturalHeight >= 400);
+                tempImg.onerror = () => resolve(false);
+                tempImg.src = imgUrl;
+            });
 
-            const tempImg = new Image();
-            tempImg.onload = async () => {
-                if (found) return;
+            if (isValid) {
+                found = true;
+                btn.innerText = "Processing...";
 
-                if (tempImg.naturalWidth >= 400 || tempImg.naturalHeight >= 400) {
-                    found = true;
-                    btn.innerText = "Processing...";
+                const proxyResp = await fetch(`/api/photo?targetImage=${encodeURIComponent(imgUrl)}&t=${Date.now()}`);
+                const blob = await proxyResp.blob();
+                const img = new Image();
 
-                    // Cache-buster added to the proxy fetch here
-                    const proxyResp = await fetch(`/api/photo?targetImage=${encodeURIComponent(imgUrl)}&t=${Date.now()}`);
-                    const blob = await proxyResp.blob();
-                    const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    
+                    const now = new Date();
+                    const timestamp = now.getFullYear() +
+                        String(now.getMonth() + 1).padStart(2, '0') +
+                        String(now.getDate()).padStart(2, '0') + "_" +
+                        String(now.getHours()).padStart(2, '0') +
+                        String(now.getMinutes()).padStart(2, '0') +
+                        String(now.getSeconds()).padStart(2, '0');
+                    const filename = `featured_photo_${timestamp}.png`;
+                    
+                    previewBox.style.display = 'block'; 
+                    previewBox.style.textAlign = 'center';
+                    
+                    previewBox.innerHTML = `
+                        <button id="nativeDownloadBtn" style="display: block; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-size: 1rem; font-weight: bold; margin-bottom: 12px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: pointer; transition: background 0.3s;">
+                            ⬇️ Download ${filename}
+                        </button>
+                        <br>
+                        <img src="${img.src}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+                        <div id="closeFetchPreview" style="margin-top: 12px; color: #ef4444; font-weight: bold; cursor: pointer; padding: 8px;">
+                            ✖ Tap here to close
+                        </div>
+                    `;
 
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = img.naturalWidth;
-                        canvas.height = img.naturalHeight;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0);
-                        
-                        const now = new Date();
-                        const timestamp = now.getFullYear() +
-                            String(now.getMonth() + 1).padStart(2, '0') +
-                            String(now.getDate()).padStart(2, '0') + "_" +
-                            String(now.getHours()).padStart(2, '0') +
-                            String(now.getMinutes()).padStart(2, '0') +
-                            String(now.getSeconds()).padStart(2, '0');
-                        const filename = `featured_photo_${timestamp}.png`;
-                        
-                        previewBox.style.display = 'block'; 
-                        previewBox.style.textAlign = 'center';
-                        
-                        previewBox.innerHTML = `
-                            <button id="nativeDownloadBtn" style="display: block; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-size: 1rem; font-weight: bold; margin-bottom: 12px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: pointer; transition: background 0.3s;">
-                                ⬇️ Download ${filename}
-                            </button>
-                            <br>
-                            <img src="${img.src}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                            <div id="closeFetchPreview" style="margin-top: 12px; color: #ef4444; font-weight: bold; cursor: pointer; padding: 8px;">
-                                ✖ Tap here to close
-                            </div>
-                        `;
+                    document.getElementById('nativeDownloadBtn').onclick = (e) => {
+                        const btn = e.target;
+                        const originalText = btn.innerHTML;
+                        btn.innerHTML = "✅ Downloaded!";
+                        btn.style.background = "#059669"; 
 
-                        // Visual feedback added to the download button
-                        document.getElementById('nativeDownloadBtn').onclick = (e) => {
-                            const btn = e.target;
-                            const originalText = btn.innerHTML;
-                            btn.innerHTML = "✅ Downloaded!";
-                            btn.style.background = "#059669"; 
+                        canvas.toBlob((blob) => {
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.style.display = 'none';
+                            a.href = url;
+                            a.download = filename;
+                            document.body.appendChild(a);
+                            a.click();
+                            URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+                        }, 'image/png');
 
-                            canvas.toBlob((blob) => {
-                                const url = URL.createObjectURL(blob);
-                                const a = document.createElement('a');
-                                a.style.display = 'none';
-                                a.href = url;
-                                a.download = filename;
-                                document.body.appendChild(a);
-                                a.click();
-                                URL.revokeObjectURL(url);
-                                document.body.removeChild(a);
-                            }, 'image/png');
-
-                            setTimeout(() => {
-                                btn.innerHTML = originalText;
-                                btn.style.background = "#10b981";
-                            }, 2000);
-                        };
-
-                        const allBtns = btn.closest('.page-section').querySelectorAll('button');
-                        const btn1 = allBtns[0]; 
-                        const btn2 = allBtns[1]; 
-                        const origBtn1Click = btn1.onclick;
-                        const origBtn2Click = btn2.onclick;
-                        const origBtn2Text = btn2.innerText; 
-                        
-                        btn1.innerText = "TinEye Check 🔍";
-                        btn1.disabled = false;
-                        btn1.onclick = (e) => {
-                            e.preventDefault();
-                            window.open(`https://tineye.com/search?url=${encodeURIComponent(imgUrl)}`, '_blank');
-                        };
-                        
-                        btn2.innerText = "Google Lens Check 🔍";
-                        btn2.disabled = false;
-                        btn2.onclick = (e) => {
-                            e.preventDefault();
-                            window.open(`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(imgUrl)}`, '_blank');
-                        };
-                        
-                        document.getElementById('closeFetchPreview').onclick = () => {
-                            previewBox.innerHTML = '';
-                            previewBox.style.display = 'none';
-                            
-                            btn1.innerText = "Fetch Single Photo 🖼️";
-                            btn1.onclick = origBtn1Click;
-                            
-                            btn2.innerText = origBtn2Text;
-                            btn2.onclick = origBtn2Click;
-
-                            let hiveBtn = document.getElementById('hiveCheckBtn');
-                            if (!hiveBtn) {
-                                hiveBtn = document.createElement('button');
-                                hiveBtn.id = 'hiveCheckBtn';
-                                hiveBtn.className = btn1.className; 
-                                hiveBtn.style.marginTop = '10px';
-                                btn2.insertAdjacentElement('afterend', hiveBtn);
-                            }
-                            hiveBtn.style.display = 'block';
-                            hiveBtn.innerText = "Hive Check 🤖";
-                            hiveBtn.onclick = (e) => {
-                                e.preventDefault();
-                                hiveBtn.style.display = 'none';
-                                window.open('https://hivedetect.ai/', '_blank');
-                            };
-                        };
+                        setTimeout(() => {
+                            btn.innerHTML = originalText;
+                            btn.style.background = "#10b981";
+                        }, 2000);
                     };
 
-                    img.src = URL.createObjectURL(blob);
-                }
-            };
-            tempImg.src = imgUrl;
+                    const allBtns = btn.closest('.page-section').querySelectorAll('button');
+                    const btn1 = allBtns[0]; 
+                    const btn2 = allBtns[1]; 
+                    const origBtn1Click = btn1.onclick;
+                    const origBtn2Click = btn2.onclick;
+                    const origBtn2Text = btn2.innerText; 
+                    
+                    btn1.innerText = "TinEye Check 🔍";
+                    btn1.disabled = false;
+                    btn1.onclick = (e) => {
+                        e.preventDefault();
+                        window.open(`https://tineye.com/search?url=${encodeURIComponent(imgUrl)}`, '_blank');
+                    };
+                    
+                    btn2.innerText = "Google Lens Check 🔍";
+                    btn2.disabled = false;
+                    btn2.onclick = (e) => {
+                        e.preventDefault();
+                        window.open(`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(imgUrl)}`, '_blank');
+                    };
+                    
+                    document.getElementById('closeFetchPreview').onclick = () => {
+                        previewBox.innerHTML = '';
+                        previewBox.style.display = 'none';
+                        
+                        btn1.innerText = "Fetch Single Photo 🖼️";
+                        btn1.onclick = origBtn1Click;
+                        
+                        btn2.innerText = origBtn2Text;
+                        btn2.onclick = origBtn2Click;
+
+                        let hiveBtn = document.getElementById('hiveCheckBtn');
+                        if (!hiveBtn) {
+                            hiveBtn = document.createElement('button');
+                            hiveBtn.id = 'hiveCheckBtn';
+                            hiveBtn.className = btn1.className; 
+                            hiveBtn.style.marginTop = '10px';
+                            btn2.insertAdjacentElement('afterend', hiveBtn);
+                        }
+                        hiveBtn.style.display = 'block';
+                        hiveBtn.innerText = "Hive Check 🤖";
+                        hiveBtn.onclick = (e) => {
+                            e.preventDefault();
+                            hiveBtn.style.display = 'none';
+                            window.open('https://hivedetect.ai/', '_blank');
+                        };
+                    };
+                };
+
+                img.src = URL.createObjectURL(blob);
+                break; // Stop the loop completely once we secure the biggest photo
+            }
         }
 
         setTimeout(() => {
@@ -489,7 +488,6 @@ async function fetchSinglePhoto(btn) {
         btn.disabled = false;
     }
 }
-
 
 async function fetchAndDownloadPhoto(btn) {
     if (btn.innerText.includes("Close Carousel")) {
@@ -601,7 +599,6 @@ async function fetchAndDownloadPhoto(btn) {
                 thumb.onclick = async () => {
                     btn.innerText = "Processing...";
                     
-                    // Cache-buster added to the proxy fetch here
                     const proxyResp = await fetch(`/api/photo?targetImage=${encodeURIComponent(imgUrl)}&t=${Date.now()}`);
                     const blob = await proxyResp.blob();
                     const img = new Image();
@@ -638,7 +635,6 @@ async function fetchAndDownloadPhoto(btn) {
                         
                         activePreviewArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-                        // Visual feedback added to the carousel download button
                         document.getElementById('nativeCarouselDownloadBtn').onclick = (e) => {
                             const btn = e.target;
                             const originalText = btn.innerHTML;
