@@ -740,7 +740,7 @@ if (locationSearchInput) {
         typingTimer = setTimeout(async () => {
             try {
                 // Fetch from OSM, requiring country details
-                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`);
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1&accept-language=en`);
                 const data = await response.json();
                 
                 locationDropdown.innerHTML = '';
