@@ -61,6 +61,7 @@ function updateVisibility() {
     const commentGroup2 = document.getElementById("commentGroup2");
     const levelGroup = document.getElementById("levelGroup");
     const roleGroup = document.getElementById("roleGroup");
+    const locationGroup = document.getElementById("locationWrapper");
 
     // 1. Artist Name: Only for Rebel BNW, Snap Allnature, and Snap Wildlife
     if (gallery === 'rebel_bnw' || gallery === 'snap_allnature' || gallery === 'snap_wildlife' || gallery === 'pictasmacro') {
@@ -104,6 +105,20 @@ function updateVisibility() {
             roleGroup.style.display = "block";
         }
     }
+
+    // 6. Location: Only for some galleries
+    if (locationGroup) {
+    if (gallery === 'snap_germany' || gallery === 'snap_waters') {
+        locationGroup.style.display = "block";
+    } else {
+        locationGroup.style.display = "none";
+        // Clear the fields if they switch to a gallery that doesn't use locations
+        const searchInput = document.getElementById('locationSearchInput');
+        const finalOutput = document.getElementById('finalLocationOutput');
+        if (searchInput) searchInput.value = '';
+        if (finalOutput) finalOutput.value = '';
+    }
+}
 }
 
 // 1. Usernames from the caution list (must be all lowercase!)
@@ -183,6 +198,8 @@ async function updateConsoles() {
     const mod = document.getElementById('modInput').value || '[username]';
     const levelSelect = document.getElementById('levelSelect');
     const level = levelSelect ? levelSelect.value : 'Artist';
+    const locationOutput = document.getElementById('finalLocationOutput');
+    const locationText = locationOutput ? locationOutput.value : '';    
     
     // Grab the new inputs
     const firstName = document.getElementById('firstNameInput') ? document.getElementById('firstNameInput').value : '[FirstName]';
@@ -224,7 +241,8 @@ async function updateConsoles() {
             .replace(/{modName}/g, firstName)
             .replace(/{personalComment}/g, comment)
             .replace(/{personalComment2}/g, comment2)
-            .replace(/{snapGallery}/g, snapGalleryName);
+            .replace(/{snapGallery}/g, snapGalleryName)
+            .replace('{location}', locationText ? `${locationText}\n` : '');
     };
 
     // Output the final generated text to all three text boxes
@@ -700,4 +718,78 @@ async function fetchAndDownloadPhoto(btn) {
         btn.innerText = "Fetch Carousel 🎠";
         btn.disabled = false;
     }
+}
+
+// --- OpenStreetMap Location Search Logic ---
+const locationSearchInput = document.getElementById('locationSearchInput');
+const locationDropdown = document.getElementById('locationDropdown');
+const finalLocationOutput = document.getElementById('finalLocationOutput'); 
+
+let typingTimer;
+
+if (locationSearchInput) {
+    locationSearchInput.addEventListener('input', (e) => {
+        const query = e.target.value.trim();
+        clearTimeout(typingTimer);
+
+        if (query.length < 3) {
+            locationDropdown.style.display = 'none';
+            return;
+        }
+
+        typingTimer = setTimeout(async () => {
+            try {
+                // Fetch from OSM, requiring country details
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`);
+                const data = await response.json();
+                
+                locationDropdown.innerHTML = '';
+                
+                if (data.length > 0) {
+                    data.forEach(place => {
+                        const li = document.createElement('li');
+                        li.style.padding = '10px';
+                        li.style.cursor = 'pointer';
+                        li.style.borderBottom = '1px solid #334155';
+                        li.style.color = 'white';
+                        
+                        // Extract specific feature and country
+                        const primaryFeature = place.display_name.split(',')[0].trim();
+                        const country = place.address && place.address.country ? place.address.country : '';
+                        
+                        let cleanName = primaryFeature;
+                        if (country && primaryFeature.toLowerCase() !== country.toLowerCase()) {
+                            cleanName = `${primaryFeature}, ${country}`;
+                        }
+                        
+                        li.innerText = cleanName;
+                        
+                        li.onmouseover = () => li.style.background = '#334155';
+                        li.onmouseout = () => li.style.background = 'transparent';
+                        
+                        li.onclick = () => {
+                            finalLocationOutput.value = ` ${cleanName}`;
+                            locationSearchInput.value = ''; 
+                            locationDropdown.style.display = 'none';
+                            updateConsoles();
+                            };
+                        
+                        locationDropdown.appendChild(li);
+                    });
+                    locationDropdown.style.display = 'block';
+                } else {
+                    locationDropdown.style.display = 'none';
+                }
+            } catch (err) {
+                console.error("Map fetch failed:", err);
+            }
+        }, 500); // 500ms debounce
+    });
+
+    // Close the dropdown if clicking outside
+    document.addEventListener('click', (e) => {
+        if (e.target !== locationSearchInput) {
+            locationDropdown.style.display = 'none';
+        }
+    });
 }
