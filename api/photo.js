@@ -61,8 +61,8 @@ export default async function handler(req, res) {
                     const imgUrl = parts[0];
                     const width = parseInt(parts[1].replace('w', ''), 10);
 
-                    // Grab the largest version, and filter out tiny avatars (under 300px)
-                    if (width > maxWidth && width > 300) {
+                    // Grab the largest version, and filter out tiny avatars (under 600px)
+                    if (width > maxWidth && width > 600) {
                         maxWidth = width;
                         largestUrl = imgUrl;
                     }
