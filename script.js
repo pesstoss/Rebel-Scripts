@@ -304,6 +304,13 @@ function clearArtistFields() {
     const commentInput2 = document.getElementById('commentInput2');
     if (commentInput2) commentInput2.value = '';
 
+    // Clear the location search and final output
+    const locationSearch = document.getElementById('locationSearchInput');
+    if (locationSearch) locationSearch.value = '';
+
+    const locationFinal = document.getElementById('finalLocationOutput');
+    if (locationFinal) locationFinal.value = '';
+
     const photoPreview = document.getElementById('iosPhotoFallback');
     if (photoPreview) {
         photoPreview.remove(); 
