@@ -38,34 +38,47 @@ export default async function handler(req, res) {
 
         const cleanHtml = await postReq.text();
 
-        // Extract the explicit size data Vero provides
-        const srcSetMatch = cleanHtml.match(/<source[^>]*type="image\/jpeg"[^>]*srcSet="([^"]+)"/i);
-        
-        if (!srcSetMatch) {
-            return res.status(404).json({ error: 'Blocked by Cloudflare or could not find image source.' });
+        // Use matchAll and the global 'g' flag to find EVERY image block on the page
+        const regex = /<source[^>]*type="image\/jpeg"[^>]*srcSet="([^"]+)"/gi;
+        const matches = [...cleanHtml.matchAll(regex)];
+
+        if (matches.length === 0) {
+            return res.status(404).json({ error: 'Blocked by Cloudflare or could not find image sources.' });
         }
 
-        const imageOptions = srcSetMatch[1].split(',').map(entry => entry.trim());
-        let largestUrl = null;
-        let maxWidth = 0;
+        const largestUrls = [];
 
-        for (const option of imageOptions) {
-            const parts = option.split(' ');
-            if (parts.length === 2) {
-                const imgUrl = parts[0];
-                const width = parseInt(parts[1].replace('w', ''), 10);
-                
-                if (width > maxWidth) {
-                    maxWidth = width;
-                    largestUrl = imgUrl;
+        // Loop through every image found in the HTML (carousels, avatars, etc.)
+        for (const match of matches) {
+            const srcSet = match[1];
+            const imageOptions = srcSet.split(',').map(entry => entry.trim());
+            let largestUrl = null;
+            let maxWidth = 0;
+
+            for (const option of imageOptions) {
+                const parts = option.split(' ');
+                if (parts.length === 2) {
+                    const imgUrl = parts[0];
+                    const width = parseInt(parts[1].replace('w', ''), 10);
+
+                    // Grab the largest version, and filter out tiny avatars (under 300px)
+                    if (width > maxWidth && width > 300) {
+                        maxWidth = width;
+                        largestUrl = imgUrl;
+                    }
                 }
+            }
+
+            // Only add to array if it's a valid large image and not a duplicate
+            if (largestUrl && !largestUrls.includes(largestUrl)) {
+                largestUrls.push(largestUrl);
             }
         }
 
-        if (!largestUrl) return res.status(404).json({ error: 'Failed to parse image sizes.' });
+        if (largestUrls.length === 0) return res.status(404).json({ error: 'Failed to parse post images.' });
 
         res.setHeader('Access-Control-Allow-Origin', '*');
-        res.status(200).json({ images: [largestUrl] });
+        res.status(200).json({ images: largestUrls }); // Returns the full array of carousel photos!
     } catch (error) {
         res.status(500).json({ error: 'Failed to scrape Vero link' });
     }
