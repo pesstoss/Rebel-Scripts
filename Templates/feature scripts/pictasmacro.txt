@@ -1,0 +1,13 @@
+✦ Photo by: {name} @{handle} 
+✧ Selected by: {modName} @{mod} 
+ 
+Stunning macro shot! The warm light beneath the gills and the natural dynamism of the two mushrooms have been captured fantastically. Beautiful work! 🍄✨
+
+✦ We recommend visiting the photographer’s feed and showing them some Vero love. 
+ 
+✧ Please take a look at all the other Pictas hubs:  https://vero.co/pictas/3BK-hWVkw5R5p35Q74nLHZM2 
+
+✦ #pictas_{handle}
+✧ #pictasmacro_{handle}
+
+#MacroPhotography #mushroom #nature #naturephotography #vero #verofamily #verofriends #congratulations

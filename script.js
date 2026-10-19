@@ -63,7 +63,7 @@ function updateVisibility() {
     const roleGroup = document.getElementById("roleGroup");
 
     // 1. Artist Name: Only for Rebel BNW, Snap Allnature, and Snap Wildlife
-    if (gallery === 'rebel_bnw' || gallery === 'snap_allnature' || gallery === 'snap_wildlife') {
+    if (gallery === 'rebel_bnw' || gallery === 'snap_allnature' || gallery === 'snap_wildlife' || gallery === 'pictasmacro') {
         nameGroup.style.display = "block";
     } else {
         nameGroup.style.display = "none";
@@ -78,7 +78,7 @@ function updateVisibility() {
 
     // 3. Personal Comment: Everyone gets it EXCEPT Rebel BNW and Fotomasters
     if (commentGroup && commentGroup2) { 
-        if (gallery === 'rebel_bnw' || gallery === 'fotomasters') {
+        if (gallery === 'rebel_bnw' || gallery === 'fotomasters' || gallery === 'pictasmacro') {
             commentGroup.style.display = "none";
             commentGroup2.style.display = "none";
         } else {
@@ -87,7 +87,7 @@ function updateVisibility() {
         }
     }
     // 4. Membership Level: Hide for Rebel BNW and Fotomasters
-        if (gallery === 'rebel_bnw' || gallery === 'fotomasters') {
+        if (gallery === 'rebel_bnw' || gallery === 'fotomasters' || gallery === 'pictasmacro') {
             levelGroup.style.display = "none";
         } else {
             levelGroup.style.display = "block";
@@ -195,8 +195,10 @@ async function updateConsoles() {
         commentFileName = 'snap';
     } else if (gallery === 'fotomasters') {
         commentFileName = 'fotomasters'; 
+    } else if (gallery === 'pictasmacro') {
+        commentFileName = 'pictas';
     }
-    
+
     const snapGalleryName = gallery.replace('snap_', ''); 
 
     // Fetch all three templates using our new folders
