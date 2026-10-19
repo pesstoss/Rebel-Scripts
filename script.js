@@ -69,8 +69,8 @@ function updateVisibility() {
         nameGroup.style.display = "none";
     }
 
-    // 2. Curator First Name: Only for Snap galleries
-    if (gallery.startsWith('snap_')) {
+    // 2. Curator First Name: Only for Snap and Pictas galleries
+    if (gallery.startsWith('snap_') || gallery.startsWith('pictas')) {
         firstNameGroup.style.display = "block";
     } else {
         firstNameGroup.style.display = "none";
@@ -81,19 +81,24 @@ function updateVisibility() {
         if (gallery === 'rebel_bnw' || gallery === 'fotomasters' || gallery === 'pictasmacro') {
             commentGroup.style.display = "none";
             commentGroup2.style.display = "none";
-        } else {
+        } else if (gallery.startsWith('snap_')) {
             commentGroup.style.display = "block";
             commentGroup2.style.display = "block";
+        } else if (gallery === 'monomoods') {
+            commentGroup.style.display = "block";
         }
     }
+
     // 4. Membership Level: Hide for Rebel BNW and Fotomasters
-        if (gallery === 'rebel_bnw' || gallery === 'fotomasters' || gallery === 'pictasmacro') {
+        if (gallery === 'rebel_bnw' || gallery === 'fotomasters' || gallery === 'pictasmacro'  || gallery === 'monomoods') {
             levelGroup.style.display = "none";
         } else {
             levelGroup.style.display = "block";
         }
+
+    // 5. Role Selection: Hide for Fotomasters, Pictas and Monomoods    
         if (roleGroup) {
-        if (gallery === 'fotomasters') {
+        if (gallery === 'fotomasters' || gallery === 'pictasmacro' || gallery === 'monomoods') {
             roleGroup.style.display = "none";
         } else {
             roleGroup.style.display = "block";
@@ -197,6 +202,8 @@ async function updateConsoles() {
         commentFileName = 'fotomasters'; 
     } else if (gallery === 'pictasmacro') {
         commentFileName = 'pictas';
+    } else if (gallery === 'monomoods') {
+        commentFileName = 'monomoods';
     }
 
     const snapGalleryName = gallery.replace('snap_', ''); 
