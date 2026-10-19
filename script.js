@@ -583,9 +583,10 @@ async function fetchAndDownloadPhoto(btn) {
         
         const scrollContainer = document.createElement('div');
         scrollContainer.style.display = 'flex';
-        scrollContainer.style.gap = '12px';
+        scrollContainer.style.flexWrap = 'wrap'; // Allows it to drop to the next line
+        scrollContainer.style.justifyContent = 'center';
+        scrollContainer.style.gap = '8px'; // Slightly tighter gap for the grid
         scrollContainer.style.width = '100%';
-        scrollContainer.style.overflowX = 'auto';
         scrollContainer.style.paddingBottom = '8px';
         previewBox.appendChild(scrollContainer);
 
@@ -598,11 +599,14 @@ async function fetchAndDownloadPhoto(btn) {
         // Route all carousel thumbnails through the proxy to bypass WAF
         data.images.forEach(imgUrl => {
             const thumb = document.createElement('img');
-            thumb.style.height = '140px';
-            thumb.style.width = 'auto';
+            // Calculate width to fit exactly 3 per row (minus the gaps)
+            thumb.style.width = 'calc(33.33% - 6px)'; 
+            thumb.style.aspectRatio = '1 / 1'; // Makes them perfect squares
+            thumb.style.objectFit = 'cover'; // Crops beautifully without squishing
             thumb.style.borderRadius = '8px';
             thumb.style.cursor = 'pointer';
             thumb.style.border = '2px solid #334155';
+            thumb.style.flexShrink = '0'; // Keeps their shape in single-row mode
             
             fetch(`/api/photo?targetImage=${encodeURIComponent(imgUrl)}&t=${Date.now()}`)
                 .then(res => res.blob())
@@ -612,6 +616,15 @@ async function fetchAndDownloadPhoto(btn) {
 
                     thumb.onclick = () => {
                         btn.innerText = "Processing...";
+                        
+                        // Switch to horizontal scrolling row
+                        scrollContainer.style.flexWrap = 'nowrap';
+                        scrollContainer.style.overflowX = 'auto';
+                        scrollContainer.style.justifyContent = 'flex-start';
+                        Array.from(scrollContainer.children).forEach(t => {
+                            t.style.width = '80px'; // Shrink them out of the way
+                        });
+
                         const img = new Image();
                         
                         img.onload = () => {
@@ -686,6 +699,14 @@ async function fetchAndDownloadPhoto(btn) {
                             
                             document.getElementById('closeFetchPreview').onclick = () => {
                                 activePreviewArea.innerHTML = '';
+
+                                // Switch back to the 3-column wrap grid
+                                scrollContainer.style.flexWrap = 'wrap';
+                                scrollContainer.style.overflowX = 'visible';
+                                scrollContainer.style.justifyContent = 'center';
+                                Array.from(scrollContainer.children).forEach(t => {
+                                    t.style.width = 'calc(33.33% - 6px)'; // Restore square size
+                                });
                                 
                                 btn1.innerText = "Fetch Single Photo 🖼️";
                                 btn1.onclick = origBtn1Click;
