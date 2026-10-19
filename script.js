@@ -470,7 +470,7 @@ async function fetchSinglePhoto(btn) {
         img.src = URL.createObjectURL(blob);
 
     } catch (err) {
-        alert("Error extracting photo. Make sure the post link is valid.");
+        alert("Error extracting photo. This profile is private.");
         btn.innerText = "Fetch Single Photo 🖼️";
         btn.disabled = false;
     }
@@ -696,7 +696,7 @@ async function fetchAndDownloadPhoto(btn) {
         btn.disabled = false;
 
     } catch (err) {
-        alert("Error extracting photos. Make sure the post link is valid.");
+        alert("Error extracting photos. This profile is private.");
         btn.innerText = "Fetch Carousel 🎠";
         btn.disabled = false;
     }
