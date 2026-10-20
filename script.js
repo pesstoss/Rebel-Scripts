@@ -122,60 +122,70 @@ function updateVisibility() {
 }
 }
 
-// 1. Usernames from the caution list (must be all lowercase!)
-    const cautionList = [
-    "anacvitoria",
-    "ashishkumar",
-    "ashley1313",
-    "augenxblick",
-    "barrystone",
-    "beegabe",
-    "droneaboveireland",
-    "deeweeuavp",
-    "etoile6",
-    "marieo0",
-    "photoamateur05",
-    "cathy00",
-    "countrymansam",
-    "elatedsoul",
-    "elias sairafi",
-    "frapan8475",
-    "hobbyfotograf_robert",
-    "jackdav",
-    "lucyh",
-    "marcoaurelioantonioaugusto",
-    "marleen2024",
-    "miss_interpols_world",
-    "najmcphotography",
-    "nathaliejessart",
-    "palatina",
-    "retrograyde",
-    "roni001",
-    "sakipix_",
-    "sergeyyy",
-    "streetsoul",
-    "trondtopstad",
-    "volwitt51",
-    "wao82",
-    "wayneb"
-    ];
+// 1. Set up empty arrays for our lists
+let cautionList = [];
+let blockedList = [];
 
-    // 2. Real-time scanner for the handle input box
-    document.getElementById("handleInput").addEventListener("input", function() {
-        const warningMsg = document.getElementById("cautionWarning");
-        const typedText = this.value.toLowerCase(); 
+// 2. Fetch the text files and load them into the arrays
+async function loadModerationLists() {
+    try {
+        const cautionRes = await fetch('caution-list.txt');
+        const cautionText = await cautionRes.text();
+        // Splits by line break, removes extra spaces, makes lowercase, and ignores blank lines
+        cautionList = cautionText.split('\n').map(name => name.trim().toLowerCase()).filter(Boolean);
+
+        const blockedRes = await fetch('blocked-list.txt');
+        const blockedText = await blockedRes.text();
+        blockedList = blockedText.split('\n').map(name => name.trim().toLowerCase()).filter(Boolean);
+    } catch (error) {
+        console.error("Error loading moderation lists:", error);
+    }
+}
+
+// Call the function immediately
+loadModerationLists();
+
+// 3. Real-time scanner for the handle input box
+document.getElementById("handleInput").addEventListener("input", function() {
+    const warningMsg = document.getElementById("cautionWarning");
+    
+    // Extract just the username if they pasted a full VERO URL, or just take the typed text
+    const veroRegex = /vero\.co\/([^\/\?\#\s]+)/i;
+    const match = this.value.match(veroRegex);
+    const typedText = match ? match[1].toLowerCase().trim() : this.value.toLowerCase().trim();
+
+    // Skip empty input
+    if (typedText === "") {
+        warningMsg.style.display = "none";
+        return;
+    }
+
+    // Check Blocked List first
+    if (blockedList.includes(typedText)) {
+        warningMsg.innerHTML = "🚫 BLOCKED ARTIST: You are not allowed to feature this user.";
+        warningMsg.style.color = "#ef4444"; // Bold Red
+        warningMsg.style.display = "block";
         
-        // Check if the typed text contains any username from the caution list
-        // This works whether they type just the handle or paste a full Vero link
-        const isOnList = cautionList.some(badUser => typedText.includes(badUser));
-
-        // Show the warning if there is a match, otherwise keep it hidden
-        if (isOnList && typedText.trim() !== "") {
-            warningMsg.style.display = "block";
-        } else {
-            warningMsg.style.display = "none";
+        // Prevent them from being chosen by clearing the script output box
+        const consoleMain = document.getElementById('consoleMain');
+        if (consoleMain) {
+            consoleMain.value = "ERROR: Cannot generate script for a blocked user.";
         }
-    });
+        
+    // Check Caution List second
+    } else if (cautionList.includes(typedText)) {
+        warningMsg.innerHTML = "⚠️ CAUTION: Please check moderator notes before featuring.";
+        warningMsg.style.color = "#f59e0b"; // Warning Orange
+        warningMsg.style.display = "block";
+        
+        updateConsoles(); // Allow the script to generate, but keep the warning visible
+        
+    // Clear warnings if it's a safe user
+    } else {
+        warningMsg.style.display = "none";
+        updateConsoles(); // Standard script generation
+    }
+});
 
 // Fetch the template text file from the specific subfolder
 async function fetchTemplate(folder, fileName) {
@@ -192,6 +202,19 @@ async function fetchTemplate(folder, fileName) {
 
 // Update text areas
 async function updateConsoles() {
+    // 1. Grab the current handle/URL being typed
+    const rawHandle = document.getElementById("handleInput").value;
+    const veroRegex = /vero\.co\/([^\/\?\#\s]+)/i;
+    const match = rawHandle.match(veroRegex);
+    const typedText = match ? match[1].toLowerCase().trim() : rawHandle.toLowerCase().trim();
+
+    // 2. The Bouncer: Stop generation instantly if user is blocked
+    if (blockedList.includes(typedText)) {
+        document.getElementById('consoleMain').value = "⛔️ ERROR: This artist is on the Blocked List.\nScripts cannot be generated.";
+        document.getElementById('consoleComment1').value = "⛔️ BLOCKED";
+        document.getElementById('consoleComment2').value = "⛔️ BLOCKED";
+        return; // Completely kills the function so templates don't load!
+    }
     const gallery = document.getElementById('gallerySelect').value;
     const role = document.getElementById('roleSelect').value;
     const name = document.getElementById('nameInput').value || '[name]';
