@@ -350,7 +350,7 @@
             border: none;
             font-size: 1rem;
             font-weight: bold;
-            margin-bottom: 12px;
+            margin: 0 auto 12px auto;
             width: max-content;
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
             cursor: pointer;
