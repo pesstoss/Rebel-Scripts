@@ -79,7 +79,7 @@ export default async function handler(req, res) {
 
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.status(200).json({ images: largestUrls }); // Returns the full array of carousel photos!
-    } catch (error) {
+            } catch (error) {
         res.status(500).json({ error: 'Failed to scrape Vero link' });
     }
 }

@@ -1,3 +1,4 @@
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.userAgent.includes("Mac") && "ontouchend" in document);
     document.getElementById('handleInput').addEventListener('input', async function() {
     const inputVal = this.value;
     this.dataset.fullUrl = inputVal;
@@ -408,40 +409,58 @@ async function fetchSinglePhoto(btn) {
                 String(now.getSeconds()).padStart(2, '0');
             const filename = `feature_${timestamp}.png`;
             
-            previewBox.innerHTML = `
-                <button id="nativeDownloadBtn" class="download-photo-btn">
-                    ⬇️ Download Photo
-                </button>
-                <br>
-                <img src="${img.src}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                <div id="closeFetchPreview" class="close-preview-btn">
-                    ✖ Tap here to close
-                </div>
-            `;
+            // 1. Swap between the button and the iOS text
+const downloadUI = isIOS 
+    ? `<div class="ios-save-text">📱 Long press photo to save to gallery</div>`
+    : `<button id="nativeDownloadBtn" class="download-photo-btn">⬇️ Download Photo</button>`;
 
-            document.getElementById('nativeDownloadBtn').onclick = (e) => {
-                const btn = e.target;
-                const originalText = btn.innerHTML;
-                btn.innerHTML = "✅ Downloaded!";
-                btn.classList.add('downloaded'); 
+previewBox.innerHTML = `
+    ${downloadUI}
+    <br>
+    <img src="${img.src}" class="photo-preview-img">
+    <div id="closeFetchPreview" class="close-preview-btn">
+        ✖ Tap/click here to close
+    </div>
+`;
 
-                canvas.toBlob((blob) => {
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = url;
-                    a.download = filename;
-                    document.body.appendChild(a);
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-                }, 'image/png');
+// 2. The Escape key listener
+document.addEventListener('keydown', function escListener(e) {
+    if (e.key === 'Escape') {
+        const closeBtn = document.getElementById('closeFetchPreview');
+        if (closeBtn) {
+            closeBtn.click(); 
+            document.removeEventListener('keydown', escListener); 
+        }
+    }
+});
 
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.classList.remove('downloaded');
-                }, 2000);
-            };
+// 3. Protect the click event so it only runs on Android/Desktop
+const singleDownloadBtn = document.getElementById('nativeDownloadBtn');
+if (singleDownloadBtn) {
+    singleDownloadBtn.onclick = (e) => {
+        const btn = e.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = "✅ Downloaded!";
+        btn.classList.add('downloaded');
+
+        canvas.toBlob((blob) => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }, 'image/png');
+
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.classList.remove('downloaded');
+        }, 2000);
+    };
+}
 
             const allBtns = btn.closest('.page-section').querySelectorAll('button');
             const btn1 = allBtns[0]; 
@@ -625,63 +644,81 @@ async function fetchAndDownloadPhoto(btn) {
                             t.style.width = '80px'; // Shrink them out of the way
                         });
 
-                        const img = new Image();
+        const img = new Image();
                         
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            canvas.width = img.naturalWidth;
-                            canvas.height = img.naturalHeight;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0);
+    img.onload = () => {
+        const canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
                             
-                            const now = new Date();
-                            const timestamp = now.getFullYear() +
-                                String(now.getMonth() + 1).padStart(2, '0') +
-                                String(now.getDate()).padStart(2, '0') + "_" +
-                                String(now.getHours()).padStart(2, '0') +
-                                String(now.getMinutes()).padStart(2, '0') +
-                                String(now.getSeconds()).padStart(2, '0');
-                            const filename = `feature_${timestamp}.png`;
+        const now = new Date();
+        const timestamp = now.getFullYear() +
+            String(now.getMonth() + 1).padStart(2, '0') +
+            String(now.getDate()).padStart(2, '0') + "_" +
+            String(now.getHours()).padStart(2, '0') +
+            String(now.getMinutes()).padStart(2, '0') +
+            String(now.getSeconds()).padStart(2, '0');
+        const filename = `feature_${timestamp}.png`;
                             
-                            activePreviewArea.style.textAlign = 'center';
-                            activePreviewArea.style.marginBottom = '16px';
+            activePreviewArea.style.textAlign = 'center';
+            activePreviewArea.style.marginBottom = '16px';
                             
-                            activePreviewArea.innerHTML = `
-                                <button id="nativeCarouselDownloadBtn" class="download-photo-btn">
-                                    ⬇️ Download Photo
-                                </button>
-                                <br>
-                                <img src="${img.src}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                                <div id="closeFetchPreview" class="close-preview-btn">
-                                    ✖ Tap here to close
-                                </div>
-                            `;
-                            
-                            activePreviewArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+       // 1. Swap between the button and the iOS text
+const downloadUI = isIOS 
+    ? `<div class="ios-save-text">📱 Long press photo to save to gallery</div>`
+    : `<button id="nativeCarouselDownloadBtn" class="download-photo-btn">⬇️ Download Photo</button>`;
 
-                            document.getElementById('nativeCarouselDownloadBtn').onclick = (e) => {
-                                const btn = e.target;
-                                const originalText = btn.innerHTML;
-                                btn.innerHTML = "✅ Downloaded!";
-                                btn.classList.add('downloaded'); 
+activePreviewArea.innerHTML = `
+    ${downloadUI}
+    <br>
+    <img src="${img.src}" class="photo-preview-img">
+    <div id="closeFetchPreview" class="close-preview-btn">
+        ✖ Tap/click here to close
+    </div>
+`;
 
-                                canvas.toBlob((blob) => {
-                                    const url = URL.createObjectURL(blob);
-                                    const a = document.createElement('a');
-                                    a.style.display = 'none';
-                                    a.href = url;
-                                    a.download = filename;
-                                    document.body.appendChild(a);
-                                    a.click();
-                                    URL.revokeObjectURL(url);
-                                    document.body.removeChild(a);
-                                }, 'image/png');
+// 2. The Escape key listener
+document.addEventListener('keydown', function escListener(e) {
+    if (e.key === 'Escape') {
+        const closeBtn = document.getElementById('closeFetchPreview');
+        if (closeBtn) {
+            closeBtn.click(); 
+            document.removeEventListener('keydown', escListener); 
+        }
+    }
+});
 
-                                setTimeout(() => {
-                                    btn.innerHTML = originalText;
-                                    btn.classList.remove('downloaded');
-                                }, 2000);
-                            };
+activePreviewArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+// 3. Protect the click event so it only runs on Android/Desktop
+const carouselDownloadBtn = document.getElementById('nativeCarouselDownloadBtn');
+if (carouselDownloadBtn) {
+    carouselDownloadBtn.onclick = (e) => {
+        const btn = e.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = "✅ Downloaded!";
+        btn.classList.add('downloaded');
+
+        canvas.toBlob((blob) => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }, 'image/png');
+
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.classList.remove('downloaded');
+        }, 2000);
+    };
+}
                             
                             btn1.innerText = "TinEye Check 🔍";
                             btn1.disabled = false;
