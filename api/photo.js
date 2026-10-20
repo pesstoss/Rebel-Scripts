@@ -38,8 +38,9 @@ export default async function handler(req, res) {
 
         const cleanHtml = await postReq.text();
 
-        // Use matchAll and the global 'g' flag to find EVERY image block on the page
-        const regex = /<source[^>]*type="image\/jpeg"[^>]*srcSet="([^"]+)"/gi;
+        // 1. Remove the JPEG restriction to catch larger WebP/AVIF master files
+        // and look for both <source> and <img> tags just to be safe
+        const regex = /(?:<source|<img)[^>]*srcSet="([^"]+)"/gi;
         const matches = [...cleanHtml.matchAll(regex)];
 
         if (matches.length === 0) {
@@ -48,24 +49,23 @@ export default async function handler(req, res) {
 
         const largestUrls = [];
 
-        // Loop through every image found in the HTML (carousels, avatars, etc.)
+        // 2. Loop through every image found in the HTML
         for (const match of matches) {
             const srcSet = match[1];
-            const imageOptions = srcSet.split(',').map(entry => entry.trim());
             let largestUrl = null;
             let maxWidth = 0;
 
-            for (const option of imageOptions) {
-                const parts = option.split(' ');
-                if (parts.length === 2) {
-                    const imgUrl = parts[0];
-                    const width = parseInt(parts[1].replace('w', ''), 10);
+            // 3. Safely extract "URL 1000w" pairs using regex to avoid splitting URL commas
+            const sizeMatches = [...srcSet.matchAll(/(\S+)\s+(\d+)w/g)];
+            
+            for (const sizeMatch of sizeMatches) {
+                const imgUrl = sizeMatch[1];
+                const width = parseInt(sizeMatch[2], 10);
 
-                    // Grab the largest version, and filter out tiny avatars (under 600px)
-                    if (width > maxWidth && width > 600) {
-                        maxWidth = width;
-                        largestUrl = imgUrl;
-                    }
+                // Grab the largest version, and filter out tiny avatars (under 600px)
+                if (width > maxWidth && width > 600) {
+                    maxWidth = width;
+                    largestUrl = imgUrl;
                 }
             }
 
@@ -74,7 +74,7 @@ export default async function handler(req, res) {
                 largestUrls.push(largestUrl);
             }
         }
-
+        
         if (largestUrls.length === 0) return res.status(404).json({ error: 'Failed to parse post images.' });
 
         res.setHeader('Access-Control-Allow-Origin', '*');
