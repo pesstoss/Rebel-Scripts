@@ -154,15 +154,19 @@ document.getElementById("handleInput").addEventListener("input", function() {
     const match = this.value.match(veroRegex);
     const typedText = match ? match[1].toLowerCase().trim() : this.value.toLowerCase().trim();
 
-    // Skip empty input
-    if (typedText === "") {
+    // Grab the currently selected gallery
+    const currentGallery = document.getElementById('gallerySelect').value;
+
+    // Skip if input is empty OR if the gallery is NOT a Snap gallery
+    if (typedText === "" || !currentGallery.startsWith('snap_')) {
         warningMsg.style.display = "none";
+        updateConsoles(); 
         return;
     }
 
     // Check Blocked List first
     if (blockedList.includes(typedText)) {
-        warningMsg.innerHTML = "🚫 BLOCKED ARTIST: You are not allowed to feature this user.";
+        warningMsg.innerHTML = "🚫 User is on the BLOCKED LIST: Feature is not allowed";
         warningMsg.style.color = "#ef4444"; // Bold Red
         warningMsg.style.display = "block";
         
@@ -174,7 +178,7 @@ document.getElementById("handleInput").addEventListener("input", function() {
         
     // Check Caution List second
     } else if (cautionList.includes(typedText)) {
-        warningMsg.innerHTML = "⚠️ CAUTION: Please check moderator notes before featuring.";
+        warningMsg.innerHTML = "⚠️ User is on the CAUTION LIST: Double-check before featuring.";
         warningMsg.style.color = "#f59e0b"; // Warning Orange
         warningMsg.style.display = "block";
         
@@ -208,9 +212,12 @@ async function updateConsoles() {
     const match = rawHandle.match(veroRegex);
     const typedText = match ? match[1].toLowerCase().trim() : rawHandle.toLowerCase().trim();
 
-    // 2. The Bouncer: Stop generation instantly if user is blocked
-    if (blockedList.includes(typedText)) {
-        document.getElementById('consoleMain').value = "⛔️ ERROR: This artist is on the Blocked List.\nScripts cannot be generated.";
+    // Grab the currently selected gallery
+    const currentGallery = document.getElementById('gallerySelect').value;
+
+    // 2. The Bouncer: Stop generation ONLY if user is blocked AND it's a Snap gallery
+    if (currentGallery.startsWith('snap_') && blockedList.includes(typedText)) {
+        document.getElementById('consoleMain').value = "⛔️ ERROR: User is on the Blocked List.\nScripts will not be generated.";
         document.getElementById('consoleComment1').value = "⛔️ BLOCKED";
         document.getElementById('consoleComment2').value = "⛔️ BLOCKED";
         return; // Completely kills the function so templates don't load!
@@ -319,7 +326,9 @@ function showFeedback(btn) {
 function clearArtistFields() {
     document.getElementById('nameInput').value = '';
     document.getElementById('handleInput').value = '';
-    document.getElementById('handleInput').dataset.fullUrl = ''; 
+    document.getElementById('handleInput').dataset.fullUrl = '';
+    const warningMsg = document.getElementById("cautionWarning");
+    if (warningMsg) warningMsg.style.display = "none"; 
     
     // Clear the personal comments
     const commentInput = document.getElementById('commentInput');
