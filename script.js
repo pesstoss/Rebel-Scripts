@@ -409,12 +409,12 @@ async function fetchSinglePhoto(btn) {
             const filename = `feature_${timestamp}.png`;
             
             previewBox.innerHTML = `
-                <button id="nativeDownloadBtn" style="display: block; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-size: 1rem; font-weight: bold; margin-bottom: 12px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: pointer; transition: background 0.3s;">
+                <button id="nativeDownloadBtn" class="download-photo-btn">
                     ⬇️ Download Photo
                 </button>
                 <br>
                 <img src="${img.src}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                <div id="closeFetchPreview" style="margin-top: 12px; color: #ef4444; font-weight: bold; cursor: pointer; padding: 8px;">
+                <div id="closeFetchPreview" class="close-preview-btn">
                     ✖ Tap here to close
                 </div>
             `;
@@ -423,7 +423,7 @@ async function fetchSinglePhoto(btn) {
                 const btn = e.target;
                 const originalText = btn.innerHTML;
                 btn.innerHTML = "✅ Downloaded!";
-                btn.style.background = "#059669"; 
+                btn.classList.add('downloaded'); 
 
                 canvas.toBlob((blob) => {
                     const url = URL.createObjectURL(blob);
@@ -439,7 +439,7 @@ async function fetchSinglePhoto(btn) {
 
                 setTimeout(() => {
                     btn.innerHTML = originalText;
-                    btn.style.background = "#10b981";
+                    btn.classList.remove('downloaded');
                 }, 2000);
             };
 
@@ -647,12 +647,12 @@ async function fetchAndDownloadPhoto(btn) {
                             activePreviewArea.style.marginBottom = '16px';
                             
                             activePreviewArea.innerHTML = `
-                                <button id="nativeCarouselDownloadBtn" style="display: block; background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; border: none; font-size: 1rem; font-weight: bold; margin-bottom: 12px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.2); cursor: pointer; transition: background 0.3s;">
+                                <button id="nativeCarouselDownloadBtn" class="download-photo-btn">
                                     ⬇️ Download Photo
                                 </button>
                                 <br>
                                 <img src="${img.src}" style="max-width: 100%; max-height: 250px; border-radius: 8px; border: 2px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-                                <div id="closeFetchPreview" style="margin-top: 12px; color: #ef4444; font-weight: bold; cursor: pointer; padding: 8px;">
+                                <div id="closeFetchPreview" class="close-preview-btn">
                                     ✖ Tap here to close
                                 </div>
                             `;
@@ -663,7 +663,7 @@ async function fetchAndDownloadPhoto(btn) {
                                 const btn = e.target;
                                 const originalText = btn.innerHTML;
                                 btn.innerHTML = "✅ Downloaded!";
-                                btn.style.background = "#059669"; 
+                                btn.classList.add('downloaded'); 
 
                                 canvas.toBlob((blob) => {
                                     const url = URL.createObjectURL(blob);
@@ -679,7 +679,7 @@ async function fetchAndDownloadPhoto(btn) {
 
                                 setTimeout(() => {
                                     btn.innerHTML = originalText;
-                                    btn.style.background = "#10b981";
+                                    btn.classList.remove('downloaded');
                                 }, 2000);
                             };
                             

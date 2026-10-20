@@ -315,3 +315,26 @@
                 margin: 0 2px;
             }
         }
+
+        .download-photo-btn {
+            display: block;
+            background: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        /* Adds a slightly darker green when pressing or hovering */
+        .download-photo-btn:hover, 
+        .download-photo-btn:active,
+        .download-photo-btn.downloaded {
+            background: #059669; 
+        }
