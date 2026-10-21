@@ -83,11 +83,9 @@ function updateVisibility() {
         if (gallery === 'rebel_bnw' || gallery === 'fotomasters' || gallery === 'pictasmacro') {
             commentGroup.style.display = "none";
             commentGroup2.style.display = "none";
-        } else if (gallery.startsWith('snap_')) {
+        } else if (gallery.startsWith('snap_') || gallery === 'monomoods') {
             commentGroup.style.display = "block";
             commentGroup2.style.display = "block";
-        } else if (gallery === 'monomoods') {
-            commentGroup.style.display = "block";
         }
     }
 
