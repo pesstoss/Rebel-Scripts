@@ -38,6 +38,13 @@
 });
 
 function loadSettings() {
+    renderFavoriteGalleries(); // Loads their personal list FIRST
+    
+    if (localStorage.getItem('rebel_mod_name')) document.getElementById('modInput').value = localStorage.getItem('rebel_mod_name');
+    // ... the rest of your existing loadSettings code ...
+}
+
+{
     if (localStorage.getItem('rebel_mod_name')) document.getElementById('modInput').value = localStorage.getItem('rebel_mod_name');
     if (localStorage.getItem('rebel_role')) document.getElementById('roleSelect').value = localStorage.getItem('rebel_role');
     if (localStorage.getItem('rebel_gallery')) document.getElementById('gallerySelect').value = localStorage.getItem('rebel_gallery');
@@ -943,6 +950,140 @@ if (locationSearchInput) {
     document.addEventListener('click', (e) => {
         if (e.target !== locationSearchInput) {
             locationDropdown.style.display = 'none';
+        }
+    });
+}
+
+// Master dictionary to map the backend values to display names
+const galleryNames = {
+    "rebel_bnw": "Rebel BNW", "fotomasters": "Fotomasters", "snap_bnw": "Snap BNW",
+    "snap_asia": "Snap Asia", "snap_depthoffield": "Snap Depthoffield", "snap_allnature": "Snap Allnature",
+    "snap_wildlife": "Snap Wildlife", "snap_potd": "Snap POTD", "snap_abandoned": "Snap Abandoned",
+    "snap_allwhite": "Snap Allwhite", "snap_macro": "Snap Macro", "snap_minimal": "Snap Minimal",
+    "snap_germany": "Snap Germany", "snap_waters": "Snap Waters", "pictasmacro": "Pictasmacro",
+    "monomoods": "Monomoods", "photography_hub": "Photography Hub"
+};
+
+function addGalleryToFavorites() {
+    const searchInput = document.getElementById('gallerySearch');
+    const selectedText = searchInput.value.trim();
+    
+    // Find the backend ID that matches the beautiful text they typed/selected
+    const selectedValue = Object.keys(galleryNames).find(key => galleryNames[key] === selectedText);
+    
+    if (selectedValue) {
+        let savedGalleries = JSON.parse(localStorage.getItem('rebel_my_galleries') || '[]');
+        
+        if (!savedGalleries.includes(selectedValue)) {
+            savedGalleries.push(selectedValue);
+            localStorage.setItem('rebel_my_galleries', JSON.stringify(savedGalleries));
+            renderFavoriteGalleries();
+            
+            document.getElementById('gallerySelect').value = selectedValue;
+            saveSettings();
+            updateVisibility();
+            updateConsoles();
+        }
+        searchInput.value = ''; // Clear the search box
+    } else {
+        alert("Please select a valid gallery from the dropdown list.");
+    }
+}
+
+function removeGalleryFromFavorites() {
+    const select = document.getElementById('gallerySelect');
+    const valueToRemove = select.value;
+    
+    if (valueToRemove) {
+        let savedGalleries = JSON.parse(localStorage.getItem('rebel_my_galleries') || '[]');
+        savedGalleries = savedGalleries.filter(g => g !== valueToRemove);
+        localStorage.setItem('rebel_my_galleries', JSON.stringify(savedGalleries));
+        
+        renderFavoriteGalleries();
+        saveSettings();
+        updateVisibility();
+        updateConsoles();
+    }
+}
+
+function renderFavoriteGalleries() {
+    const select = document.getElementById('gallerySelect');
+    const savedGalleries = JSON.parse(localStorage.getItem('rebel_my_galleries') || '[]');
+    
+    select.innerHTML = ''; // Clear current options
+    
+    if (savedGalleries.length === 0) {
+        const defaultOption = document.createElement('option');
+        defaultOption.value = "";
+        defaultOption.text = "-- Add a gallery above --";
+        select.appendChild(defaultOption);
+    } else {
+        savedGalleries.forEach(val => {
+            const opt = document.createElement('option');
+            opt.value = val;
+            opt.text = galleryNames[val];
+            select.appendChild(opt);
+        });
+    }
+}
+
+// --- Custom Searchable Dropdown Logic ---
+const searchInput = document.getElementById('gallerySearch');
+const customList = document.getElementById('customGalleryList');
+
+function renderCustomDropdown(filterText = '') {
+    if (!customList) return;
+    customList.innerHTML = ''; // Clear current list
+    
+    // Grab all the display names (e.g., "Rebel BNW") from your dictionary
+    const allGalleryDisplayNames = Object.values(galleryNames);
+    
+    // Filter based on what the user types
+    const filtered = allGalleryDisplayNames.filter(name => 
+        name.toLowerCase().includes(filterText.toLowerCase())
+    );
+
+    if (filtered.length === 0) {
+        const noResult = document.createElement('div');
+        noResult.className = 'custom-dropdown-item';
+        noResult.textContent = 'No gallery found';
+        customList.appendChild(noResult);
+    } else {
+        // Create a clickable item for each matching gallery
+        filtered.forEach(name => {
+            const div = document.createElement('div');
+            div.className = 'custom-dropdown-item';
+            div.textContent = name;
+            div.onclick = function() {
+                searchInput.value = name;
+                customList.style.display = 'none'; // Hide list after selection
+            };
+            customList.appendChild(div);
+        });
+    }
+}
+
+// Event Listeners to open, filter, and close the custom list
+if (searchInput && customList) {
+    searchInput.addEventListener('focus', () => {
+        renderCustomDropdown(searchInput.value);
+        customList.style.display = 'block';
+    });
+    
+    searchInput.addEventListener('click', () => {
+        renderCustomDropdown(searchInput.value);
+        customList.style.display = 'block';
+    });
+
+    searchInput.addEventListener('input', (e) => {
+        renderCustomDropdown(e.target.value);
+        customList.style.display = 'block';
+    });
+    
+    // Hide the list if you click anywhere outside of it
+    document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !customList.contains(e.target)) {
+            customList.style.display = 'none';
         }
     });
 }

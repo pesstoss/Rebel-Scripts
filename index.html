@@ -52,29 +52,30 @@
             <div class="page-indicator">1 / 4 <span class="arrow">▶</span></div>
             <h2>Moderator Details</h2>
             
-            <div>
-                <span class="label">Choose Gallery</span>
-                <select id="gallerySelect" onchange="saveSettings(); updateVisibility(); updateConsoles()">
-                    <option value="rebel_bnw">Rebel BNW</option>
-                    <option value="fotomasters">Fotomasters</option>
-                    <option value="snap_bnw">Snap BNW</option>
-                    <option value="snap_asia">Snap Asia</option>
-                    <option value="snap_depthoffield">Snap Depthoffield</option>
-                    <option value="snap_allnature">Snap Allnature</option>
-                    <option value="snap_wildlife">Snap Wildlife</option>
-                    <option value="snap_potd">Snap POTD</option>
-                    <option value="snap_abandoned">Snap Abandoned</option>
-                    <option value="snap_allwhite">Snap Allwhite</option>
-                    <option value="snap_macro">Snap Macro</option>
-                    <option value="snap_minimal">Snap Minimal</option>
-                    <option value="snap_germany">Snap Germany</option>
-                    <option value="snap_waters">Snap Waters</option>
-                    <option value="pictasmacro">Pictasmacro</option>
-                    <option value="monomoods">Monomoods</option>
-                    <option value="photography_hub">Photography Hub</option>
-                </select>
-            </div>
+           <!-- 1. The Custom Searchable Master List -->
+<div class="gallery-tier-group">
+    <span class="label">Choose Gallery (Search Master List)</span>
+    <div class="gallery-input-row">
+        <!-- Wrapper for positioning the custom list exactly under the input -->
+        <div style="position: relative; flex-grow: 1;">
+            <input type="text" id="gallerySearch" placeholder="Type gallery name..." autocomplete="off">
+            <!-- Our custom dropdown container -->
+            <div id="customGalleryList" class="custom-dropdown" style="display: none;"></div>
+        </div>
+        <button id="addGalleryBtn" onclick="addGalleryToFavorites()">Add</button>
+    </div>
+</div>
 
+<!-- 2. The Personalized Quick-Select -->
+<div class="gallery-tier-group">
+    <span class="label">Selected Gallery</span>
+    <div class="gallery-input-row">
+        <select id="gallerySelect" onchange="saveSettings(); updateVisibility(); updateConsoles()">
+            <!-- Options will be injected here by JavaScript -->
+        </select>
+        <button id="removeGalleryBtn" onclick="removeGalleryFromFavorites()">Remove</button>
+    </div>
+</div>
             <div id="roleGroup">
                 <span class="label">Choose Role</span>
                 <select id="roleSelect" onchange="saveSettings(); updateConsoles()">

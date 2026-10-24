@@ -402,3 +402,140 @@
             background: #4f46e5; 
             transform: translateY(-1px); 
         }
+
+        /* 1. Container forcing perfect vertical alignment */
+.gallery-input-row {
+    display: flex;
+    align-items: center; /* This strictly centers everything vertically */
+    gap: 10px;
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+/* 2. Base styling for both Inputs (Forcing a strict 40px height) */
+input#gallerySearch, select#gallerySelect {
+    flex-grow: 1;
+    height: 40px; /* Strict height instead of min-height */
+    background-color: #334155;
+    color: #f8fafc;
+    border: none;
+    border-radius: 6px;
+    padding: 5px 35px 5px 10px;
+    font-size: 16px;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+/* 1. Apply the purple arrow and strip native desktop styles */
+input#gallerySearch {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+}
+
+/* 1. Base styling for the custom Search Box (Purple arrow restored!) */
+input#gallerySearch {
+    width: 100%;
+    height: 40px;
+    background-color: #334155;
+    color: #f8fafc;
+    border: none;
+    border-radius: 6px;
+    padding: 5px 35px 5px 10px; /* Space for the arrow */
+    font-size: 16px;
+    font-family: inherit;
+    box-sizing: border-box;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+    margin: 0;
+    display: block;
+}
+
+/* 2. The Custom Dropdown List Container */
+.custom-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    margin-top: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+/* 3. The Custom Dropdown Items */
+.custom-dropdown-item {
+    padding: 10px;
+    color: #f8fafc;
+    cursor: pointer;
+    border-bottom: 1px solid #334155;
+}
+
+.custom-dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.custom-dropdown-item:hover {
+    background-color: #4f46e5; /* Highlights item with your theme's purple */
+}
+
+/* Add the purple arrow strictly to the dropdown */
+select#gallerySelect {
+    height: 40px;
+    box-sizing: border-box;
+    margin: 0;
+    border: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+}
+
+/* 3. Button styling (Matching the exact 40px height) */
+#addGalleryBtn, #removeGalleryBtn {
+    height: 40px; /* Perfectly matches the input boxes */
+    box-sizing: border-box;
+    border: none;
+    width: max-content;
+    flex-grow: 0;
+    padding: 0 15px; /* Removed top/bottom padding since height controls it */
+    margin: 0;
+    border-radius: 6px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#addGalleryBtn {
+    background-color: #10b981;
+}
+
+#addGalleryBtn:hover {
+    background-color: #059669;
+}
+
+#removeGalleryBtn {
+    background-color: #ef4444;
+}
+
+#removeGalleryBtn:hover {
+    background-color: #dc2626;
+}
