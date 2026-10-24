@@ -55,7 +55,7 @@ function saveSettings() {
 }
 
 function updateVisibility() {
-    const gallery = document.getElementById("gallerySelect").value;
+    const gallery = document.getElementById("gallerySelect") ? document.getElementById("gallerySelect").value : '';
     const nameGroup = document.getElementById("nameGroup");
     const firstNameGroup = document.getElementById("firstNameGroup");
     const commentGroup = document.getElementById("commentGroup");
@@ -63,61 +63,96 @@ function updateVisibility() {
     const levelGroup = document.getElementById("levelGroup");
     const roleGroup = document.getElementById("roleGroup");
     const locationGroup = document.getElementById("locationWrapper");
+    
+    // Grab the new elements safely
+    const categoryGroup = document.getElementById('categoryGroup');
+    const hashtagsGroup = document.getElementById('hashtagsGroup');
 
-    // 1. Artist Name: Only for Rebel BNW, Snap Allnature, and Snap Wildlife
-    if (gallery === 'rebel_bnw' || gallery === 'snap_allnature' || gallery === 'snap_wildlife' || gallery === 'pictasmacro') {
-        nameGroup.style.display = "block";
-    } else {
-        nameGroup.style.display = "none";
-    }
-
-    // 2. Curator First Name: Only for Snap and Pictas galleries
-    if (gallery.startsWith('snap_') || gallery.startsWith('pictas')) {
-        firstNameGroup.style.display = "block";
-    } else {
-        firstNameGroup.style.display = "none";
-    }
-
-    // 3. Personal Comment: Everyone gets it EXCEPT Rebel BNW and Fotomasters
-    if (commentGroup && commentGroup2) { 
-        if (gallery === 'rebel_bnw' || gallery === 'fotomasters' || gallery === 'pictasmacro') {
-            commentGroup.style.display = "none";
-            commentGroup2.style.display = "none";
-        } else if (gallery.startsWith('snap_') || gallery === 'monomoods') {
-            commentGroup.style.display = "block";
-            commentGroup2.style.display = "block";
+    // 1. Artist Name
+    if (nameGroup) {
+        if (gallery === 'rebel_bnw' || gallery === 'snap_allnature' || gallery === 'snap_wildlife' || gallery === 'pictasmacro') {
+            nameGroup.style.display = "block";
+        } else {
+            nameGroup.style.display = "none";
         }
     }
 
-    // 4. Membership Level: Hide for Rebel BNW and Fotomasters
-        if (gallery === 'rebel_bnw' || gallery === 'fotomasters' || gallery === 'pictasmacro'  || gallery === 'monomoods') {
+    // 2. Curator First Name
+    if (firstNameGroup) {
+        if (gallery.startsWith('snap_') || gallery.startsWith('pictas')) {
+            firstNameGroup.style.display = "block";
+        } else {
+            firstNameGroup.style.display = "none";
+        }
+    }
+
+    // 3. Personal Comment: Custom routing for different galleries
+    if (commentGroup && commentGroup2) { 
+        if (gallery === 'rebel_bnw' || gallery === 'fotomasters' || gallery === 'pictasmacro') {
+            // Hide both comments
+            commentGroup.style.display = "none";
+            commentGroup2.style.display = "none";
+        } else if (gallery === 'photography_hub') {
+            // Show FIRST comment only, hide SECOND comment
+            commentGroup.style.display = "block";
+            commentGroup2.style.display = "none";
+        } else if (gallery.startsWith('snap_') || gallery === 'monomoods') {
+            // Show both comments
+            commentGroup.style.display = "block";
+            commentGroup2.style.display = "block";
+        } else {
+            // Safe fallback to hide both if a gallery isn't listed above
+            commentGroup.style.display = "none";
+            commentGroup2.style.display = "none";
+        }
+    }
+
+    // 4. Membership Level
+    if (levelGroup) {
+        if (gallery === 'rebel_bnw' || gallery === 'fotomasters' || gallery === 'photography_hub' || gallery === 'pictasmacro' || gallery === 'monomoods') {
             levelGroup.style.display = "none";
         } else {
             levelGroup.style.display = "block";
         }
+    }
 
-    // 5. Role Selection: Hide for Fotomasters, Pictas and Monomoods    
-        if (roleGroup) {
-        if (gallery === 'fotomasters' || gallery === 'pictasmacro' || gallery === 'monomoods') {
+    // 5. Role Selection: Hide for Fotomasters, Pictas, Photography Hub and Monomoods    
+    if (roleGroup) {
+        if (gallery === 'fotomasters' || gallery === 'pictasmacro' || gallery === 'photography_hub' || gallery === 'monomoods') {
             roleGroup.style.display = "none";
         } else {
             roleGroup.style.display = "block";
         }
     }
 
-    // 6. Location: Only for some galleries
+    // 6. Location
     if (locationGroup) {
-    if (gallery === 'snap_germany' || gallery === 'snap_waters') {
-        locationGroup.style.display = "block";
-    } else {
-        locationGroup.style.display = "none";
-        // Clear the fields if they switch to a gallery that doesn't use locations
-        const searchInput = document.getElementById('locationSearchInput');
-        const finalOutput = document.getElementById('finalLocationOutput');
-        if (searchInput) searchInput.value = '';
-        if (finalOutput) finalOutput.value = '';
+        if (gallery === 'snap_germany' || gallery === 'snap_waters') {
+            locationGroup.style.display = "block";
+        } else {
+            locationGroup.style.display = "none";
+            const searchInput = document.getElementById('locationSearchInput');
+            const finalOutput = document.getElementById('finalLocationOutput');
+            if (searchInput) searchInput.value = '';
+            if (finalOutput) finalOutput.value = '';
+        }
     }
-}
+
+    // 7. Category and Hashtags
+    if (categoryGroup && hashtagsGroup) {
+        if (gallery === 'photography_hub') {
+            categoryGroup.style.display = "block";
+            hashtagsGroup.style.display = "block";
+        } else {
+            categoryGroup.style.display = "none";
+            hashtagsGroup.style.display = "none";
+            
+            const categoryInput = document.getElementById('categoryInput');
+            const hashtagsInput = document.getElementById('hashtagsInput');
+            if (categoryInput) categoryInput.value = '';
+            if (hashtagsInput) hashtagsInput.value = '';
+        }
+    }
 }
 
 // 1. Set up empty arrays for our lists
@@ -232,6 +267,17 @@ async function updateConsoles() {
     
     // Grab the new inputs
     const firstName = document.getElementById('firstNameInput') ? document.getElementById('firstNameInput').value : '[FirstName]';
+    const categoryValue = document.getElementById('categoryInput') ? document.getElementById('categoryInput').value : '';
+    // Grab the hashtags input and magically format them
+    let hashtagsValue = document.getElementById('hashtagsInput') ? document.getElementById('hashtagsInput').value : '';
+
+    if (hashtagsValue.trim() !== '') {
+        hashtagsValue = hashtagsValue
+        .split(/[\s,]+/) // Splits the text by spaces or commas
+        .filter(Boolean) // Removes any accidental blank spaces
+        .map(tag => '#' + tag.replace(/^#+/, '')) // Strips existing '#' so they don't double up, then adds exactly one
+        .join(' '); // Glues them all back together with a single space
+    }
     
     // Add the smart spacing for comments
     let comment = document.getElementById('commentInput') ? document.getElementById('commentInput').value : '';
@@ -250,6 +296,8 @@ async function updateConsoles() {
         commentFileName = 'pictas';
     } else if (gallery === 'monomoods') {
         commentFileName = 'monomoods';
+    } else if (gallery === 'photography_hub') {
+        commentFileName = 'photography_hub';
     }
 
     const snapGalleryName = gallery.replace('snap_', ''); 
@@ -271,7 +319,9 @@ async function updateConsoles() {
             .replace(/{personalComment}/g, comment)
             .replace(/{personalComment2}/g, comment2)
             .replace(/{snapGallery}/g, snapGalleryName)
-            .replace('{location}', locationText ? `${locationText}\n` : '');
+            .replace('{location}', locationText ? `${locationText}\n` : '')
+            .replace(/{category}/g, categoryValue)
+            .replace(/{hashtags}/g, hashtagsValue);
     };
 
     // Output the final generated text to all three text boxes
@@ -352,6 +402,14 @@ function clearArtistFields() {
     } else {
         document.getElementById('nameInput').focus();
     }
+
+    // Clear Category and Hashtags
+    const categoryInput = document.getElementById('categoryInput');
+    if (categoryInput) categoryInput.value = '';
+
+    const hashtagsInput = document.getElementById('hashtagsInput');
+    if (hashtagsInput) hashtagsInput.value = '';
+
     updateConsoles(); 
 }
 

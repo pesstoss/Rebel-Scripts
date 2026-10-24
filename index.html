@@ -71,6 +71,7 @@
                     <option value="snap_waters">Snap Waters</option>
                     <option value="pictasmacro">Pictasmacro</option>
                     <option value="monomoods">Monomoods</option>
+                    <option value="photography_hub">Photography Hub</option>
                 </select>
             </div>
 
@@ -155,6 +156,18 @@
             </div>
 
             <input type="text" id="finalLocationOutput" placeholder="📍 Pinned location..." readonly style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #10b981; font-weight: bold; font-size: 1rem; text-align: center;">
+            </div>
+
+            <!-- Category Group (Only for Photography Hub) -->
+            <div id="categoryGroup" style="display: none;">
+                <span class="label">CATEGORY</span>
+                <input type="text" id="categoryInput" placeholder="Enter category..." oninput="updateConsoles()">
+            </div>
+
+            <!-- Hashtags Group (Only for Photography Hub) -->
+            <div id="hashtagsGroup" style="display: none;">
+                <span class="label">HASHTAGS</span>
+                <textarea id="hashtagsInput" rows="2" placeholder="Enter hashtags here..." oninput="updateConsoles()"></textarea>
             </div>
 
             <div style="margin-top: auto; padding-top: 20px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 24px;">
