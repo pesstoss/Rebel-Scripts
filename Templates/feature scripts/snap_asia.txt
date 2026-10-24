@@ -1,7 +1,7 @@
 #snap_asia
 .
- Featured {level} @{handle} 
- ✨ C O N G R A T U L A T I O N S ✨
+Featured {level} @{handle} 
+✨ C O N G R A T U L A T I O N S ✨
 __________________________________
 .
 Selected by Page {role} :
@@ -24,7 +24,7 @@ For your membership questions and level validations
 .
 #asia #asiaphotography #asiapictures #asiatravel #asiavacations #asiaadventures #asiacity #exploreasia #travelasia #sculpture
 .
- For internal use only!
+For internal use only!
 #snap_asia_{handle}
 #snap_featured_{handle}
 .

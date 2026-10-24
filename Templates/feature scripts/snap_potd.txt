@@ -1,8 +1,8 @@
 #snap_potd
 
- Featured {level} @{handle}
+Featured {level} @{handle}
 
- ✨C O N G R A T U L A T I O N S ✨
+✨C O N G R A T U L A T I O N S ✨
 __________________________________
 
 Selected by Page {role} :

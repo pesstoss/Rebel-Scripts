@@ -1,7 +1,7 @@
 #snap_wildlife
 .
- Featured {level} {name} @{handle} 
- ✨ C O N G R A T U L A T I O N S ✨
+Featured {level} {name} @{handle} 
+✨ C O N G R A T U L A T I O N S ✨
 __________________________________
 .
 Selected by Page {role} :
