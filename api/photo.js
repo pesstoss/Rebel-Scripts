@@ -38,8 +38,7 @@ export default async function handler(req, res) {
 
         const cleanHtml = await postReq.text();
 
-        // 1. Remove the JPEG restriction to catch larger WebP/AVIF master files
-        // and look for both <source> and <img> tags just to be safe
+        // 1. Look for all srcSet attributes in both <source> and <img> tags
         const regex = /(?:<source|<img)[^>]*srcSet="([^"]+)"/gi;
         const matches = [...cleanHtml.matchAll(regex)];
 
@@ -48,37 +47,47 @@ export default async function handler(req, res) {
         }
 
         const largestUrls = [];
+        const seenIds = new Set(); // 2. Tracker to destroy format and layout duplicates
 
-        // 2. Loop through every image found in the HTML
+        // 3. Loop through every image node found in the HTML
         for (const match of matches) {
             const srcSet = match[1];
             let largestUrl = null;
             let maxWidth = 0;
 
-            // 3. Safely extract "URL 1000w" pairs using regex to avoid splitting URL commas
             const sizeMatches = [...srcSet.matchAll(/(\S+)\s+(\d+)w/g)];
             
             for (const sizeMatch of sizeMatches) {
-                const imgUrl = sizeMatch[1];
+                let imgUrl = sizeMatch[1];
+                
+                // Clean any stray commas that might trick the parser
+                imgUrl = imgUrl.replace(/,$/, ''); 
                 const width = parseInt(sizeMatch[2], 10);
 
-                // Grab the largest version, and filter out tiny avatars (under 600px)
+                // Grab the absolute largest version
                 if (width > maxWidth && width > 600) {
                     maxWidth = width;
                     largestUrl = imgUrl;
                 }
             }
 
-            // Only add to array if it's a valid large image and not a duplicate
-            if (largestUrl && !largestUrls.includes(largestUrl)) {
-                largestUrls.push(largestUrl);
+            if (largestUrl) {
+                // 4. Extract the unique core ID of the image (ignoring sizes and extensions)
+                const idMatch = largestUrl.match(/\/([a-f0-9\-]+)_[0-9]+x\./i);
+                const imageId = idMatch ? idMatch[1] : largestUrl;
+
+                // 5. Only push if we haven't seen this exact photo ID yet
+                if (!seenIds.has(imageId)) {
+                    seenIds.add(imageId);
+                    largestUrls.push(largestUrl);
+                }
             }
         }
         
         if (largestUrls.length === 0) return res.status(404).json({ error: 'Failed to parse post images.' });
 
         res.setHeader('Access-Control-Allow-Origin', '*');
-        res.status(200).json({ images: largestUrls }); // Returns the full array of carousel photos!
+        res.status(200).json({ images: largestUrls }); 
             } catch (error) {
         res.status(500).json({ error: 'Failed to scrape Vero link' });
     }
