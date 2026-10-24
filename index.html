@@ -70,7 +70,7 @@
 <div class="gallery-tier-group">
     <span class="label">Selected Gallery</span>
     <div class="gallery-input-row">
-        <select id="gallerySelect" onchange="saveSettings(); updateVisibility(); updateConsoles()">
+        <select id="gallerySelect" onchange="loadRoleForGallery(); saveSettings(); updateVisibility(); updateConsoles()">
             <!-- Options will be injected here by JavaScript -->
         </select>
         <button id="removeGalleryBtn" onclick="removeGalleryFromFavorites()">Remove</button>

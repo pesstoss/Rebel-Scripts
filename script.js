@@ -38,10 +38,27 @@
 });
 
 function loadSettings() {
-    renderFavoriteGalleries(); // Loads their personal list FIRST
+    renderFavoriteGalleries(); // Loads your custom dropdown first
     
-    if (localStorage.getItem('rebel_mod_name')) document.getElementById('modInput').value = localStorage.getItem('rebel_mod_name');
-    // ... the rest of your existing loadSettings code ...
+    // Load standard text fields
+    if (localStorage.getItem('rebel_mod_name')) {
+        document.getElementById('modInput').value = localStorage.getItem('rebel_mod_name');
+    }
+    if (localStorage.getItem('rebel_first_name')) {
+        document.getElementById('firstNameInput').value = localStorage.getItem('rebel_first_name');
+    }
+    
+    // Load the last used gallery
+    if (localStorage.getItem('rebel_gallery')) {
+        document.getElementById('gallerySelect').value = localStorage.getItem('rebel_gallery');
+    }
+    
+    // Load the specific role tied to that gallery
+    loadRoleForGallery(); 
+    
+    // Refresh the screen and console
+    updateVisibility(); 
+    updateConsoles();
 }
 
 {
@@ -59,6 +76,12 @@ function saveSettings() {
     localStorage.setItem('rebel_role', document.getElementById('roleSelect').value);
     localStorage.setItem('rebel_gallery', document.getElementById('gallerySelect').value);
     localStorage.setItem('rebel_first_name', document.getElementById('firstNameInput').value);
+    const currentGallery = document.getElementById('gallerySelect').value;
+    const currentRole = document.getElementById('roleSelect').value;
+    if (currentGallery) {
+        localStorage.setItem('rebel_gallery', currentGallery); // Remembers the last picked gallery
+        localStorage.setItem('rebel_role_' + currentGallery, currentRole); // Remembers the role for it
+    }
 }
 
 function updateVisibility() {
@@ -123,9 +146,9 @@ function updateVisibility() {
         }
     }
 
-    // 5. Role Selection: Hide for Fotomasters, Pictas, Photography Hub and Monomoods    
+    // 5. Role Selection: Hide for Fotomasters, Pictas, Photography Hub, Rebel BnW andMonomoods    
     if (roleGroup) {
-        if (gallery === 'fotomasters' || gallery === 'pictasmacro' || gallery === 'photography_hub' || gallery === 'monomoods') {
+        if (gallery === 'fotomasters' || gallery === 'pictasmacro' || gallery === 'photography_hub' || gallery === 'monomoods' || gallery === 'rebel_bnw') {
             roleGroup.style.display = "none";
         } else {
             roleGroup.style.display = "block";
@@ -1086,4 +1109,18 @@ if (searchInput && customList) {
             customList.style.display = 'none';
         }
     });
+}
+
+function loadRoleForGallery() {
+    const currentGallery = document.getElementById('gallerySelect').value;
+    if (currentGallery) {
+        // Look for a specifically saved role for this gallery
+        const savedRole = localStorage.getItem('rebel_role_' + currentGallery);
+        if (savedRole) {
+            document.getElementById('roleSelect').value = savedRole;
+        } else {
+            // Default to 'Mod' if no role has been saved for this gallery yet
+            document.getElementById('roleSelect').value = 'Mod';
+        }
+    }
 }
