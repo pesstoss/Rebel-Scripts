@@ -118,11 +118,11 @@ function updateVisibility() {
 
     // 3. Personal Comment: Custom routing for different galleries
     if (commentGroup && commentGroup2) { 
-        if (gallery === 'rebel_bnw' || gallery === 'fotomasters' || gallery === 'pictasmacro') {
+        if (gallery === 'rebel_bnw' || gallery === 'fotomasters') {
             // Hide both comments
             commentGroup.style.display = "none";
             commentGroup2.style.display = "none";
-        } else if (gallery === 'photography_hub') {
+        } else if (gallery === 'photography_hub' || gallery === 'pictasmacro') {
             // Show FIRST comment only, hide SECOND comment
             commentGroup.style.display = "block";
             commentGroup2.style.display = "none";
@@ -172,6 +172,8 @@ function updateVisibility() {
     if (categoryGroup && hashtagsGroup) {
         if (gallery === 'photography_hub') {
             categoryGroup.style.display = "block";
+            hashtagsGroup.style.display = "block";
+        } else if (gallery === 'pictasmacro') {
             hashtagsGroup.style.display = "block";
         } else {
             categoryGroup.style.display = "none";
