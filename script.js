@@ -20,6 +20,17 @@
             const response = await fetch(`/api/scrape?url=${encodeURIComponent(inputVal)}`);
             const data = await response.json();
             
+            // --- DIAGNOSTIC DEBUG TOOL ---
+            const debugBox = document.getElementById('commentInput');
+            if (debugBox) {
+                if (data.bio) {
+                    debugBox.value = `✅ BIO RECEIVED: ${data.bio}`;
+                } else {
+                    debugBox.value = `❌ NO BIO. The Vercel backend is still running the old code!`;
+                }
+            }
+            // -----------------------------
+            
             if (data.name) {
                 nameInput.value = data.name; // Insert the scraped name!
             } else {
@@ -51,7 +62,6 @@
                     autoLevel = "Member";
                 }
 
-                // Apply the selection to your dropdown instantly
                 if (levelSelect) {
                     levelSelect.value = autoLevel; 
                 }
