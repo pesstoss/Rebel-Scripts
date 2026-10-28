@@ -59,6 +59,8 @@
         } catch (error) {
             nameInput.value = originalName;
         }
+    }
+    });
 
 function loadSettings() {
     renderFavoriteGalleries(); // Loads your custom dropdown first
