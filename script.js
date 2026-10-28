@@ -35,8 +35,7 @@
                 const levelSelect = document.getElementById('levelSelect');
                 let autoLevel = "Artist"; // Default
 
-                // \b ensures we match the standalone word, preventing substring mismatches
-                const hasWord = (word) => new RegExp(`\\b${word}\\b`, 'i').test(bioText);
+                const hasWord = (word) => new RegExp(`(^|[^a-z0-9])${word}([^a-z0-9]|$)`, 'i').test(bioText);
 
                 if (hasWord("diamond")) {
                     autoLevel = "Diamond Member";

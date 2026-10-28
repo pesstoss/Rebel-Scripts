@@ -26,12 +26,12 @@ export default async function handler(req, res) {
       .replace(/[™®]/g, '')
       .trim();
 
-    // ULTRA-FLEXIBLE BIO EXTRACTION: Handles comma-separated, colon-separated, or escaped JSON variants
+    // ULTRA-FLEXIBLE BIO EXTRACTION: Handles internal escaped quotes and line breaks safely
     let bio = '';
     const patterns = [
-      /"bio"\s*,\s*"([^"]{2,})"/i,
-      /"bio"\s*:\s*"([^"]{2,})"/i,
-      /\\"bio\\"\s*,\s*\\?"([^\\"]{2,})\\?"/i,
+      /"bio"\s*,\s*"((?:\\.|[^"\\])*)"/i,
+      /"bio"\s*:\s*"((?:\\.|[^"\\])*)"/i,
+      /\\"bio\\"\s*,\s*\\?"((?:\\.|[^"\\])*)\\?"/i,
       /<meta[^>]*name="description"[^>]*content="([^"]+)"/i
     ];
 
