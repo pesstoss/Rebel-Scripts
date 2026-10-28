@@ -1157,3 +1157,10 @@ function loadRoleForGallery() {
         }
     }
 }
+
+document.getElementById('gallerySelect').addEventListener('change', function() {
+    saveSettings();
+    loadRoleForGallery();
+    updateVisibility();
+    updateConsoles();
+});
