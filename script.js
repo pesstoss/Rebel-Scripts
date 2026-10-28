@@ -1,5 +1,5 @@
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.userAgent.includes("Mac") && "ontouchend" in document);
-    document.getElementById('handleInput').addEventListener('input', async function() {
+document.getElementById('handleInput').addEventListener('input', async function() {
     const inputVal = this.value;
     this.dataset.fullUrl = inputVal;
     const veroRegex = /vero\.(?:com|co)\/([^\/?#\s]+)/i;
@@ -15,7 +15,7 @@
         nameInput.value = "Fetching name...";
         updateConsoles(); 
 
-       try {
+        try {
             // 3. Send the full Vero URL to the Vercel backend
             const response = await fetch(`/api/scrape?url=${encodeURIComponent(inputVal)}`);
             const data = await response.json();
@@ -26,19 +26,19 @@
                 if (data.bio) {
                     debugBox.value = `✅ BIO RECEIVED: ${data.bio}`;
                 } else {
-                    debugBox.value = `❌ NO BIO. The Vercel backend is still running the old code!`;
+                    debugBox.value = `❌ NO BIO. The scraper didn't find it.`;
                 }
             }
             // -----------------------------
             
             if (data.name) {
-                nameInput.value = data.name; // Insert the scraped name!
+                nameInput.value = data.name; 
             } else {
-                nameInput.value = originalName; // Revert if name wasn't found
+                nameInput.value = originalName; 
                 nameInput.placeholder = "Name not found, enter manually";
             }
 
-            // 4. NEW CODE: Check the bio and auto-change the level dropdown (SNAP ONLY)
+            // 4. Check the bio and auto-change the level dropdown (SNAP ONLY)
             const currentGallery = document.getElementById('gallerySelect').value;
             
             if (data.bio && currentGallery.startsWith('snap_')) {
@@ -69,8 +69,13 @@
         } catch (error) {
             nameInput.value = originalName;
         }
+        
+        // 5. Update the console to show the final generated script
+        updateConsoles();
+    } else {
+        updateConsoles(); 
     }
-    });
+});
 
 function loadSettings() {
     renderFavoriteGalleries(); // Loads your custom dropdown first
