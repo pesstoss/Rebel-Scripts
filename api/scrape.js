@@ -26,13 +26,12 @@ export default async function handler(req, res) {
       .replace(/[™®]/g, '')
       .trim();
 
-    // SUPER FLEXIBLE REGEX: Finds "bio", skips any formatting characters, and grabs the text string inside quotes
+    // MATCHES VERO'S REACT STATE: "bio","Your bio text here"
     let bio = '';
-    const bioRegex = /"bio"\s*[:,\,]\s*"([^"]{2,})"|<meta[^>]*name="description"[^>]*content="([^"]+)"/i;
-    const match = html.match(bioRegex);
+    const bioMatch = html.match(/"bio"\s*,\s*"([^"]{2,})"/i) || html.match(/"bio"\s*:\s*"([^"]{2,})"/i);
     
-    if (match) {
-      bio = match[1] || match[2] || '';
+    if (bioMatch && bioMatch[1]) {
+      bio = bioMatch[1];
     }
 
     res.status(200).json({ name, bio });
