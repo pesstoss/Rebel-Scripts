@@ -35,19 +35,22 @@
                 const levelSelect = document.getElementById('levelSelect');
                 let autoLevel = "Artist"; // Default
 
-                if (bioText.includes("diamond")) {
+                // \b ensures we match the standalone word, preventing substring mismatches like "photohofilot"
+                const hasWord = (word) => new RegExp(`\\b${word}\\b`, 'i').test(bioText);
+
+                if (hasWord("diamond")) {
                     autoLevel = "Diamond Member";
-                } else if (bioText.includes("hof") || bioText.includes("hall of fame")) {
+                } else if (hasWord("hof") || hasWord("hall of fame")) {
                     autoLevel = "HOF Member";
-                } else if (bioText.includes("elite")) {
+                } else if (hasWord("elite")) {
                     autoLevel = "Elite Member";
-                } else if (bioText.includes("platinum")) {
+                } else if (hasWord("platinum")) {
                     autoLevel = "Platinum Member";
                 } else if (bioText.includes("vip gold")) {
                     autoLevel = "VIP Gold Member";
-                } else if (bioText.includes("vip")) {
+                } else if (hasWord("vip")) {
                     autoLevel = "VIP Member";
-                } else if (bioText.includes("snap member") || bioText.includes("Ⓜ️ember") || bioText.includes("Ⓜ")) {
+                } else if (hasWord("member") || bioText.includes("Ⓜ️ember") || bioText.includes("Ⓜ")) {
                     autoLevel = "Member";
                 }
 
@@ -55,9 +58,6 @@
                     levelSelect.value = autoLevel; 
                 }
             }
-        } catch (error) {
-            nameInput.value = originalName;
-        }
         
         // 5. Update the console to show the final generated script
         updateConsoles();
