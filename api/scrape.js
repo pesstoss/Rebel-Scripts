@@ -30,9 +30,9 @@ export default async function handler(req, res) {
       .replace(/[™®]/g, '')
       .trim();
 
-    // NEW REGEX: Bulletproof bio extraction
+    // UPDATED REGEX: Matches Vero's exact array structure ("bio","Text here")
     let bio = '';
-    const bioMatch = html.match(/"bio"\s*,\s*"(.*?)"/i) || html.match(/"bio"\s*:\s*"(.*?)"/i);
+    const bioMatch = html.match(/"bio"\s*,\s*"([^"]+)"/i) || html.match(/"bio"\s*:\s*"([^"]+)"/i);
     
     if (bioMatch && bioMatch[1]) {
       bio = bioMatch[1];
