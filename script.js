@@ -47,7 +47,7 @@
                     autoLevel = "VIP Gold Member";
                 } else if (bioText.includes("vip")) {
                     autoLevel = "VIP Member";
-                } else if (bioText.includes("snap member")) {
+                } else if (bioText.includes("snap member") || bioText.includes("Ⓜ️ember") || bioText.includes("Ⓜ")) {
                     autoLevel = "Member";
                 }
 
@@ -437,16 +437,19 @@ function clearArtistFields() {
     document.getElementById('handleInput').value = '';
     document.getElementById('handleInput').dataset.fullUrl = '';
     const warningMsg = document.getElementById("cautionWarning");
-    if (warningMsg) warningMsg.style.display = "none"; 
+    if (warningMsg) warningMsg.style.display = "none";
     
-    // Clear the personal comments
+    const levelSelect = document.getElementById('levelSelect');
+    if (levelSelect) {
+        levelSelect.value = 'Artist';
+    }
+    
     const commentInput = document.getElementById('commentInput');
     if (commentInput) commentInput.value = '';
     
     const commentInput2 = document.getElementById('commentInput2');
     if (commentInput2) commentInput2.value = '';
 
-    // Clear the location search and final output
     const locationSearch = document.getElementById('locationSearchInput');
     if (locationSearch) locationSearch.value = '';
 
@@ -464,7 +467,6 @@ function clearArtistFields() {
         document.getElementById('nameInput').focus();
     }
 
-    // Clear Category and Hashtags
     const categoryInput = document.getElementById('categoryInput');
     if (categoryInput) categoryInput.value = '';
 
