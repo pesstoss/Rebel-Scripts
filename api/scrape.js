@@ -12,7 +12,7 @@ export default async function handler(req, res) {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       }
     });
-    
+
     const html = await response.text();
 
     let name = '';
@@ -32,7 +32,15 @@ export default async function handler(req, res) {
       .replace(/[™®]/g, '')
       .trim();
 
-    res.status(200).json({ name });
+    // NEW: Extract the bio from Vero's internal state array
+    let bio = '';
+    const bioMatch = html.match(/"bio","(.*?)"/i);
+    if (bioMatch && bioMatch[1]) {
+      bio = bioMatch[1];
+    }
+
+    // Return both the cleaned name and the raw bio string
+    res.status(200).json({ name, bio });
   } catch (error) {
     res.status(500).json({ error: 'Failed to scrape' });
   }

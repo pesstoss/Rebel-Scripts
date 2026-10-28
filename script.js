@@ -15,7 +15,7 @@
         nameInput.value = "Fetching name...";
         updateConsoles(); 
 
-        try {
+       try {
             // 3. Send the full Vero URL to the Vercel backend
             const response = await fetch(`/api/scrape?url=${encodeURIComponent(inputVal)}`);
             const data = await response.json();
@@ -26,16 +26,39 @@
                 nameInput.value = originalName; // Revert if name wasn't found
                 nameInput.placeholder = "Name not found, enter manually";
             }
+
+            // 4. NEW CODE: Check the bio and auto-change the level dropdown (SNAP ONLY)
+            const currentGallery = document.getElementById('gallerySelect').value;
+            
+            if (data.bio && currentGallery.startsWith('snap_')) {
+                const bioText = data.bio.toLowerCase();
+                const levelSelect = document.getElementById('levelSelect');
+                let autoLevel = "Artist"; // Default
+
+                if (bioText.includes("diamond")) {
+                    autoLevel = "Diamond Member";
+                } else if (bioText.includes("hof") || bioText.includes("hall of fame")) {
+                    autoLevel = "HOF Member";
+                } else if (bioText.includes("elite")) {
+                    autoLevel = "Elite Member";
+                } else if (bioText.includes("platinum")) {
+                    autoLevel = "Platinum Member";
+                } else if (bioText.includes("vip gold")) {
+                    autoLevel = "VIP Gold Member";
+                } else if (bioText.includes("vip")) {
+                    autoLevel = "VIP Member";
+                } else if (bioText.includes("snap member")) {
+                    autoLevel = "Member";
+                }
+
+                // Apply the selection to your dropdown instantly
+                if (levelSelect) {
+                    levelSelect.value = autoLevel; 
+                }
+            }
         } catch (error) {
             nameInput.value = originalName;
         }
-        
-        // 4. Update the console to show the final generated script
-        updateConsoles();
-    } else {
-        updateConsoles(); 
-    }
-});
 
 function loadSettings() {
     renderFavoriteGalleries(); // Loads your custom dropdown first
