@@ -19,16 +19,20 @@ export default async function handler(req, res) {
     if (ogMatch && ogMatch[1]) {
       name = ogMatch[1];
     }
-
-    // Let's search for "bio" in the text or return a preview of what html length we got
-    let bio = '';
-    const bioMatch = html.match(/"bio"\s*,\s*"([^"]+)"/i) || html.match(/"bio"\s*:\s*"([^"]+)"/i);
     
-    if (bioMatch && bioMatch[1]) {
-      bio = bioMatch[1];
-    } else {
-      // DEBUG: If no bio found, return part of the HTML text length so we know if it blocked us
-      bio = `HTML Length: ${html.length} | Contains bio string: ${html.includes('bio')}`;
+    name = name
+      .replace(/(\s+shared\s+(a\s+)?(photo|post|video|image|link).*)/i, '')
+      .replace(/\s+on\s+VERO.*$/i, '')
+      .replace(/[™®]/g, '')
+      .trim();
+
+    // SUPER FLEXIBLE REGEX: Finds "bio", skips any formatting characters, and grabs the text string inside quotes
+    let bio = '';
+    const bioRegex = /"bio"\s*[:,\,]\s*"([^"]{2,})"|<meta[^>]*name="description"[^>]*content="([^"]+)"/i;
+    const match = html.match(bioRegex);
+    
+    if (match) {
+      bio = match[1] || match[2] || '';
     }
 
     res.status(200).json({ name, bio });
