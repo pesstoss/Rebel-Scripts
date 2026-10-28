@@ -1,5 +1,5 @@
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.userAgent.includes("Mac") && "ontouchend" in document);
-document.getElementById('handleInput').addEventListener('input', async function() {
+    document.getElementById('handleInput').addEventListener('input', async function() {
     const inputVal = this.value;
     this.dataset.fullUrl = inputVal;
     const veroRegex = /vero\.(?:com|co)\/([^\/?#\s]+)/i;
@@ -19,17 +19,6 @@ document.getElementById('handleInput').addEventListener('input', async function(
             // 3. Send the full Vero URL to the Vercel backend
             const response = await fetch(`/api/scrape?url=${encodeURIComponent(inputVal)}`);
             const data = await response.json();
-            
-            // --- DIAGNOSTIC DEBUG TOOL ---
-            const debugBox = document.getElementById('commentInput');
-            if (debugBox) {
-                if (data.bio) {
-                    debugBox.value = `✅ BIO RECEIVED: ${data.bio}`;
-                } else {
-                    debugBox.value = `❌ NO BIO. The scraper didn't find it.`;
-                }
-            }
-            // -----------------------------
             
             if (data.name) {
                 nameInput.value = data.name; 
