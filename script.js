@@ -54,8 +54,16 @@
                 }
 
                 if (levelSelect) {
-                    levelSelect.value = autoLevel; 
-                }
+            // Only animate if the script is actually changing the level to something new
+                if (levelSelect.value !== autoLevel) {
+                    levelSelect.value = autoLevel;
+        
+            // Remove class, force a quick layout refresh, and re-add to restart the animation
+                    levelSelect.classList.remove("auto-updated");
+                    void levelSelect.offsetWidth; 
+                    levelSelect.classList.add("auto-updated");
+        }
+    }
             }
         } catch (error) {
             nameInput.value = originalName;
