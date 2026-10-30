@@ -159,6 +159,21 @@
             <input type="text" id="finalLocationOutput" placeholder="📍 Pinned location..." readonly style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #10b981; font-weight: bold; font-size: 1rem; text-align: center;">
             </div>
 
+            <!-- Species Search Group -->
+            <div id="speciesGroup" style="display: none; margin-top: 20px; padding-top: 20px;">
+                <span class="label">SPECIES</span>
+    
+            <div style="position: relative; width: 100%; margin-bottom: 12px;">
+                <input type="text" id="speciesSearchInput" placeholder="Search species (e.g., Monarch)...">
+        
+            <!-- The hidden dropdown for search results -->
+                <ul id="speciesDropdown" style="display: none; position: absolute; top: 100%; left: 0; width: 100%; background: #2a2a2a; border: 1px solid #444; z-index: 1000; list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto;"></ul>
+            </div>
+    
+            <!-- The final output that gets sent to the template -->
+                <input type="text" id="speciesInput" placeholder="Final species output (editable)..." oninput="updateConsoles()">
+            </div>
+
             <!-- Category Group (Only for Photography Hub) -->
             <div id="categoryGroup" style="display: none;">
                 <span class="label">CATEGORY</span>

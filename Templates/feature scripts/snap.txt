@@ -1,8 +1,9 @@
-#snap_depthoffield
+#snap_{snapGallery}
 .
 Featured {level} @{handle} 
 ✨ C O N G R A T U L A T I O N S ✨
 __________________________________
+{location}{species}{category}
 .
 Selected by Page {role} :
 {modName} : @{mod} 
@@ -22,10 +23,10 @@ Diamond - by Invitation Only
 Contact vero.co/snap_community_member
 For your membership questions and level validations
 .
-#dof #street #closeup #lensculture #nature #bokeh #depthoffield #focusonforeground #macrophotography
+{galleryHashtags}
 .
 For internal use only!
-#snap_depthoffield_{handle}
+#snap_{snapGallery}_{handle}
 #snap_featured_{handle}
 .
 .

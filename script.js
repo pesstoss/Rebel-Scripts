@@ -186,9 +186,13 @@ function updateVisibility() {
         }
     }
 
+    // Define which galleries get which input boxes
+    const locationGalleries = ['snap_waters', 'snap_landscape', 'snap_australia', 'snap_germany', 'snap_mountains', 'snap_nordic', 'snap_birds'];
+    const speciesGalleries = ['snap_butterflies', 'snap_birds', 'snap_herpetology'];
+
     // 6. Location
     if (locationGroup) {
-        if (gallery === 'snap_germany' || gallery === 'snap_waters') {
+        if (locationGalleries.includes(gallery)) {
             locationGroup.style.display = "block";
         } else {
             locationGroup.style.display = "none";
@@ -199,7 +203,19 @@ function updateVisibility() {
         }
     }
 
-    // 7. Category and Hashtags
+    // 7. Species / ID Routing
+    const speciesGroup = document.getElementById("speciesGroup");
+    if (speciesGroup) {
+        if (speciesGalleries.includes(gallery)) {
+            speciesGroup.style.display = "block";
+        } else {
+            speciesGroup.style.display = "none";
+            const speciesInput = document.getElementById('speciesInput');
+            if (speciesInput) speciesInput.value = '';
+        }
+    }
+
+    // 8. Category and Hashtags
     if (categoryGroup && hashtagsGroup) {
         if (gallery === 'photography_hub') {
             categoryGroup.style.display = "block";
@@ -222,6 +238,7 @@ function updateVisibility() {
 let cautionList = [];
 let blockedList = [];
 
+
 // 2. Fetch the text files and load them into the arrays
 async function loadModerationLists() {
     try {
@@ -233,6 +250,10 @@ async function loadModerationLists() {
         const blockedRes = await fetch('blocked-list.txt');
         const blockedText = await blockedRes.text();
         blockedList = blockedText.split('\n').map(name => name.trim().toLowerCase()).filter(Boolean);
+
+        const hashtagsRes = await fetch('snap-hashtags.json');
+        snapHashtags = await hashtagsRes.json();
+
     } catch (error) {
         console.error("Error loading moderation lists:", error);
     }
@@ -365,13 +386,40 @@ async function updateConsoles() {
 
     const snapGalleryName = gallery.replace('snap_', ''); 
 
+    // Determine the feature script file to load
+    let scriptFileName = gallery;
+    if (gallery.startsWith('snap_')) {
+        scriptFileName = 'snap'; // Forces ALL Snap galleries to use snap.txt
+    }
+
     // Fetch all three templates using our new folders
-    let scriptText = await fetchTemplate('feature scripts', gallery);
+    let scriptText = await fetchTemplate('feature scripts', scriptFileName);
     let featureCommentText = await fetchTemplate('feature comments', commentFileName);
     let postCommentText = await fetchTemplate('post comments', commentFileName);
 
+    // Grab the species input value (add this right above replaceTags)
+    const speciesInput = document.getElementById('speciesInput');
+    const speciesText = speciesInput ? speciesInput.value.trim() : '';
+
     // A helper function to swap all placeholders in the text
     const replaceTags = (text) => {
+        const specificGalleryHashtags = snapHashtags[gallery] || '';
+
+        // Safely build the dynamic block and add a spacer dot ONLY if multiple fields exist
+        let dynamicFields = [];
+        
+        if (locationText && locationText.trim() !== '') {
+            dynamicFields.push('\uD83D\uDCCD ' + locationText.trim());
+        }
+        if (speciesText && speciesText.trim() !== '') {
+            dynamicFields.push('Species : ' + speciesText.trim());
+        }
+        if (categoryValue && categoryValue.trim() !== '') {
+            dynamicFields.push(categoryValue.trim());
+        }
+        
+        let dynamicText = dynamicFields.join('\n.\n');
+
         return text
             .replace(/{level}/g, level)
             .replace(/{name}/g, name)
@@ -382,9 +430,10 @@ async function updateConsoles() {
             .replace(/{personalComment}/g, comment)
             .replace(/{personalComment2}/g, comment2)
             .replace(/{snapGallery}/g, snapGalleryName)
-            .replace('{location}', locationText ? `${locationText}\n` : '')
-            .replace(/{category}/g, categoryValue)
-            .replace(/{hashtags}/g, hashtagsValue);
+            .replace('{location}{species}{category}', dynamicText) 
+            .replace(/{hashtags}/g, hashtagsValue)
+            .replace(/{galleryHashtags}/g, specificGalleryHashtags)
+            .replace('#snap_flatlays\n.', '#snap_flatlays & #snap_stilllife\n.');
     };
 
     // Output the final generated text to all three text boxes
@@ -474,6 +523,9 @@ function clearArtistFields() {
 
     const hashtagsInput = document.getElementById('hashtagsInput');
     if (hashtagsInput) hashtagsInput.value = '';
+
+    const speciesInput = document.getElementById('speciesInput');
+    if (speciesInput) speciesInput.value = '';
 
     updateConsoles(); 
 }
@@ -1012,14 +1064,143 @@ if (locationSearchInput) {
     });
 }
 
+// --- iNaturalist Species Search ---
+const speciesSearchInput = document.getElementById('speciesSearchInput');
+const speciesDropdown = document.getElementById('speciesDropdown');
+const speciesInput = document.getElementById('speciesInput');
+let speciesTimeout = null;
+
+if (speciesSearchInput) {
+    speciesSearchInput.addEventListener('input', function() {
+        clearTimeout(speciesTimeout); // Prevents spamming the API on every single keystroke
+        const query = this.value.trim();
+        
+        if (query.length < 3) {
+            speciesDropdown.style.display = 'none';
+            return;
+        }
+
+        // Wait 300ms after they stop typing before searching
+        speciesTimeout = setTimeout(async () => {
+            try {
+                // locale=en forces English common names
+                const response = await fetch(`https://api.inaturalist.org/v1/taxa?q=${query}&is_active=true&per_page=5&locale=en`);
+                const data = await response.json();
+                
+                speciesDropdown.innerHTML = '';
+                
+                if (data.results && data.results.length > 0) {
+                    data.results.forEach(taxon => {
+                        const li = document.createElement('li');
+                        // Styling for the dropdown items
+                        li.style.padding = "10px";
+                        li.style.cursor = "pointer";
+                        li.style.borderBottom = "1px solid #444";
+                        
+                        const commonName = taxon.preferred_common_name || '';
+                        const scientificName = taxon.name || '';
+                        
+                        // Format: English Name (Latin Name)
+                        const displayName = commonName ? `${commonName} (${scientificName})` : scientificName;
+                        
+                        li.textContent = displayName;
+                        
+                        // Hover effect
+                        li.onmouseover = () => li.style.background = "#3a3a3a";
+                        li.onmouseout = () => li.style.background = "transparent";
+                        
+                        // When clicked: push to final input, hide dropdown, trigger template update
+                        li.onclick = () => {
+                            // Jana can manually add the 🦋 or 🐦 emojis here if needed!
+                            speciesInput.value = displayName; 
+                            speciesDropdown.style.display = 'none';
+                            speciesSearchInput.value = ''; 
+                            updateConsoles(); 
+                        };
+                        speciesDropdown.appendChild(li);
+                    });
+                    speciesDropdown.style.display = 'block';
+                } else {
+                    speciesDropdown.style.display = 'none';
+                }
+            } catch (error) {
+                console.error("Error fetching species data:", error);
+            }
+        }, 300);
+    });
+}
+
+// Hide dropdown if user clicks somewhere else on the page
+document.addEventListener('click', function(e) {
+    if (speciesSearchInput && !speciesSearchInput.contains(e.target) && !speciesDropdown.contains(e.target)) {
+        speciesDropdown.style.display = 'none';
+    }
+});
+
 // Master dictionary to map the backend values to display names
 const galleryNames = {
-    "rebel_bnw": "Rebel BNW", "fotomasters": "Fotomasters", "snap_bnw": "Snap BNW",
-    "snap_asia": "Snap Asia", "snap_depthoffield": "Snap Depthoffield", "snap_allnature": "Snap Allnature",
-    "snap_wildlife": "Snap Wildlife", "snap_potd": "Snap POTD", "snap_abandoned": "Snap Abandoned",
-    "snap_allwhite": "Snap Allwhite", "snap_macro": "Snap Macro", "snap_minimal": "Snap Minimal",
-    "snap_germany": "Snap Germany", "snap_waters": "Snap Waters", "pictasmacro": "Pictasmacro",
-    "monomoods": "Monomoods", "photography_hub": "Photography Hub"
+    // Your Originals & Non-Snap Galleries
+    "rebel_bnw": "Rebel BNW",
+    "fotomasters": "Fotomasters",
+    "pictasmacro": "Pictasmacro",
+    "monomoods": "Monomoods",
+    "photography_hub": "Photography Hub",
+
+    // Snap Galleries
+    "snap_skies": "Snap Skies",
+    "snap_seasons": "Snap Seasons",
+    "snap_australia": "Snap Australia",
+    "snap_allpets": "Snap All Pets",
+    "snap_canada": "Snap Canada",
+    "snap_abandoned": "Snap Abandoned",
+    "snap_silhouette": "Snap Silhouette",
+    "snap_people": "Snap People",
+    "snap_allwhite": "Snap Allwhite",
+    "snap_butterflies": "Snap Butterflies",
+    "snap_waters": "Snap Waters",
+    "snap_allsports": "Snap Allsports",
+    "snap_toys": "Snap Toys",
+    "snap_insects": "Snap Insects",
+    "snap_gardening": "Snap Gardening",
+    "snap_middleeast": "Snap Middle East",
+    "snap_fishing": "Snap Fishing",
+    "snap_communityarts": "Snap Community Arts",
+    "snap_newartist": "Snap New Artist",
+    "snap_communitymember": "Snap Community Member",
+    "snap_challenge": "Snap Challenge",
+    "snap_artgallery": "Snap Art Gallery",
+    "snap_beaches": "Snap Beaches",
+    "snap_hikes": "Snap Hikes",
+    "snap_minimal": "Snap Minimal",
+    "snap_transports": "Snap Transports",
+    "snap_ai": "Snap AI",
+    "snap_landscape": "Snap Landscape",
+    "snap_depthoffield": "Snap Depth of Field",
+    "snap_bnw": "Snap BNW",
+    "snap_asia": "Snap Asia",
+    "snap_mountains": "Snap Mountains",
+    "snap_herpetology": "Snap Herpetology",
+    "snap_birds": "Snap Birds",
+    "snap_germany": "Snap Germany",
+    "snap_allnature": "Snap Allnature",
+    "snap_wildlife": "Snap Wildlife",
+    "snap_potd": "Snap POTD",
+    "snap_macro": "Snap Macro",
+    "snap_nordic": "Snap Nordic",
+    "snap_flowers": "Snap Flowers",
+    "snap_colours": "Snap Colours",
+    "snap_birds": "Snap Birds",
+    "snap_longexposure": "Snap Longexposure",
+    "snap_lighthouses": "Snap Lighthouses",
+    "snap_mobile": "Snap Mobile",
+    "snap_moody": "Snap Moody",
+    "snap_nightshots": "Snap Nightshots",
+    "snap_abstract": "Snap Abstract",
+    "snap_coffee": "Snap Coffee",
+    "snap_allblack": "Snap Allblack",
+    "snap_country": "Snap Country",
+    "snap_flatlays": "Snap Flatlays",
+    "snap_numbers": "Snap Numbers"
 };
 
 function addGalleryToFavorites() {
