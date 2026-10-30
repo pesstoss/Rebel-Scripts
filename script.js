@@ -237,6 +237,7 @@ function updateVisibility() {
 // 1. Set up empty arrays for our lists
 let cautionList = [];
 let blockedList = [];
+let snapHashtags = {};
 
 
 // 2. Fetch the text files and load them into the arrays
@@ -311,7 +312,7 @@ document.getElementById("handleInput").addEventListener("input", function() {
 // Fetch the template text file from the specific subfolder
 async function fetchTemplate(folder, fileName) {
     if (!fileName || fileName === '') return '';
-    
+
     try {
         const response = await fetch(`Templates/${folder}/${fileName}.txt`);
         if (!response.ok) {
