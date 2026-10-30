@@ -54,14 +54,13 @@
                 }
 
                 if (levelSelect) {
-            // Only animate if the script is actually changing the level to something new
-                if (levelSelect.value !== autoLevel) {
-                    levelSelect.value = autoLevel;
-        
-            // Remove class, force a quick layout refresh, and re-add to restart the animation
-                    levelSelect.classList.remove("auto-updated");
-                    void levelSelect.offsetWidth; 
-                    levelSelect.classList.add("auto-updated");
+            // Set the value (even if it is already Artist)
+            levelSelect.value = autoLevel;
+            
+            // Always trigger the animation to confirm the bio was checked
+            levelSelect.classList.remove("auto-updated");
+            void levelSelect.offsetWidth; 
+            levelSelect.classList.add("auto-updated");
         }
     }
             }
