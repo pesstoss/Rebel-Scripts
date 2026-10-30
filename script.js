@@ -46,7 +46,7 @@
                 } else if (hasWord("platinum")) {
                     autoLevel = "Platinum Member";
                 } else if (hasWord("gold")) {
-                    autoLevel = "VIP Gold Member";
+                    autoLevel = "VIP Gold Member"; 
                 } else if (hasWord("vip")) {
                     autoLevel = "VIP Member";
                 } else if (hasWord("member") || bioText.includes("Ⓜ️ember") || bioText.includes("Ⓜ")) {
