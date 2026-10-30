@@ -540,3 +540,13 @@ select#gallerySelect {
 #removeGalleryBtn:hover {
     background-color: #dc2626;
 }
+
+@keyframes successPulse {
+    0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.8); border-color: #4CAF50; }
+    70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); border-color: #4CAF50; }
+    100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+}
+
+.auto-updated {
+    animation: successPulse 1.5s ease-out;
+}
