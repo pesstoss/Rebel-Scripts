@@ -63,7 +63,7 @@
             levelSelect.classList.add("auto-updated");
         }
     }
-            }
+            
         } catch (error) {
             nameInput.value = originalName;
         }
