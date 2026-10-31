@@ -719,10 +719,15 @@ if (singleDownloadBtn) {
                 hiveBtn.style.display = 'block';
                 hiveBtn.innerText = "Hive Check 🤖";
                 hiveBtn.onclick = (e) => {
-                    e.preventDefault();
-                    hiveBtn.style.display = 'none';
-                    window.open('https://hivedetect.ai/', '_blank');
-                };
+        e.preventDefault();
+        
+        if (window.va) {
+            window.va('event', { name: 'HiveButton_Clicked' });
+        }
+
+        hiveBtn.style.display = 'none';
+        window.open('https://hivedetect.ai/', '_blank');
+    };
             };
         };
 
