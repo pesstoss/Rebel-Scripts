@@ -1185,7 +1185,7 @@ const galleryNames = {
     "snap_transports": "Snap Transports",
     "snap_ai": "Snap AI",
     "snap_landscape": "Snap Landscape",
-    "snap_depthoffield": "Snap Depth of Field",
+    "snap_depthoffield": "Snap Depthoffield",
     "snap_bnw": "Snap BNW",
     "snap_asia": "Snap Asia",
     "snap_mountains": "Snap Mountains",
