@@ -684,14 +684,23 @@ if (singleDownloadBtn) {
             const origBtn2Click = btn2.onclick;
             const origBtn2Text = btn2.innerText; 
             
-btn2.innerText = "Google Lens Check 🔍";
+// 1. TinEye Button Check
+    btn1.innerText = "TinEye Check 🔍";
+    btn1.disabled = false;
+    btn1.onclick = (e) => {
+        e.preventDefault();
+        window.open(`https://tineye.com/search?url=${encodeURIComponent(targetUrl)}`, '_blank');
+    };
+
+    // 2. Google Lens Check
+    btn2.innerText = "Google Lens Check 🔍";
     btn2.disabled = false;
     btn2.onclick = (e) => {
         e.preventDefault();
         window.open(`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(targetUrl)}`, '_blank');
     };
 
-    // --- MOVE HIVE BUTTON HERE (So it appears with TinEye and Google Lens) ---
+    // 3. Hive Check
     let hiveBtn = document.getElementById('hiveCheckBtn');
     if (!hiveBtn) {
         hiveBtn = document.createElement('button');
@@ -705,8 +714,8 @@ btn2.innerText = "Google Lens Check 🔍";
     hiveBtn.onclick = (e) => {
         e.preventDefault();
         
-        // Auto-copy the link
-        navigator.clipboard.writeText(img.src);
+        // Auto-copy the public web link (targetUrl), not the local blob image!
+        navigator.clipboard.writeText(targetUrl);
         
         // Google Analytics tracking
         if (typeof gtag === 'function') {
@@ -718,7 +727,6 @@ btn2.innerText = "Google Lens Check 🔍";
         
         window.open('https://hivedetect.ai/', '_blank');
     };
-
     // --- NOW OPEN THE CLOSE FUNCTION ---
     document.getElementById('closeFetchPreview').onclick = () => {
         previewBox.innerHTML = '';
@@ -945,6 +953,7 @@ if (carouselDownloadBtn) {
     };
 }
                             
+// 1. TinEye Button
                             btn1.innerText = "TinEye Check 🔍";
                             btn1.disabled = false;
                             btn1.onclick = (e) => {
@@ -952,13 +961,62 @@ if (carouselDownloadBtn) {
                                 window.open(`https://tineye.com/search?url=${encodeURIComponent(imgUrl)}`, '_blank');
                             };
                             
+                            // 2. Google Lens Button
                             btn2.innerText = "Google Lens Check 🔍";
                             btn2.disabled = false;
                             btn2.onclick = (e) => {
                                 e.preventDefault();
                                 window.open(`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(imgUrl)}`, '_blank');
                             };
+
+                            // 3. Hive Button (Built BEFORE close function)
+                            let hiveBtn = document.getElementById('hiveCheckBtn');
+                            if (!hiveBtn) {
+                                hiveBtn = document.createElement('button');
+                                hiveBtn.id = 'hiveCheckBtn';
+                                hiveBtn.className = btn1.className; 
+                                hiveBtn.style.marginTop = '10px';
+                                btn2.insertAdjacentElement('afterend', hiveBtn);
+                            }
+                            hiveBtn.style.display = 'block';
+                            hiveBtn.innerText = "Hive Check 🤖";
+                            hiveBtn.onclick = (e) => {
+                                e.preventDefault();
+                                
+                                // Auto-copy the carousel link!
+                                navigator.clipboard.writeText(imgUrl); 
+                                
+                                if (typeof gtag === 'function') {
+                                    gtag('event', 'click', {
+                                        'event_category': 'engagement',
+                                        'event_label': 'Hive_Button_Clicked'
+                                    });
+                                }
+                                window.open('https://hivedetect.ai/', '_blank');
+                            };
                             
+                            // 4. Close Button Logic
+                            document.getElementById('closeFetchPreview').onclick = () => {
+                                activePreviewArea.innerHTML = '';
+
+                                // Switch back to the 3-column wrap grid
+                                scrollContainer.style.flexWrap = 'wrap';
+                                scrollContainer.style.overflowX = 'visible';
+                                scrollContainer.style.justifyContent = 'center';
+                                Array.from(scrollContainer.children).forEach(t => {
+                                    t.style.width = 'calc(33.33% - 6px)'; // Restore square size
+                                });
+                                
+                                btn1.innerText = "Fetch Single Photo 🖼️";
+                                btn1.onclick = origBtn1Click;
+                                
+                                btn2.innerText = "Close Carousel ❌";
+                                btn2.onclick = origBtn2Click;
+
+                                // Hide Hive button
+                                if (hiveBtn) hiveBtn.style.display = 'none';
+                            };
+                                                        
                             document.getElementById('closeFetchPreview').onclick = () => {
                                 activePreviewArea.innerHTML = '';
 
