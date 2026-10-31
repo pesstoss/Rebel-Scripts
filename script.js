@@ -721,11 +721,17 @@ if (singleDownloadBtn) {
                 hiveBtn.onclick = (e) => {
         e.preventDefault();
         
-        if (window.va) {
-            window.va('event', { name: 'HiveButton_Clicked' });
+        // Copy the image URL to clipboard for easy pasting into Hive
+        navigator.clipboard.writeText(img.src);
+        
+        // Send the event to Google Analytics
+        if (typeof gtag === 'function') {
+            gtag('event', 'click', {
+                'event_category': 'engagement',
+                'event_label': 'Hive_Button_Clicked'
+            });
         }
-
-        hiveBtn.style.display = 'none';
+        
         window.open('https://hivedetect.ai/', '_blank');
     };
             };
