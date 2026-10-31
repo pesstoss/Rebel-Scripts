@@ -194,7 +194,7 @@ function updateVisibility() {
     }
 
     // Define which galleries get which input boxes
-    const locationGalleries = ['snap_waters', 'snap_landscape', 'snap_australia', 'snap_germany', 'snap_mountains', 'snap_nordic', 'snap_birds', 'snap_world'];
+    const locationGalleries = ['snap_waters', 'snap_landscape', 'snap_australia', 'snap_germany', 'snap_mountains', 'snap_nordic', 'snap_birds', 'snap_world', 'snap_cityscape'];
     const speciesGalleries = ['snap_butterflies', 'snap_birds', 'snap_herpetology'];
 
     // 6. Location
@@ -1222,7 +1222,9 @@ const galleryNames = {
     "snap_country": "Snap Country",
     "snap_flatlays": "Snap Flatlays",
     "snap_numbers": "Snap Numbers",
-    "snap_world": "Snap World"
+    "snap_world": "Snap World",
+    "snap_cityscape": "Snap Cityscape",
+    "snap_street": "Snap Street"
 };
 
 function addGalleryToFavorites() {
