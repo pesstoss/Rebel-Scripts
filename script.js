@@ -1016,7 +1016,7 @@ if (carouselDownloadBtn) {
                                 // Hide Hive button
                                 if (hiveBtn) hiveBtn.style.display = 'none';
                             };
-                                                        
+
                             document.getElementById('closeFetchPreview').onclick = () => {
                                 activePreviewArea.innerHTML = '';
 
@@ -1281,7 +1281,9 @@ const galleryNames = {
     "snap_numbers": "Snap Numbers",
     "snap_world": "Snap World",
     "snap_cityscape": "Snap Cityscape",
-    "snap_street": "Snap Street"
+    "snap_street": "Snap Street",
+    "snap_writings": "Snap Writings",
+    "snap_symmetry": "Snap Symmetry"
 };
 
 function addGalleryToFavorites() {
