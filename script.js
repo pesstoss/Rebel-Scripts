@@ -1210,7 +1210,8 @@ const galleryNames = {
     "snap_allblack": "Snap Allblack",
     "snap_country": "Snap Country",
     "snap_flatlays": "Snap Flatlays",
-    "snap_numbers": "Snap Numbers"
+    "snap_numbers": "Snap Numbers",
+    "snap_world": "Snap World"
 };
 
 function addGalleryToFavorites() {
