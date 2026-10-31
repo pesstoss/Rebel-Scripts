@@ -194,7 +194,7 @@ function updateVisibility() {
     }
 
     // Define which galleries get which input boxes
-    const locationGalleries = ['snap_waters', 'snap_landscape', 'snap_australia', 'snap_germany', 'snap_mountains', 'snap_nordic', 'snap_birds'];
+    const locationGalleries = ['snap_waters', 'snap_landscape', 'snap_australia', 'snap_germany', 'snap_mountains', 'snap_nordic', 'snap_birds', 'snap_world'];
     const speciesGalleries = ['snap_butterflies', 'snap_birds', 'snap_herpetology'];
 
     // 6. Location
