@@ -684,47 +684,31 @@ if (singleDownloadBtn) {
             const origBtn2Click = btn2.onclick;
             const origBtn2Text = btn2.innerText; 
             
-            btn1.innerText = "TinEye Check 🔍";
-            btn1.disabled = false;
-            btn1.onclick = (e) => {
-                e.preventDefault();
-                window.open(`https://tineye.com/search?url=${encodeURIComponent(targetUrl)}`, '_blank');
-            };
-            
-            btn2.innerText = "Google Lens Check 🔍";
-            btn2.disabled = false;
-            btn2.onclick = (e) => {
-                e.preventDefault();
-                window.open(`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(targetUrl)}`, '_blank');
-            };
-            
-            document.getElementById('closeFetchPreview').onclick = () => {
-                previewBox.innerHTML = '';
-                previewBox.style.display = 'none';
-                
-                btn1.innerText = "Fetch Single Photo 🖼️";
-                btn1.onclick = origBtn1Click;
-                
-                btn2.innerText = origBtn2Text;
-                btn2.onclick = origBtn2Click;
+btn2.innerText = "Google Lens Check 🔍";
+    btn2.disabled = false;
+    btn2.onclick = (e) => {
+        e.preventDefault();
+        window.open(`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(targetUrl)}`, '_blank');
+    };
 
-                let hiveBtn = document.getElementById('hiveCheckBtn');
-                if (!hiveBtn) {
-                    hiveBtn = document.createElement('button');
-                    hiveBtn.id = 'hiveCheckBtn';
-                    hiveBtn.className = btn1.className; 
-                    hiveBtn.style.marginTop = '10px';
-                    btn2.insertAdjacentElement('afterend', hiveBtn);
-                }
-                hiveBtn.style.display = 'block';
-                hiveBtn.innerText = "Hive Check 🤖";
-                hiveBtn.onclick = (e) => {
+    // --- MOVE HIVE BUTTON HERE (So it appears with TinEye and Google Lens) ---
+    let hiveBtn = document.getElementById('hiveCheckBtn');
+    if (!hiveBtn) {
+        hiveBtn = document.createElement('button');
+        hiveBtn.id = 'hiveCheckBtn';
+        hiveBtn.className = btn1.className;
+        hiveBtn.style.marginTop = '10px';
+        btn2.insertAdjacentElement('afterend', hiveBtn);
+    }
+    hiveBtn.style.display = 'block';
+    hiveBtn.innerText = "Hive Check 🤖";
+    hiveBtn.onclick = (e) => {
         e.preventDefault();
         
-        // Copy the image URL to clipboard for easy pasting into Hive
+        // Auto-copy the link
         navigator.clipboard.writeText(img.src);
         
-        // Send the event to Google Analytics
+        // Google Analytics tracking
         if (typeof gtag === 'function') {
             gtag('event', 'click', {
                 'event_category': 'engagement',
@@ -734,8 +718,23 @@ if (singleDownloadBtn) {
         
         window.open('https://hivedetect.ai/', '_blank');
     };
-            };
-        };
+
+    // --- NOW OPEN THE CLOSE FUNCTION ---
+    document.getElementById('closeFetchPreview').onclick = () => {
+        previewBox.innerHTML = '';
+        previewBox.style.display = 'none';
+
+        btn1.innerText = "Fetch Single Photo 🖼️";
+        btn1.onclick = origBtn1Click;
+        
+        btn2.innerText = origBtn2Text;
+        btn2.onclick = origBtn2Click;
+        
+        // Hide the Hive button when closing the photo
+        if (hiveBtn) {
+            hiveBtn.style.display = 'none';
+        }
+    };        };
 
         img.src = URL.createObjectURL(blob);
 
