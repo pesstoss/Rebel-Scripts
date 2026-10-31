@@ -1189,7 +1189,7 @@ const galleryNames = {
     "snap_newartist": "Snap New Artist",
     "snap_communitymember": "Snap Community Member",
     "snap_challenge": "Snap Challenge",
-    "snap_artgallery": "Snap Art Gallery",
+    "snap_artgallery": "Snap Artgallery",
     "snap_beaches": "Snap Beaches",
     "snap_hikes": "Snap Hikes",
     "snap_minimal": "Snap Minimal",
