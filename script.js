@@ -35,7 +35,7 @@
                 const levelSelect = document.getElementById('levelSelect');
                 let autoLevel = "Artist"; // Default
 
-                const hasWord = (word) => new RegExp(`(^|[^a-z0-9_])${word}([^a-z0-9_]|$)`, 'i').test(bioText);
+                const hasWord = (word) => new RegExp(`(^|[^a-z0-9])${word}([^a-z0-9]|$)`, 'i').test(bioText);
 
                 if (hasWord("diamond")) {
                     autoLevel = "Diamond Member";
