@@ -132,7 +132,7 @@
         .btn-main:hover { background: #4f46e5; transform: translateY(-1px); }
 
         .btn-clear { 
-            background: #6366f1; 
+            background: #ef4444; 
             color: white; 
             margin: 0 auto 16px auto;
             display: block; 
