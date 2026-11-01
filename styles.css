@@ -163,7 +163,7 @@
         .btn-alt:hover { background: #4f46e5; }
 
         /* Hides the green paste button automatically on mobile browsers */
-        @media (max-width: 767px) {
+        @media (max-width: 850px) {
             .btn-paste {
                 display: none !important;
             }
@@ -211,7 +211,7 @@
             object-fit: contain;
             border-radius: 8px; /* Optional: rounds the corners to match your UI */
         }
-        @media (max-width: 767px) {
+        @media (max-width: 850px) {
             /* Fix button width for mobile */
         button {
             width: 100%;
@@ -315,7 +315,7 @@
         }
 
         /* Show and position them on mobile */
-        @media (max-width: 767px) {
+        @media (max-width: 850px) {
             .page-section {
                 position: relative; /* Crucial so the indicator stays inside its specific page */
             }
