@@ -1244,7 +1244,6 @@ const galleryNames = {
     "snap_bridges": "Snap Bridges",
     "snap_butterflies": "Snap Butterflies",
     "snap_canada": "Snap Canada",
-    "snap_challenge": "Snap Challenge",
     "snap_cityscape": "Snap Cityscape",
     "snap_coffee": "Snap Coffee",
     "snap_clorsplash": "Snap Colorsplash",
