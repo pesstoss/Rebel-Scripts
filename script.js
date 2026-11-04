@@ -443,6 +443,7 @@ async function updateConsoles() {
             .replace('{location}{species}{category}', dynamicText) 
             .replace(/{hashtags}/g, hashtagsValue)
             .replace(/{galleryHashtags}/g, specificGalleryHashtags)
+            .replace(/{category}/g, categoryValue)
             .replace('#snap_flatlays\n.', '#snap_flatlays & #snap_stilllife\n.');
     };
 
