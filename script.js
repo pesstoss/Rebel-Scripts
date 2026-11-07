@@ -1247,7 +1247,7 @@ const galleryNames = {
     "snap_canada": "Snap Canada",
     "snap_cityscape": "Snap Cityscape",
     "snap_coffee": "Snap Coffee",
-    "snap_clorsplash": "Snap Colorsplash",
+    "snap_colorsplash": "Snap Colorsplash",
     "snap_colours": "Snap Colours",
     "snap_communityarts": "Snap Communityarts",
     "snap_community_member": "Snap Community Member",
