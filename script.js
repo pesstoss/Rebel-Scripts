@@ -33,7 +33,7 @@
             if (data.bio && currentGallery.startsWith('snap_')) {
                 const bioText = data.bio.toLowerCase();
                 const levelSelect = document.getElementById('levelSelect');
-                let autoLevel = "Artist"; // Default
+                let autoLevel = (currentGallery === 'snap_ai' || currentGallery.endsWith('_ai')) ? "Artist" : "Photographer";
 
                 const hasWord = (word) => new RegExp(`(^|[^a-z0-9])${word}([^a-z0-9]|$)`, 'i').test(bioText);
 
@@ -136,6 +136,18 @@ function updateVisibility() {
     const categoryGroup = document.getElementById('categoryGroup');
     const hashtagsGroup = document.getElementById('hashtagsGroup');
 
+    const defaultOption = document.getElementById('defaultLevelOption');
+    
+    if (defaultOption) {
+        if (gallery === 'snap_ai' || gallery.endsWith('_ai')) {
+            defaultOption.value = 'Artist';
+            defaultOption.text = 'Artist';
+        } else {
+            defaultOption.value = 'Photographer';
+            defaultOption.text = 'Photographer';
+        }
+    }
+
     // 1. Artist Name
     if (nameGroup) {
         if (gallery === 'rebel_bnw' || gallery === 'snap_allnature' || gallery === 'snap_wildlife' || gallery === 'pictasmacro') {
@@ -160,11 +172,11 @@ function updateVisibility() {
             // Hide both comments
             commentGroup.style.display = "none";
             commentGroup2.style.display = "none";
-        } else if (gallery === 'photography_hub' || gallery === 'pictasmacro') {
+        } else if (gallery.startsWith('snap_') || gallery === 'photography_hub' || gallery === 'pictasmacro') {
             // Show FIRST comment only, hide SECOND comment
             commentGroup.style.display = "block";
             commentGroup2.style.display = "none";
-        } else if (gallery.startsWith('snap_') || gallery === 'monomoods') {
+        } else if (gallery === 'monomoods') {
             // Show both comments
             commentGroup.style.display = "block";
             commentGroup2.style.display = "block";
@@ -333,6 +345,7 @@ async function fetchTemplate(folder, fileName) {
 
 // Update text areas
 async function updateConsoles() {
+    updatePromoState();
     // 1. Grab the current handle/URL being typed
     const rawHandle = document.getElementById("handleInput").value;
     const veroRegex = /vero\.co\/([^\/\?\#\s]+)/i;
@@ -354,8 +367,8 @@ async function updateConsoles() {
     const name = document.getElementById('nameInput').value || '[name]';
     const handle = document.getElementById('handleInput').value || '[handle]';
     const mod = document.getElementById('modInput').value || '[username]';
-    const levelSelect = document.getElementById('levelSelect');
-    const level = levelSelect ? levelSelect.value : 'Artist';
+    let defaultLevel = (currentGallery === 'snap_ai' || currentGallery.endsWith('_ai')) ? 'Artist' : 'Photographer';
+    const level = levelSelect ? levelSelect.value : defaultLevel;
     const locationOutput = document.getElementById('finalLocationOutput');
     const locationText = locationOutput ? locationOutput.value : '';    
     
@@ -503,7 +516,8 @@ function clearArtistFields() {
     
     const levelSelect = document.getElementById('levelSelect');
     if (levelSelect) {
-        levelSelect.value = 'Artist';
+        const currentGallery = document.getElementById('gallerySelect').value;
+        levelSelect.value = (currentGallery === 'snap_ai' || currentGallery.endsWith('_ai')) ? 'Artist' : 'Photographer';
     }
     
     const commentInput = document.getElementById('commentInput');
@@ -538,7 +552,8 @@ function clearArtistFields() {
     const speciesInput = document.getElementById('speciesInput');
     if (speciesInput) speciesInput.value = '';
 
-    updateConsoles(); 
+    updateConsoles();
+    updatePromoState(); 
 }
 
 async function pasteFromClipboard() {
@@ -1441,3 +1456,59 @@ document.getElementById('gallerySelect').addEventListener('change', function() {
     updateVisibility();
     updateConsoles();
 });
+
+// --- Promo Copy Feature ---
+function updatePromoState() {
+    const levelSelect = document.getElementById('levelSelect');
+    const promoSection = document.getElementById('promoSection');
+    const promoBtn = document.getElementById('promoBtn');
+    const promoPreview = document.getElementById('promoPreview');
+    
+    if (!levelSelect || !promoSection || !promoBtn) return;
+    
+    const level = levelSelect.value;
+    
+    // Always reset the preview/button state when the level changes
+    promoPreview.style.display = 'none';
+    promoBtn.dataset.state = 'generate';
+    
+    if (level === 'Artist' || level === 'Photographer') {
+        promoSection.style.display = 'block';
+        promoBtn.textContent = 'New Member?';
+    } else if (level === 'Member') {
+        promoSection.style.display = 'block';
+        promoBtn.textContent = 'New VIP Member?';
+    } else {
+        // Hide completely if they are already VIP or higher
+        promoSection.style.display = 'none';
+    }
+}
+
+function handlePromoClick() {
+    const btn = document.getElementById('promoBtn');
+    const preview = document.getElementById('promoPreview');
+    const level = document.getElementById('levelSelect').value;
+    
+    let promoText = "";
+    if (level === 'Artist' || level === 'Photographer') {
+        promoText = "Congratulations on being a NEW Snap member!\nYour photos are amazing and thank you for sharing them 💐💫\n\n✨Please remember to add this new Membership status to your bio!✨";
+    } else if (level === 'Member') {
+        promoText = "Congratulations on your new Snap VIP membership level!\nThank you for continuing to share your wonderful work 💐💫\n\n✨Please remember to add this new Membership status to your bio!✨";
+    }
+    
+    // First Click: Generate Preview
+    if (btn.dataset.state === 'generate') {
+        preview.textContent = promoText;
+        preview.style.display = 'block';
+        btn.textContent = 'Copy (to clipboard)';
+        btn.dataset.state = 'copy';
+        
+    // Second Click: Copy to Clipboard
+    } else if (btn.dataset.state === 'copy') {
+        navigator.clipboard.writeText(promoText).then(() => {
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = originalText, 2000);
+        });
+    }
+}

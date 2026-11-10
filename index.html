@@ -136,7 +136,7 @@ gtag('config', 'G-9PTPYZ4HM0');
             <div id="levelGroup">
                 <span class="label">Membership Level</span>
                 <select id="levelSelect" onchange="updateConsoles()">
-                    <option value="Artist">Artist</option>
+                    <option id="defaultLevelOption" value="Photographer">Photographer</option>
                     <option value="Member">Member</option>
                     <option value="VIP Member">VIP</option>
                     <option value="VIP Gold Member">VIP Gold</option>
@@ -145,11 +145,19 @@ gtag('config', 'G-9PTPYZ4HM0');
                     <option value="HOF Member">HOF</option>
                     <option value="Diamond Member">Diamond</option>
                 </select>
+                <!-- Quick Promo Button & Preview -->
+            <div id="promoSection" style="display: none; margin-top: 15px;">
+                <button type="button" id="promoBtn" class="btn-main" data-state="generate" onclick="handlePromoClick()"></button>
+                
+                <textarea id="promoPreview" class="preview-box small" style="display: none; height: 120px; margin-top: 10px;" readonly></textarea>
+            </div>
             </div>
 
             <div id="cautionWarning" style="display: none; color: #ef4444; font-weight: bold; font-size: 14px; margin-bottom: 8px; text-align: center;">
                 ⚠️ Warning: This artist is on the Caution List!
             </div>
+
+            
 
             <!-- Personal Comment Input -->
             <div id="commentGroup" style="display: none;">

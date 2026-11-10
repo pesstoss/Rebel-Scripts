@@ -1,32 +1,39 @@
 #snap_{snapGallery}
 .
-Featured {level} @{handle} 
+Featured {level} @{handle}
 ✨ C O N G R A T U L A T I O N S ✨
 __________________________________
+{personalComment}
+.
 {location}{species}{category}
 .
-Selected by Page {role} :
-{modName} : @{mod} 
+Selected by Page {role}:
+{modName}, @{mod}
 .
-Follow vero.co/snap_kingdom for more pages to tag and follow
-Visit our Website: www.rawkingdomarts.com
+Visit our Information Hub for all  SNAP news, updates and information:
+https://vero.co/snap_kingdom
+.
+Check out our Behind the Lens page 
+a photography learning page dedicated to helping photographers learn, create, share and grow
+https://vero.co/snap_behind_the_lens
+.
+Visit our website  https://www.rawkingdomarts.com
 .
 ✨ Membership Levels ✨
-5 ANY Page Feature - Member
-15 ANY Page Feature - VIP
-15 Different Page Features - VIP Gold
-35 Different Page Features - Platinum
-55 Different Page Features - Elite
-75 Different Page Features - Hall of Fame
-Diamond - by Invitation Only
+05 ANY Page Features - Member
+15 ANY Page Features - VIP
+------------------------------------------------
+15 Membership Points - VIP Gold
+35 Membership Points - Platinum
+55 Membership Points - Elite
+75 Membership Points - Hall of Fame
 .
-Contact vero.co/snap_community_member
-For your membership questions and level validations
+Contact https://vero.co/snap_community_member
+for your membership questions and level validations
 .
-{galleryHashtags}
+{galleryHashtags} 
 .
 For internal use only!
 #snap_{snapGallery}_{handle}
 #snap_featured_{handle}
-.
 .
