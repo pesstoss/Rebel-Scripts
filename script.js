@@ -1313,7 +1313,8 @@ const galleryNames = {
     "snap_waters": "Snap Waters",
     "snap_wildlife": "Snap Wildlife",
     "snap_world": "Snap World",
-    "snap_writings": "Snap Writings"
+    "snap_writings": "Snap Writings",
+    "snap_process": "Snap Process"
 };
 
 function addGalleryToFavorites() {
