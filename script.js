@@ -443,6 +443,10 @@ async function updateConsoles() {
         
         let dynamicText = dynamicFields.join('\n.\n');
 
+        if (dynamicText !== '') {
+        dynamicText = '\n.\n' + dynamicText;
+        }
+
         return text
             .replace(/{level}/g, level)
             .replace(/{name}/g, name)

@@ -3,8 +3,7 @@
 Featured {level} @{handle}
 ✨ C O N G R A T U L A T I O N S ✨
 __________________________________
-{personalComment}
-{location}{species}{category}
+{personalComment}{location}{species}{category}
 .
 Selected by Page {role}:
 {modName}, @{mod}
