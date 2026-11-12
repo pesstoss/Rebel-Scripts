@@ -239,7 +239,7 @@ function updateVisibility() {
         if (gallery === 'photography_hub') {
             categoryGroup.style.display = "block";
             hashtagsGroup.style.display = "block";
-        } else if (gallery === 'pictasmacro') {
+        } else if (gallery === 'pictasmacro' || gallery === 'snap_reflection') {
             hashtagsGroup.style.display = "block";
         } else {
             categoryGroup.style.display = "none";
