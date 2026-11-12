@@ -458,7 +458,7 @@ async function updateConsoles() {
             .replace(/{personalComment2}/g, comment2)
             .replace(/{snapGallery}/g, snapGalleryName)
             .replace('{location}{species}{category}', dynamicText) 
-            .replace(/{hashtags}/g, hashtagsValue)
+            .replace(/{hashtags}/g, hashtagsValue ? hashtagsValue + ' ' : '')
             .replace(/{galleryHashtags}/g, specificGalleryHashtags)
             .replace(/{category}/g, categoryValue)
             .replace('#snap_flatlays\n.', '#snap_flatlays & #snap_stilllife\n.');
