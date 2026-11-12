@@ -29,7 +29,7 @@ Visit our website  https://www.rawkingdomarts.com
 Contact https://vero.co/snap_community_member
 for your membership questions and level validations
 .
-{hashtags} {galleryHashtags} 
+{hashtags}{galleryHashtags} 
 .
 For internal use only!
 #snap_{snapGallery}_{handle}
