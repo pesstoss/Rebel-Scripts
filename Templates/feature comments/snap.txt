@@ -1,2 +1,2 @@
-✨CONGRATULATIONS @{handle}✨
-✨Thank you for tagging #snap_{snapGallery}✨
+✨ CONGRATULATIONS @{handle} ✨
+✨ Thank you for tagging #snap_{snapGallery} ✨
