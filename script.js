@@ -395,7 +395,9 @@ async function updateConsoles() {
 
     // Determine the comment file to load (Route Fotomasters correctly!)
     let commentFileName = 'rebel';
-    if (gallery.startsWith('snap_')) {
+    if (gallery === 'snap_world') {
+        commentFileName = 'snap_world';
+    } else if (gallery.startsWith('snap_')) {
         commentFileName = 'snap';
     } else if (gallery === 'fotomasters') {
         commentFileName = 'fotomasters'; 
