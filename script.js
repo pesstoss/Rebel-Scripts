@@ -393,7 +393,7 @@ async function updateConsoles() {
     let comment2 = document.getElementById('commentInput2') ? document.getElementById('commentInput2').value : '';
     if (comment2.trim() !== '') comment2 = '\n' + comment2.trim() + '\n'; 
 
-    // Determine the comment file to load (Route Fotomasters correctly!)
+    // Determine the comment file to load
     let commentFileName = 'rebel';
     if (gallery === 'snap_world') {
         commentFileName = 'snap_world';
