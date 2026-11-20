@@ -397,6 +397,8 @@ async function updateConsoles() {
     let commentFileName = 'rebel';
     if (gallery === 'snap_world') {
         commentFileName = 'snap_world';
+    } else if (gallery === 'snap_moody') {
+        commentFileName = 'snap_moody';
     } else if (gallery.startsWith('snap_')) {
         commentFileName = 'snap';
     } else if (gallery === 'fotomasters') {
