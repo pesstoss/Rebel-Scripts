@@ -150,7 +150,7 @@ function updateVisibility() {
 
     // 1. Artist Name
     if (nameGroup) {
-        if (gallery === 'rebel_bnw' || gallery === 'snap_allnature' || gallery === 'snap_wildlife' || gallery === 'pictasmacro') {
+        if (gallery === 'snap_allnature' || gallery === 'snap_wildlife' || gallery === 'pictasmacro') {
             nameGroup.style.display = "block";
         } else {
             nameGroup.style.display = "none";
@@ -249,6 +249,18 @@ function updateVisibility() {
             const hashtagsInput = document.getElementById('hashtagsInput');
             if (categoryInput) categoryInput.value = '';
             if (hashtagsInput) hashtagsInput.value = '';
+        }
+    }
+
+    // 9. Photo Title (Rebel BnW only)
+    const titleGroup = document.getElementById('titleGroup');
+    if (titleGroup) {
+        if (gallery === 'rebel_bnw') {
+            titleGroup.style.display = "block";
+        } else {
+            titleGroup.style.display = "none";
+            const titleInput = document.getElementById('titleInput');
+            if (titleInput) titleInput.value = '';
         }
     }
 }
@@ -374,6 +386,7 @@ async function updateConsoles() {
     
     // Grab the new inputs
     const firstName = document.getElementById('firstNameInput') ? document.getElementById('firstNameInput').value : '[FirstName]';
+    const photoTitle = document.getElementById('titleInput') ? document.getElementById('titleInput').value.trim() : '';
     const categoryValue = document.getElementById('categoryInput') ? document.getElementById('categoryInput').value : '';
     // Grab the hashtags input and magically format them
     let hashtagsValue = document.getElementById('hashtagsInput') ? document.getElementById('hashtagsInput').value : '';
@@ -465,7 +478,8 @@ async function updateConsoles() {
             .replace(/{hashtags}/g, hashtagsValue ? hashtagsValue + ' ' : '')
             .replace(/{galleryHashtags}/g, specificGalleryHashtags)
             .replace(/{category}/g, categoryValue)
-            .replace('#snap_flatlays\n.', '#snap_flatlays & #snap_stilllife\n.');
+            .replace('#snap_flatlays\n.', '#snap_flatlays & #snap_stilllife\n.')
+            .replace(/{photoTitle}/g, photoTitle);
     };
 
     // Output the final generated text to all three text boxes
@@ -559,6 +573,9 @@ function clearArtistFields() {
 
     const speciesInput = document.getElementById('speciesInput');
     if (speciesInput) speciesInput.value = '';
+
+    const titleInput = document.getElementById('titleInput');
+    if (titleInput) titleInput.value = '';
 
     updateConsoles();
     updatePromoState(); 

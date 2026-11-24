@@ -1,21 +1,14 @@
-𝐟𝐞𝐚𝐭𝐮𝐫𝐞𝐝 𝐚𝐫𝐭𝐢𝐬𝐭
-☆ {name}
-@{handle} 
-.
-✼ Please visit this talented artist’s gallery
-━━━•☆•━━━
-Selected By {role}:
-@{mod} 
-.
-Follow & Hashtag:
-@rebel_bnw 
-#rebel_bnw 
-━━━━━━━•☆•━━━━━━━
-#MoreOnVero #bnw4vero #verofriendsandfamily 
-.
-#bnw #blackandwhite #monomoods #lightandshadow #blackandwhitephotography #bw #monoculture #gomono #momo #fineart_bwphoto #Bnw_mood #darkandmoody
-.
-For Hub Use:
+✦ Featured Photo - 
+
+{photoTitle} 
+
+✧ Photographer : @{handle} 
+
+♡ Please visit this talented artist’s gallery ♡
+・────・────・
+✧ Selected by : @{mod} 
 #rebelbnw_{handle}
 #rufeature_{handle}
+・────・────・
+#monochrome #monomoods #blackandwhitephotography #mono_culture #fineart_bwphoto #Bnw_mood 
 .
