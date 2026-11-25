@@ -1,7 +1,4 @@
-✦ Featured Photo - 
-
-{photoTitle} 
-
+✦ Featured Photo -{photoTitle}
 ✧ Photographer : @{handle} 
 
 ♡ Please visit this talented artist’s gallery ♡

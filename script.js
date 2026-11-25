@@ -386,7 +386,8 @@ async function updateConsoles() {
     
     // Grab the new inputs
     const firstName = document.getElementById('firstNameInput') ? document.getElementById('firstNameInput').value : '[FirstName]';
-    const photoTitle = document.getElementById('titleInput') ? document.getElementById('titleInput').value.trim() : '';
+    const rawTitle = document.getElementById('titleInput') ? document.getElementById('titleInput').value.trim() : '';
+    const photoTitle = rawTitle ? ' \n\n' + rawTitle + '\n' : '\n';
     const categoryValue = document.getElementById('categoryInput') ? document.getElementById('categoryInput').value : '';
     // Grab the hashtags input and magically format them
     let hashtagsValue = document.getElementById('hashtagsInput') ? document.getElementById('hashtagsInput').value : '';
